@@ -1,4 +1,4 @@
-<div align="center">
+<div align="center" style="object-fit: cover;">
   <img src="https://github.com/Otavig/Pejo/blob/main/Manual%20da%20Marca%20(PEJO).png" width="300" height="200">
 </div>
 
