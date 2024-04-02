@@ -5,9 +5,9 @@ O PEJO é um aplicativo inovador que combina o poder dos desafios sociais com a 
 Recursos Principais:
 Desafios Personalizados: Os usuários recebem desafios personalizados com base em seus interesses, nível de conforto e metas de desenvolvimento social.
 
-Compartilhamento de Experiências:Os participantes podem compartilhar suas experiências ao cumprir desafios, proporcionando uma plataforma para narrativas autênticas e insights sobre o processo de superar a timidez.
+Compartilhamento de Experiências: Os participantes podem compartilhar suas experiências ao cumprir desafios, proporcionando uma plataforma para narrativas autênticas e insights sobre o processo de superar a timidez.
 
-Comunidade de Apoio:Uma comunidade ativa e positiva que incentiva a troca de dicas, conselhos e histórias de superação entre os membros.
+Comunidade de Apoio: Uma comunidade ativa e positiva que incentiva a troca de dicas, conselhos e histórias de superação entre os membros.
 
 Conselhos de Especialistas: Integração de conselhos de especialistas em psicologia social e comunicação, oferecendo orientação profissional aos usuários.
 
