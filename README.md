@@ -1,4 +1,4 @@
-# Pejo
+## Pejo
 Descrição:
 O PEJO é um aplicativo inovador que combina o poder dos desafios sociais com a missão de superar a timidez e promover conexões significativas. O aplicativo não apenas incentiva os usuários a participarem de desafios divertidos e construtivos, mas também oferece um espaço seguro para compartilhar experiências, fornecer apoio mútuo e desenvolver habilidades sociais.
  
