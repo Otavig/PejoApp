@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://github.com/Otavig/Pejo/blob/main/Manual%20da%20Marca%20(PEJO).png" width="200" height="200">
+  <img src="https://github.com/Otavig/Pejo/blob/main/Manual%20da%20Marca%20(PEJO).png" width="300" height="200">
 </div>
 
 # PEJO
