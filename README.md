@@ -1,6 +1,6 @@
 <div style="display: flex;">
   <div style="flex: 1;">
-    <img src="https://github.com/Otavig/Pejo/blob/main/Manual%20da%20Marca%20(PEJO).png" width="300" height="200" style="object-fit: cover;">
+    <img src="https://via.placeholder.com/300x200" width="300" height="200" style="object-fit: cover;">
   </div>
   <div style="flex: 2; margin-left: 20px;">
     <h1>PEJO</h1>
