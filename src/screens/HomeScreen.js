@@ -1,25 +1,43 @@
-import {React} from 'react'
-import {View, StyleSheet, Text, TouchableOpacity, Dimensions } from 'react-native'
+import * as React from 'react';
+import { View, StyleSheet, Text } from 'react-native';
+import { BottomNavigation, Text as PaperText } from 'react-native-paper';
 
-// const largura = Dimensions.get('screen').width
-// const altura = Dimensions.get('screen').height
+const MusicRoute = () => <Text>Home</Text>;
+const AlbumsRoute = () => <Text>Desafios</Text>;
+const RecentsRoute = () => <Text>Chat</Text>;
+const NotificationsRoute = () => <Text>Mais</Text>;
+
+const NavigationApp = () => {
+  const [index, setIndex] = React.useState(0);
+  const [routes] = React.useState([
+    { key: 'music', title: 'Favorites', focusedIcon: 'heart', unfocusedIcon: 'heart-outline' },
+    { key: 'albums', title: 'Albums', focusedIcon: 'album' },
+    { key: 'recents', title: 'Recents', focusedIcon: 'history' },
+    { key: 'notifications', title: 'Notifications', focusedIcon: 'bell', unfocusedIcon: 'bell-outline' },
+  ]);
+
+  const renderScene = BottomNavigation.SceneMap({
+    music: MusicRoute,
+    albums: AlbumsRoute,
+    recents: RecentsRoute,
+    notifications: NotificationsRoute,
+  });
+
+  return (
+    <View style={{ flex: 1 }}>
+      <BottomNavigation
+        navigationState={{ index, routes }}
+        onIndexChange={setIndex}
+        renderScene={renderScene}
+      />
+    </View>
+  );
+};
 
 const HomeScreen = () => {
-    return (
-      <View style={styles.container}>
-        <Text>Tela inicial</Text>
-        
-      </View>
-    );
-  }
+  return (
+    <NavigationApp />
+  );
+};
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#fff',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-});
-
-export default HomeScreen
+export default HomeScreen;

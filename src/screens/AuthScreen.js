@@ -1,9 +1,10 @@
 // AuthScreen.js
 import React, { useState, useEffect } from "react";
 import { AsyncStorage } from "react-native";
-import { View, StyleSheet, Text, TouchableOpacity, Dimensions, TextInput, Image } from "react-native";
-import { BtnLogin , InputLogin } from "../components/LoginComponents";
+import { View, StyleSheet, Text, TouchableOpacity, Dimensions, Image } from "react-native";
+import { BtnLogin , InputLogin, InputLoginHide } from "../components/LoginComponents";
 import { useNavigation } from '@react-navigation/native';
+import { TextInput } from 'react-native-paper';
 
 const largura = Dimensions.get('screen').width
 const altura = Dimensions.get('screen').height
@@ -47,10 +48,8 @@ const AuthScreen = () => {
         onChangeText={setEmailOrPhone}
       />
 
-      <InputLogin
-        keyboardType="numeric"
+      <InputLoginHide
         place={'Senha'}
-        seguro={true}
         value={password}
         onChangeText={setPassword}
       />
@@ -61,7 +60,7 @@ const AuthScreen = () => {
         onClick={() => navigation.navigate("Home")}
       />
       <View style={{flexDirection: "row"}}>
-        <TouchableOpacity style={{marginRight:'20%', marginTop: 10}} onPress={() => navigation.navigate("RecuperarSenha")}><Text>Esqueceu a senha ?</Text></TouchableOpacity>
+        <TouchableOpacity style={{marginRight:'22%', marginTop: 10}} onPress={() => navigation.navigate("RecuperarSenha")}><Text>Esqueceu a senha ?</Text></TouchableOpacity>
         <TouchableOpacity style={{marginTop: 10}} onPress={() => navigation.navigate("Cadastro")}><Text>Crie uma conta!</Text></TouchableOpacity>
       </View>
     </View>
@@ -84,8 +83,8 @@ const RecuperarScreen = () => {
       />
 
       <BtnLogin
-        TextLogin={'Entrar'}
-        onClick={() => navigation.navigate("HomeScreen")}
+        TextLogin={'Enviar'}
+        onClick={() => navigation.navigate("Auth")}
       />
 
       <View style={{flexDirection: "row"}}>
@@ -119,18 +118,16 @@ const CadastroScreen = () => {
         onChangeText={setEmail}
       />
 
-      <InputLogin
+      <InputLoginHide
         keyboardType="numeric"
-        place={'Senha'}
-        seguro={true}
+        place={'Senha'} 
         value={password}
         onChangeText={setPassword}
       />
       
-      <InputLogin
+      <InputLoginHide
         keyboardType="numeric"
         place={'Digite novamente sua Senha'}
-        seguro={true}
         value={passwordRefresh}
         onChangeText={setPasswordRefresh}
       />
@@ -141,8 +138,8 @@ const CadastroScreen = () => {
       />
 
       <View style={{flexDirection: "row"}}>
-        <TouchableOpacity style={{marginRight: "36%", marginTop: 10}} onPress={() => navigation.navigate("Auth")}><Text>Entrar!</Text></TouchableOpacity>
-        <TouchableOpacity style={{marginTop: 10}}><Text>Sou especialista.</Text></TouchableOpacity>
+        <TouchableOpacity style={{marginRight: "42.5%", marginTop: 10}} onPress={() => navigation.navigate("Auth")}><Text>Entrar!</Text></TouchableOpacity>
+        <TouchableOpacity style={{marginTop: 10}}><Text>Sou especialista</Text></TouchableOpacity>
       </View>
     </View>
   );
