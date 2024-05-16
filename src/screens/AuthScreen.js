@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "white",
-    paddingTop: 0, // Adicionando espaçamento superior
+    paddingTop: 0,
   },
 
   input: {
