@@ -1,5 +1,6 @@
 // AuthScreen.js
-import { React } from "react";
+import React, { useState, useEffect } from "react";
+import { AsyncStorage } from "react-native";
 import { View, StyleSheet, Text, TouchableOpacity, Dimensions, TextInput, Image } from "react-native";
 import { BtnLogin , InputLogin } from "../components/LoginComponents";
 import { useNavigation } from '@react-navigation/native';
@@ -9,8 +10,31 @@ const altura = Dimensions.get('screen').height
 
 const logo = require('../assets/imgs/PEJO.semfundo.png')
 
+
 const AuthScreen = () => {
+  const [emailOrPhone, setEmailOrPhone] = useState("");
+  const [password, setPassword] = useState("");
   const navigation = useNavigation();
+
+  // useEffect(() => {
+  //   AsyncStorage.getItem("userData").then(userData => {
+  //     if (userData) {
+  //       // Se as credenciais estiverem presentes, redirecione para a tela inicial
+  //       navigation.navigate("Home");
+  //     }
+  //   });
+  // }, []);
+
+  // const handleLogin = () => {
+  //   // Verificar as credenciais aqui
+  //   // Se as credenciais estiverem corretas, armazene-as em AsyncStorage
+  //   const userData = { emailOrPhone, password };
+  //   AsyncStorage.setItem("userData", JSON.stringify(userData)).then(() => {
+  //     // Redirecionar para a tela inicial após o login bem-sucedido
+  //     navigation.navigate("Home");
+  //   });
+  // };
+
   return (
     <View style={styles.container}>
       <Image style={styles.imageLogo} source={logo}/>
@@ -19,19 +43,23 @@ const AuthScreen = () => {
       <InputLogin
         keyboardType="text"
         place={'Email ou Telefone'}
+        value={emailOrPhone}
+        onChangeText={setEmailOrPhone}
       />
 
       <InputLogin
         keyboardType="numeric"
         place={'Senha'}
         seguro={true}
+        value={password}
+        onChangeText={setPassword}
       />
 
       <BtnLogin
         TextLogin={'Entrar'}
-        onClick={() => navigation.navigate("HomeScreen")}
+        // onClick={handleLogin}
+        onClick={() => navigation.navigate("Home")}
       />
-
       <View style={{flexDirection: "row"}}>
         <TouchableOpacity style={{marginRight:'20%', marginTop: 10}} onPress={() => navigation.navigate("RecuperarSenha")}><Text>Esqueceu a senha ?</Text></TouchableOpacity>
         <TouchableOpacity style={{marginTop: 10}} onPress={() => navigation.navigate("Cadastro")}><Text>Crie uma conta!</Text></TouchableOpacity>
@@ -42,6 +70,7 @@ const AuthScreen = () => {
 
 const RecuperarScreen = () => {
   const navigation = useNavigation();
+  const [emailOrPhone, setEmailOrPhone] = useState("");
   return (
     <View style={styles.container}>
       <Image style={styles.imageLogo} source={logo}/>
@@ -50,6 +79,8 @@ const RecuperarScreen = () => {
       <InputLogin
         keyboardType="text"
         place={'Email ou Telefone'}
+        value={emailOrPhone}
+        onChangeText={setEmailOrPhone}
       />
 
       <BtnLogin
@@ -66,6 +97,10 @@ const RecuperarScreen = () => {
 
 const CadastroScreen = () => {
   const navigation = useNavigation();
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [passwordRefresh, setPasswordRefresh] = useState("");
   return (
     <View style={styles.container}>
       <Text style={{fontSize: 26, marginBottom: 30}}>Cadastra-se</Text>
@@ -73,32 +108,40 @@ const CadastroScreen = () => {
       <InputLogin
         keyboardType="text"
         place={'Nome'}
+        value={name}
+        onChangeText={setName}
       />
 
       <InputLogin
         keyboardType="text"
         place={'Email'}
+        value={email}
+        onChangeText={setEmail}
       />
 
       <InputLogin
         keyboardType="numeric"
         place={'Senha'}
         seguro={true}
+        value={password}
+        onChangeText={setPassword}
       />
       
       <InputLogin
         keyboardType="numeric"
         place={'Digite novamente sua Senha'}
         seguro={true}
+        value={passwordRefresh}
+        onChangeText={setPasswordRefresh}
       />
 
       <BtnLogin
-        TextLogin={'Entrar'}
-        onClick={() => navigation.navigate("HomeScreen")}
+        TextLogin={'Cadastrar'}
+        onClick={() => navigation.navigate("Home")}
       />
 
       <View style={{flexDirection: "row"}}>
-        <TouchableOpacity style={{marginRight: "36%", marginTop: 10}} onPress={() => navigation.navigate("Auth")}><Text>Logar-Se!</Text></TouchableOpacity>
+        <TouchableOpacity style={{marginRight: "36%", marginTop: 10}} onPress={() => navigation.navigate("Auth")}><Text>Entrar!</Text></TouchableOpacity>
         <TouchableOpacity style={{marginTop: 10}}><Text>Sou especialista.</Text></TouchableOpacity>
       </View>
     </View>
@@ -113,7 +156,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "white",
-    paddingTop: 0,
+    paddingTop: 0, 
   },
 
   input: {
@@ -127,7 +170,7 @@ const styles = StyleSheet.create({
   },
   imageLogo: {
     height: '20%',
-    width: '40%',
+    width: '50%',
   }
 });
 

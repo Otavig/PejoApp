@@ -12,7 +12,7 @@ export default function MyStack() {
     <NavigationContainer>
       <Stack.Navigator initialRouteName='Auth'>
         <Stack.Screen name="Auth" component={AuthScreen} options={{headerShown: false}} />
-        <Stack.Screen name="Home" component={HomeScreen} />
+        <Stack.Screen name="Home" component={HomeScreen} options={{headerShown: false}} />
         <Stack.Screen name="Cadastro" component={CadastroScreen} />
         <Stack.Screen name="RecuperarSenha" component={RecuperarScreen} />
       </Stack.Navigator>
