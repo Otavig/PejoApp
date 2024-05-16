@@ -1,43 +1,58 @@
-import * as React from 'react';
-import { View, StyleSheet, Text } from 'react-native';
-import { BottomNavigation, Text as PaperText } from 'react-native-paper';
+import React from 'react';
+import { ImageBackground, StyleSheet, View , Text} from 'react-native';
+import { BottomNavigation } from 'react-native-paper';
 
-const MusicRoute = () => <Text>Home</Text>;
-const AlbumsRoute = () => <Text>Desafios</Text>;
-const RecentsRoute = () => <Text>Chat</Text>;
-const NotificationsRoute = () => <Text>Mais</Text>;
+const HomeRoute = () => <Text></Text>;
+const ChallengeRoute = () => <Text></Text>;
+const ChatRoute = () => <Text></Text>;
+const MoreRoute = () => <Text></Text>;
 
 const NavigationApp = () => {
   const [index, setIndex] = React.useState(0);
   const [routes] = React.useState([
-    { key: 'music', title: 'Favorites', focusedIcon: 'heart', unfocusedIcon: 'heart-outline' },
-    { key: 'albums', title: 'Albums', focusedIcon: 'album' },
-    { key: 'recents', title: 'Recents', focusedIcon: 'history' },
-    { key: 'notifications', title: 'Notifications', focusedIcon: 'bell', unfocusedIcon: 'bell-outline' },
+    { key: 'home', title: 'Home', focusedIcon: 'home', unfocusedIcon: 'home-outline' },
+    { key: 'challenge', title: 'Desafios', focusedIcon: 'tournament', unfocusedIcon: 'tournament' },
+    { key: 'chat', title: 'Chat', focusedIcon: 'chat', unfocusedIcon: 'chat-outline' },
+    { key: 'more', title: 'Mais', focusedIcon: 'more' },
   ]);
 
   const renderScene = BottomNavigation.SceneMap({
-    music: MusicRoute,
-    albums: AlbumsRoute,
-    recents: RecentsRoute,
-    notifications: NotificationsRoute,
+    home: HomeRoute,
+    challenge: ChallengeRoute,
+    chat: ChatRoute,
+    more: MoreRoute,
   });
 
   return (
     <View style={{ flex: 1 }}>
-      <BottomNavigation
-        navigationState={{ index, routes }}
-        onIndexChange={setIndex}
-        renderScene={renderScene}
-      />
+      <ImageBackground source={require('../assets/imgs/favicon.png')} style={styles.imageBackground}>
+        <View style={{ flex: 1 }}>
+          <BottomNavigation
+            navigationState={{ index, routes }}
+            onIndexChange={setIndex}
+            renderScene={renderScene}
+          />
+
+        </View>
+      </ImageBackground>
     </View>
   );
 };
 
 const HomeScreen = () => {
   return (
-    <NavigationApp />
+    <View style={{flex: 1, marginTop: 0}}>
+      <NavigationApp />
+    </View>
   );
 };
+
+const styles = StyleSheet.create({
+  imageBackground: {
+    flex: 1,
+    resizeMode: 'cover', // ou 'stretch' se preferir esticar a imagem
+    justifyContent: 'center',
+  },
+});
 
 export default HomeScreen;
