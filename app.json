@@ -1,30 +1,27 @@
 {
   "expo": {
-    "name": "Pejo",
-    "slug": "Pejo",
+    "name": "pejoapp",
+    "slug": "pejoapp",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./src/assets/imgs/icon.png",
+    "icon": "./assets/imgs/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./src/assets/imgs/splash.png",
+      "image": "./assets/imgs/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./src/assets/imgs/adaptive-icon.png",
+        "foregroundImage": "./assets/imgs/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       }
     },
     "web": {
-      "favicon": "./src/assets/imgs/favicon.png"
+      "favicon": "./assets/imgs/favicon.png"
     }
   }
 }
