@@ -1,6 +1,6 @@
 **PejoAPP** 🦕
 
-![Mídia Indoor](/pejoapp/assets/imgs/git/Projeto%20DEV.png)
+![Mídia Indoor](assets/imgs/git/Projeto%20DEV.png)
 
 
 **Visão Geral** 
