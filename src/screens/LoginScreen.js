@@ -87,7 +87,6 @@ const LoginScreen = ({ navigation, setUser }) => {
 
     return (
       <View style={styles.inputContainer}>
-
         <Animated.Text style={labelStyle}>{placeholder}</Animated.Text>
         <Animated.View style={{ ...styles.inputWrapper, borderColor }}>
           <TextInput
@@ -103,7 +102,18 @@ const LoginScreen = ({ navigation, setUser }) => {
     );
   };
 
+  const isValidEmailOrPhone = (identifier) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const phoneRegex = /^[0-9]{10,15}$/;
+    return emailRegex.test(identifier) || phoneRegex.test(identifier);
+  };
+
   const handleLogin = async () => {
+    if (!isValidEmailOrPhone(identifier)) {
+      Alert.alert('Login Failed', 'Please enter a valid email or phone number');
+      return;
+    }
+
     try {
       const response = await fetch('http://192.168.56.1:3000/login', {
         method: 'POST',
@@ -129,15 +139,19 @@ const LoginScreen = ({ navigation, setUser }) => {
 
   return (
     <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
+      <Image style={{height: 100, width: 100}} source={require('../../assets/icon.png')}/>
       <Text style={styles.title}>Bem-vindo</Text>
       <Text style={styles.description}>Faça login para continuar</Text>
-      {renderAnimatedInput('identifier', 'Email, Nome ou Telefone', identifier, setIdentifier)}
+      {renderAnimatedInput('identifier', 'Email ou Telefone', identifier, setIdentifier)}
       {renderAnimatedInput('password', 'Senha', password, setPassword, true)}
       <TouchableOpacity style={styles.button} onPress={handleLogin}>
         <Text style={styles.buttonText}>Entrar</Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.linkButton} onPress={() => navigation.navigate('Register')}>
         <Text style={styles.linkText}>Não tem uma conta? Faça cadastro</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={[styles.linkButton, {marginTop: 8}]} onPress={() => navigation.navigate('Recovery')}>
+        <Text style={styles.linkText}>Esqueceu a senha ?</Text>
       </TouchableOpacity>
     </Animated.View>
   );
@@ -165,7 +179,7 @@ const styles = StyleSheet.create({
     marginBottom: 25,
   },
   inputContainer: {
-    width: '100%',
+    width: '80%',
     alignItems: 'center',
     marginBottom: 20,
   },
@@ -182,15 +196,15 @@ const styles = StyleSheet.create({
   input: {
     width: '100%',
     padding: 15,
-    fontSize: 14,
+    fontSize: 13,
   },
   button: {
     backgroundColor: '#0088CC',
     padding: 15,
     borderRadius: 4,
-    width: '100%',
+    width: '80%',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 10,
   },
   buttonText: {
     color: '#FFFDFF',
@@ -199,10 +213,11 @@ const styles = StyleSheet.create({
   },
   linkButton: {
     alignItems: 'center',
+    marginBottom: 3,
   },
   linkText: {
     color: '#555',
-    fontSize: 13,
+    fontSize: 14,
     transition: 'color linear 160ms',
   },
 });
