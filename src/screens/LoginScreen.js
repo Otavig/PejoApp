@@ -110,12 +110,12 @@ const LoginScreen = ({ navigation, setUser }) => {
 
   const handleLogin = async () => {
     if (!isValidEmailOrPhone(identifier)) {
-      Alert.alert('Login Failed', 'Please enter a valid email or phone number');
+      Alert.alert('Login Falhou', 'Por favor, insira um email ou telefone válido');
       return;
     }
 
     try {
-      const response = await fetch('http://192.168.56.1:3000/login', {
+      const response = await fetch('http://seuip/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -124,7 +124,7 @@ const LoginScreen = ({ navigation, setUser }) => {
       });
 
       if (!response.ok) {
-        throw new Error('Invalid credentials');
+        throw new Error('Credenciais inválidas');
       }
 
       const data = await response.json();
@@ -132,8 +132,8 @@ const LoginScreen = ({ navigation, setUser }) => {
       setUser(data.user); // Certifique-se de que `setUser` está sendo chamado corretamente
       navigation.navigate('Home'); // Navegue para a tela Home ou Main
     } catch (error) {
-      console.error('Login error:', error);
-      Alert.alert('Login Failed', 'Invalid credentials');
+      console.error('Erro no login:', error);
+      Alert.alert('Login Falhou', 'Credenciais inválidas');
     }
   };
 
@@ -151,7 +151,7 @@ const LoginScreen = ({ navigation, setUser }) => {
         <Text style={styles.linkText}>Não tem uma conta? Faça cadastro</Text>
       </TouchableOpacity>
       <TouchableOpacity style={[styles.linkButton, {marginTop: 8}]} onPress={() => navigation.navigate('Recovery')}>
-        <Text style={styles.linkText}>Esqueceu a senha ?</Text>
+        <Text style={styles.linkText}>Esqueceu a senha?</Text>
       </TouchableOpacity>
     </Animated.View>
   );
@@ -186,38 +186,39 @@ const styles = StyleSheet.create({
   logo: {
     width: 100,
     height: 100,
+    resizeMode: 'contain',
     marginBottom: 20,
   },
   inputWrapper: {
     borderWidth: 1,
-    borderRadius: 4,
+    borderRadius: 8,
     width: '100%',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
   },
   input: {
+    height: 40,
+    fontSize: 16,
     width: '100%',
-    padding: 15,
-    fontSize: 13,
   },
   button: {
     backgroundColor: '#0088CC',
-    padding: 15,
-    borderRadius: 4,
+    borderRadius: 8,
     width: '80%',
+    paddingVertical: 10,
     alignItems: 'center',
-    marginBottom: 10,
+    marginTop: 10,
   },
   buttonText: {
-    color: '#FFFDFF',
-    fontSize: 14,
-    fontWeight: '600',
+    color: '#FFF',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
   linkButton: {
-    alignItems: 'center',
-    marginBottom: 3,
+    marginTop: 10,
   },
   linkText: {
-    color: '#555',
+    color: '#0088CC',
     fontSize: 14,
-    transition: 'color linear 160ms',
   },
 });

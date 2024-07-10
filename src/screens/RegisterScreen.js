@@ -1,26 +1,20 @@
 import React, { useState } from 'react';
 import { View, TextInput, StyleSheet, Alert, Text, TouchableOpacity, Dimensions, Animated } from 'react-native';
-import DateTimePickerModal from 'react-native-modal-datetime-picker';
 
 const largura = Dimensions.get('screen').width;
 
 const RegisterScreen = ({ navigation }) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [dob, setDob] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
 
   const [isFocused, setIsFocused] = useState({
     name: false,
     email: false,
-    dob: false,
     phone: false,
     password: false,
   });
-
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [date, setDate] = useState(new Date());
 
   const handleFocus = (input) => {
     setIsFocused({ ...isFocused, [input]: true });
@@ -28,28 +22,6 @@ const RegisterScreen = ({ navigation }) => {
 
   const handleBlur = (input) => {
     setIsFocused({ ...isFocused, [input]: false });
-  };
-
-  const handleDateConfirm = (selectedDate) => {
-    setShowDatePicker(false);
-    setDate(selectedDate);
-    const formattedDate = selectedDate.toISOString().split('T')[0];
-    setDob(formattedDate);
-  };
-
-  const handleDateCancel = () => {
-    setShowDatePicker(false);
-  };
-
-  const calculateAge = (dateOfBirth) => {
-    const today = new Date();
-    const birthDate = new Date(dateOfBirth);
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const monthDifference = today.getMonth() - birthDate.getMonth();
-    if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
-      age--;
-    }
-    return age;
   };
 
   const renderAnimatedInput = (inputName, placeholder, value, onChangeText, secureTextEntry = false) => {
@@ -125,7 +97,7 @@ const RegisterScreen = ({ navigation }) => {
 
   const handleRegister = async () => {
     try {
-      if (name && email && dob && phone && password) {
+      if (name && email && phone && password) {
         // Validar email
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
@@ -148,17 +120,19 @@ const RegisterScreen = ({ navigation }) => {
           throw new Error('Password must be at least 6 characters long');
         }
 
-        const age = calculateAge(dob);
-        if (age < 16) {
-          throw new Error('You must be at least 16 years old to register.');
-        }
+        const formData = {
+          user_name: name,
+          user_email: email,
+          phone,
+          user_password: password,
+        };
 
-        const response = await fetch('http://192.168.56.1:3000/register', {
+        const response = await fetch('http://seuip/register', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ name, email, dob, phone, password }),
+          body: JSON.stringify(formData),
         });
 
         if (!response.ok) {
@@ -180,34 +154,6 @@ const RegisterScreen = ({ navigation }) => {
       <Text style={styles.title}>Cadastro</Text>
       {renderAnimatedInput('name', 'Nome', name, setName)}
       {renderAnimatedInput('email', 'Email', email, setEmail)}
-      <TouchableOpacity style={styles.inputContainer} onPress={() => setShowDatePicker(true)}>
-        <Animated.Text style={{
-          position: 'absolute',
-          left: 15,
-          top: isFocused.dob || dob ? 6 : 18, // Ajuste a posição vertical aqui
-          fontSize: isFocused.dob || dob ? 12 : 14,
-          color: isFocused.dob || dob ? '#0088CC' : '#aaa', // Mantendo a cor original do texto animado
-        }}>
-          Data de Nascimento
-        </Animated.Text>
-        <View style={{ ...styles.inputWrapper, borderColor: isFocused.dob ? '#0088CC' : '#ccc' }}>
-          <TextInput
-            style={{...styles.input, color: '#000'}} // Define a cor do texto dentro do campo para preto
-            value={dob}
-            editable={false}
-            onFocus={() => handleFocus('dob')}
-            onBlur={() => handleBlur('dob')}
-          />
-        </View>
-      </TouchableOpacity>
-      <DateTimePickerModal
-        isVisible={showDatePicker}
-        mode="date"
-        display="spinner"
-        date={date}
-        onConfirm={handleDateConfirm}
-        onCancel={handleDateCancel}
-      />
       {renderAnimatedInput('phone', 'Telefone', phone, setPhone)}
       {renderAnimatedInput('password', 'Senha', password, setPassword, true)}
       <TouchableOpacity style={styles.button} onPress={handleRegister}>

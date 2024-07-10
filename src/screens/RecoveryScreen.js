@@ -108,7 +108,6 @@ const ForgotPasswordScreen = ({ navigation }) => {
     <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
       <Image style={{ height: 100, width: 100 }} source={require('../../assets/icon.png')} />
       <Text style={styles.title}>Recuperar Senha</Text>
-      <Text style={styles.description}>Digite seu email para receber instruções de recuperação de senha</Text>
       {renderAnimatedInput('Email', email, setEmail)}
       <TouchableOpacity style={styles.button} onPress={handlePasswordReset}>
         <Text style={styles.buttonText}>Enviar</Text>
