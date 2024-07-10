@@ -129,7 +129,7 @@ const LoginScreen = ({ navigation, setUser }) => {
 
       const data = await response.json();
       await AsyncStorage.setItem('user', JSON.stringify(data.user));
-      setUser(data.user); // Certifique-se de que `setUser` está sendo chamado corretamente
+      setUser(data.user); 
       navigation.navigate('Home'); // Navegue para a tela Home ou Main
     } catch (error) {
       console.error('Login error:', error);
