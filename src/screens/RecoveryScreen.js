@@ -29,7 +29,7 @@ const ForgotPasswordScreen = ({ navigation }) => {
 
   const handlePasswordReset = async () => {
     // Implementar lógica de envio de email para recuperação de senha aqui
-    // Pode incluir validações antes de enviar o email
+    // incluir validações antes de enviar o email
 
     Alert.alert('Email enviado', 'Verifique seu email para instruções de recuperação de senha');
   };
