@@ -113,7 +113,7 @@ const ForgotPasswordScreen = ({ navigation }) => {
         <Text style={styles.buttonText}>Enviar</Text>
       </TouchableOpacity>
       <TouchableOpacity style={[styles.linkButton, {marginTop: 10}]} onPress={() => navigation.navigate('Login')}>
-        <Text style={styles.linkText}>Retornar</Text>
+        <Text style={styles.linkText}>Lembrei a senha</Text>
       </TouchableOpacity>
     </Animated.View>
   );

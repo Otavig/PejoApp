@@ -13,7 +13,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const db = mysql.createConnection({
   host: 'localhost',
   user: 'root',
-  password: '',
+  password: 'password',
   database: 'bd_pejo',
 });
 
@@ -39,6 +39,25 @@ app.post('/register', (req, res) => {
   });
 });
 
+app.get('/user/:id', (req, res) => {
+  const userId = req.params.id;
+  const query = 'SELECT * FROM cadastro WHERE id = ?';
+
+  db.query(query, [userId], (err, results) => {
+    if (err) {
+      console.error('Erro ao buscar usuário:', err);
+      return res.status(500).json({ error: 'Erro ao buscar usuário', message: err.message });
+    }
+
+    if (results.length > 0) {
+      res.status(200).json({ user: results[0] });
+    } else {
+      res.status(404).json({ error: 'Usuário não encontrado' });
+    }
+  });
+});
+
+
 app.post('/login', (req, res) => {
   console.log('Recebida requisição de login:', req.body);
   const { identifier, password } = req.body;
@@ -59,6 +78,6 @@ app.post('/login', (req, res) => {
   });
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3006;
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

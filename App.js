@@ -11,6 +11,7 @@ import HomeScreen from './src/screens/HomeScreen';
 import ChallengeScreen from './src/screens/ChallengeScreen';
 import RecoveryScreen from './src/screens/RecoveryScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
+import ChosenScreen from './src/screens/ChosenScreen';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -32,8 +33,7 @@ const App = () => {
   const handleLogout = async (navigation) => {
     await AsyncStorage.removeItem('user');
     setUser(null);
-    // Navega para a tela de Login
-    navigation.navigate('Login');
+    navigation.navigate('Chosen'); // Navega para a tela ChosenScreen
   };
 
   return (
@@ -41,6 +41,11 @@ const App = () => {
       <Stack.Navigator>
         {!user ? (
           <>
+            <Stack.Screen 
+              name="Chosen"
+              component={ChosenScreen}
+              options={{ headerShown: false }}
+            />
             <Stack.Screen 
               name="Login"
               options={{ headerShown: false }}
@@ -61,7 +66,7 @@ const App = () => {
         ) : (
           <>
             <Stack.Screen name="Main" options={{ headerShown: false }}>
-              {({ navigation }) => ( // Passa navigation como propriedade
+              {({ navigation }) => (
                 <Tab.Navigator
                   screenOptions={({ route }) => ({
                     tabBarIcon: ({ focused, color, size }) => {
@@ -77,23 +82,23 @@ const App = () => {
 
                       return <Ionicons name={iconName} size={size} color={color} />;
                     },
-                    tabBarLabelStyle: { fontSize: 12, marginBottom: 5, opacity: 0 }, // Oculta inicialmente o texto
-                    tabBarShowLabel: false, // Esconde os rótulos por padrão
+                    tabBarLabelStyle: { fontSize: 12, marginBottom: 5, opacity: 0 },
+                    tabBarShowLabel: false,
                   })}
                   tabBarOptions={{
                     activeTintColor: '#0088CC',
                     inactiveTintColor: 'gray',
                     style: {
-                      borderTopWidth: 0, // Remove a linha de separação entre a barra de navegação e a tela
-                      height: 65, // Aumenta a altura da barra de navegação inferior
-                      backgroundColor: '#ffffff', // Cor de fundo da barra de navegação
-                      elevation: 10, // Sombra para uma aparência elevada
+                      borderTopWidth: 0,
+                      height: 65,
+                      backgroundColor: '#ffffff',
+                      elevation: 10,
                     },
                   }}
                 >
                   <Tab.Screen 
                     name="Home" 
-                    options={{ headerShown: false, tabBarLabel: 'Home' }} // Define o rótulo a ser mostrado
+                    options={{ headerShown: false, tabBarLabel: 'Home' }}
                   >
                     {(props) => <HomeScreen {...props} setUser={setUser} />}
                   </Tab.Screen>
@@ -106,9 +111,8 @@ const App = () => {
                     name="Perfil" 
                     component={ProfileScreen} 
                     options={{ headerShown: false, tabBarLabel: 'Perfil' }}
-                    initialParams={{ handleLogout }} // Passa a função handleLogout como parâmetro inicial
+                    initialParams={{ handleLogout }}
                   />
-
                 </Tab.Navigator>
               )}
             </Stack.Screen>

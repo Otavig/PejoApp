@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Image, TextInput, StyleSheet, Alert, Text, TouchableOpacity, Animated } from 'react-native';
+import { View, Image, TextInput, StyleSheet, Alert, Text, TouchableOpacity, Animated, SafeAreaView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Dimensions } from 'react-native';
 
@@ -35,29 +35,17 @@ const LoginScreen = ({ navigation, setUser }) => {
     const animatedLabel = new Animated.Value(isFocused[inputName] || value ? 1 : 0);
     const animatedBorderColor = new Animated.Value(isFocused[inputName] ? 1 : 0);
 
-    if (isFocused[inputName]) {
-      Animated.timing(animatedLabel, {
-        toValue: 1,
-        duration: 200,
-        useNativeDriver: false,
-      }).start();
-      Animated.timing(animatedBorderColor, {
-        toValue: 1,
-        duration: 200,
-        useNativeDriver: false,
-      }).start();
-    } else {
-      Animated.timing(animatedLabel, {
-        toValue: value ? 1 : 0,
-        duration: 200,
-        useNativeDriver: false,
-      }).start();
-      Animated.timing(animatedBorderColor, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: false,
-      }).start();
-    }
+    Animated.timing(animatedLabel, {
+      toValue: isFocused[inputName] || value ? 1 : 0,
+      duration: 200,
+      useNativeDriver: false,
+    }).start();
+    
+    Animated.timing(animatedBorderColor, {
+      toValue: isFocused[inputName] ? 1 : 0,
+      duration: 200,
+      useNativeDriver: false,
+    }).start();
 
     const labelStyle = {
       position: 'absolute',
@@ -88,7 +76,7 @@ const LoginScreen = ({ navigation, setUser }) => {
     return (
       <View style={styles.inputContainer}>
         <Animated.Text style={labelStyle}>{placeholder}</Animated.Text>
-        <Animated.View style={{ ...styles.inputWrapper, borderColor }}>
+        <Animated.View style={[styles.inputWrapper, { borderColor }]}>
           <TextInput
             style={styles.input}
             value={value}
@@ -115,7 +103,7 @@ const LoginScreen = ({ navigation, setUser }) => {
     }
 
     try {
-      const response = await fetch('http://seuip/login', {
+      const response = await fetch('http://192.168.0.255:8081/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -138,40 +126,55 @@ const LoginScreen = ({ navigation, setUser }) => {
   };
 
   return (
-    <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
-      <Image style={{height: 100, width: 100}} source={require('../../assets/icon.png')}/>
-      <Text style={styles.title}>Bem-vindo</Text>
-      <Text style={styles.description}>Faça login para continuar</Text>
-      {renderAnimatedInput('identifier', 'Email ou Telefone', identifier, setIdentifier)}
-      {renderAnimatedInput('password', 'Senha', password, setPassword, true)}
-      <TouchableOpacity style={styles.button} onPress={handleLogin}>
-        <Text style={styles.buttonText}>Entrar</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.linkButton} onPress={() => navigation.navigate('Register')}>
-        <Text style={styles.linkText}>Não tem uma conta? Faça cadastro</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={[styles.linkButton, {marginTop: 8}]} onPress={() => navigation.navigate('Recovery')}>
-        <Text style={styles.linkText}>Esqueceu a senha?</Text>
-      </TouchableOpacity>
-    </Animated.View>
+    <SafeAreaView style={styles.container}>
+      <Animated.View style={{ flex: 1, opacity: fadeAnim, justifyContent: 'center', alignItems: 'center' }}>
+        <Image style={styles.logo} source={require('../../assets/icon.png')} />
+        <Text style={styles.title}>Bem-vindo</Text>
+        <Text style={styles.description}>Faça login para continuar</Text>
+        {renderAnimatedInput('identifier', 'Email ou Telefone', identifier, setIdentifier)}
+        {renderAnimatedInput('password', 'Senha', password, setPassword, true)}
+        <TouchableOpacity style={styles.button} onPress={handleLogin}>
+          <Text style={styles.buttonText}>Entrar</Text>
+        </TouchableOpacity>
+
+        <View style={styles.linksContainer}>
+          <TouchableOpacity style={styles.linkButton} onPress={() => navigation.navigate('Register')}>
+            <Text style={styles.linkText}>Não tem uma conta?</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.linkButton, { marginLeft: 10 }]} onPress={() => navigation.navigate('Recovery')}>
+            <Text style={styles.linkText}>Recuperar senha</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.separatorContainer}>
+          <Text style={styles.separatorText}>OU</Text>
+        </View>
+        <View style={styles.separator} />
+
+        <View style={styles.socialButtonsContainer}>
+          <TouchableOpacity style={styles.socialButton}>
+            <Image style={styles.socialIcon} source={require('../../assets/imgs/options/google.png')} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.socialButton}>
+            <Image style={styles.socialIcon} source={require('../../assets/imgs/options/facebook.png')} />
+          </TouchableOpacity>
+        </View>
+      </Animated.View>
+    </SafeAreaView>
   );
 };
-
-export default LoginScreen;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFF',
-    justifyContent: 'center',
-    alignItems: 'center',
     padding: 20,
   },
   title: {
     fontSize: 32,
     fontWeight: 'bold',
     color: '#023047',
-    marginBottom: 20,
+    marginBottom: 15,
   },
   description: {
     fontSize: 14,
@@ -180,26 +183,22 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     width: '80%',
-    alignItems: 'center',
     marginBottom: 20,
+    position: 'relative',
   },
   logo: {
-    width: 100,
-    height: 100,
+    width: 200,
+    height: 200,
     resizeMode: 'contain',
-    marginBottom: 20,
   },
   inputWrapper: {
     borderWidth: 1,
-    borderRadius: 8,
-    width: '100%',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
+    borderRadius: 4,
   },
   input: {
-    height: 40,
-    fontSize: 16,
     width: '100%',
+    padding: 15,
+    fontSize: 13,
   },
   button: {
     backgroundColor: '#0088CC',
@@ -214,11 +213,53 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
+  linksContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    width: '75%',
+    justifyContent: 'space-between',
+  },
   linkButton: {
     marginTop: 10,
   },
   linkText: {
-    color: '#0088CC',
+    color: 'black',
+    fontSize: 12,
+  },
+  separatorContainer: {
+    alignItems: 'center',
+    marginBottom: 15,
+    marginTop:15,
+  },
+  separatorText: {
     fontSize: 14,
+    color: '#666',
+  },
+  separator: {
+    height: 1,
+    backgroundColor: '#ccc',
+    width: '80%',
+  },
+  socialButtonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    width: '80%',
+  },
+  socialButton: {
+    width: 50,
+    height: 50,
+    marginTop: 20,
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    marginHorizontal: 10,
+  },
+  socialIcon: {
+    width: 30,
+    height: 30,
   },
 });
+
+export default LoginScreen;

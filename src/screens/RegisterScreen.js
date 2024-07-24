@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, TextInput, StyleSheet, Alert, Text, TouchableOpacity, Dimensions, Animated } from 'react-native';
+import { View, Image, TextInput, StyleSheet, Alert, Text, TouchableOpacity, Dimensions, Animated } from 'react-native';
 
 const largura = Dimensions.get('screen').width;
 
@@ -98,26 +98,20 @@ const RegisterScreen = ({ navigation }) => {
   const handleRegister = async () => {
     try {
       if (name && email && phone && password) {
-        // Validar email
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-          throw new Error('Invalid email address');
-        }
-
         // Validar telefone
         const phoneRegex = /^[0-9]{10,12}$/; // Telefone com 10 a 12 dígitos
         if (!phoneRegex.test(phone)) {
-          throw new Error('Invalid phone number');
+          throw new Error('Número de telefone invalido');
         }
 
         // Limitar tamanho do nome (máximo de 50 caracteres)
         if (name.length > 50) {
-          throw new Error('Name exceeds maximum length of 50 characters');
+          throw new Error('Nome passou do limite de 50 caracteres');
         }
 
         // Limitar tamanho da senha (mínimo de 6 caracteres)
         if (password.length < 6) {
-          throw new Error('Password must be at least 6 characters long');
+          throw new Error('Senha precisa de mais do que 6 Caracteres');
         }
 
         const formData = {
@@ -127,7 +121,7 @@ const RegisterScreen = ({ navigation }) => {
           user_password: password,
         };
 
-        const response = await fetch('http://seuip/register', {
+        const response = await fetch('http://192.168.0.255:8081/register', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -145,13 +139,13 @@ const RegisterScreen = ({ navigation }) => {
       }
     } catch (error) {
       console.error('Registration error:', error);
-      Alert.alert('Registration Failed', `Error: ${error.message}`);
+      Alert.alert('Registro falhou', `Error: ${error.message}`);
     }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Cadastro</Text>
+      <Text style={[styles.title, {marginBottom: 30}]}>Cadastro</Text>
       {renderAnimatedInput('name', 'Nome', name, setName)}
       {renderAnimatedInput('email', 'Email', email, setEmail)}
       {renderAnimatedInput('phone', 'Telefone', phone, setPhone)}
@@ -160,8 +154,22 @@ const RegisterScreen = ({ navigation }) => {
         <Text style={styles.buttonText}>Cadastrar-se</Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.linkButton} onPress={() => navigation.navigate('Login')}>
-        <Text style={styles.linkText}>Já possui uma conta? Faça login</Text>
+        <Text style={[styles.linkText, {marginBottom: 20}]}>Já possui uma conta?</Text>
       </TouchableOpacity>
+
+      <View style={styles.separatorContainer}>
+        <Text style={styles.separatorText}>OU</Text>
+      </View>
+        <View style={styles.separator} />
+
+      <View style={styles.socialButtonsContainer}>
+        <TouchableOpacity style={styles.socialButton}>
+          <Image style={styles.socialIcon} source={require('../../assets/imgs/options/google.png')} />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.socialButton}>
+          <Image style={styles.socialIcon} source={require('../../assets/imgs/options/facebook.png')} />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -214,5 +222,50 @@ const styles = StyleSheet.create({
   linkText: {
     color: '#555',
     fontSize: 13,
+  },linksContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    width: '75%',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+  },
+  linkButton: {
+    marginTop: 10,
+  },
+  linkText: {
+    color: 'black',
+    fontSize: 12,
+  },
+  separatorContainer: {
+    alignItems: 'center',
+  },
+  separatorText: {
+    fontSize: 14,
+    color: '#666',
+  },
+  separator: {
+    height: 1,
+    backgroundColor: '#ccc',
+    width: '80%',
+    marginVertical: 20,
+  },
+  socialButtonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    width: '80%',
+  },
+  socialButton: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    marginHorizontal: 10,
+  },
+  socialIcon: {
+    width: 30,
+    height: 30,
   },
 });

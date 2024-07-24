@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, Alert, TextInput } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
 
 const ProfileScreen = ({ navigation, route }) => {
   const [profilePicture, setProfilePicture] = useState(null);
   const [user, setUser] = useState(null);
-  const [editingName, setEditingName] = useState(false);
-  const [newName, setNewName] = useState('John Doe');
 
   useEffect(() => {
     const loadUser = async () => {
@@ -16,12 +14,21 @@ const ProfileScreen = ({ navigation, route }) => {
         const parsedUser = JSON.parse(userData);
         setUser(parsedUser);
         setProfilePicture(parsedUser.profile_picture_url);
-        setNewName(parsedUser.name || newName);
+  
+        // Buscar nome do banco de dados usando o user_id
+        const response = await fetch(`http://192.168.0.255:3006/user/${parsedUser.id}`);
+        const data = await response.json();
+        if (response.ok) {
+          setUser(data.user);
+        } else {
+          console.error('Erro ao buscar detalhes do usuário:', data.error);
+        }
       }
     };
-
+  
     loadUser();
   }, []);
+  
 
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -62,15 +69,6 @@ const ProfileScreen = ({ navigation, route }) => {
     );
   };
 
-  const saveName = () => {
-    // Limite o nome a 30 caracteres
-    const limitedName = newName.substring(0, 30);
-    setNewName(limitedName); // Atualiza localmente apenas
-
-    // Saia do modo de edição
-    setEditingName(false);
-  };
-
   return (
     <View style={styles.container}>
       <View style={styles.additionalCard} />
@@ -87,25 +85,7 @@ const ProfileScreen = ({ navigation, route }) => {
       </TouchableOpacity>
 
       <View style={styles.nameContainer}>
-        {editingName ? (
-          <View style={styles.editNameContainer}>
-            <TextInput
-              style={styles.input}
-              value={newName}
-              onChangeText={setNewName}
-              maxLength={30}
-              autoFocus
-              textAlign="center"
-            />
-            <TouchableOpacity style={styles.saveButton} onPress={saveName}>
-              <Text style={styles.saveButtonText}>Salvar</Text>
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <TouchableOpacity style={styles.nameTextContainer} onPress={() => setEditingName(true)}>
-            <Text style={styles.nameText}>{user?.name || newName}</Text>
-          </TouchableOpacity>
-        )}
+        <Text style={styles.nameText}>{user?.name || 'Nome não disponível'}</Text>
       </View>
     </View>
   );
@@ -158,36 +138,9 @@ const styles = StyleSheet.create({
     width: '100%',
     zIndex: 1,
   },
-  nameTextContainer: {
-    alignItems: 'center',
-  },
   nameText: {
     fontSize: 20,
     fontWeight: 'bold',
-  },
-  editNameContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: 300,
-  },
-  input: {
-    flex: 1,
-    height: 40,
-    width: 200,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    paddingHorizontal: 10,
-    marginRight: 10,
-  },
-  saveButton: {
-    backgroundColor: '#0088CC',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-  },
-  saveButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    textAlign: 'center',
   },
   logoutButton: {
     borderWidth: 1,
