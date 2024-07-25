@@ -13,7 +13,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const db = mysql.createConnection({
   host: 'localhost',
   user: 'root',
-  password: 'password',
+  password: '',
   database: 'bd_pejo',
 });
 
@@ -41,7 +41,9 @@ app.post('/register', (req, res) => {
 
 app.get('/user/:id', (req, res) => {
   const userId = req.params.id;
-  const query = 'SELECT * FROM cadastro WHERE id = ?';
+
+  const query = 'SELECT * FROM cadastro WHERE id_user = ?';
+  console.log(req.params.id);
 
   db.query(query, [userId], (err, results) => {
     if (err) {

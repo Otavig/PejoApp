@@ -10,16 +10,18 @@ const ProfileScreen = ({ navigation, route }) => {
   useEffect(() => {
     const loadUser = async () => {
       const userData = await AsyncStorage.getItem('user');
+      console.log(userData);
       if (userData) {
         const parsedUser = JSON.parse(userData);
         setUser(parsedUser);
         setProfilePicture(parsedUser.profile_picture_url);
   
         // Buscar nome do banco de dados usando o user_id
-        const response = await fetch(`http://192.168.0.255:3006/user/${parsedUser.id}`);
+        const response = await fetch(`http://10.111.9.12:3006/user/${user.id_user}`);
         const data = await response.json();
         if (response.ok) {
           setUser(data.user);
+          console.log(user)
         } else {
           console.error('Erro ao buscar detalhes do usuário:', data.error);
         }
@@ -85,7 +87,7 @@ const ProfileScreen = ({ navigation, route }) => {
       </TouchableOpacity>
 
       <View style={styles.nameContainer}>
-        <Text style={styles.nameText}>{user?.name || 'Nome não disponível'}</Text>
+        <Text style={styles.nameText}>{user?.user_name || 'Nome não disponível'}</Text>
       </View>
     </View>
   );
@@ -105,7 +107,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 800,
     position: 'absolute',
-    top: 180,
+    top: 200,
     borderTopLeftRadius: 45,
     borderTopRightRadius: 45,
     shadowColor: '#000',
@@ -140,6 +142,7 @@ const styles = StyleSheet.create({
   },
   nameText: {
     fontSize: 20,
+    marginTop: 10,
     fontWeight: 'bold',
   },
   logoutButton: {

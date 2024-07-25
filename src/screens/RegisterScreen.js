@@ -121,7 +121,7 @@ const RegisterScreen = ({ navigation }) => {
           user_password: password,
         };
 
-        const response = await fetch('http://192.168.0.255:8081/register', {
+        const response = await fetch('http://10.111.9.12:3006/register', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

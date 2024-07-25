@@ -103,7 +103,7 @@ const LoginScreen = ({ navigation, setUser }) => {
     }
 
     try {
-      const response = await fetch('http://192.168.0.255:8081/login', {
+      const response = await fetch('http://10.111.9.12:3006/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
