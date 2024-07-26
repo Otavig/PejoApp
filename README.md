@@ -8,6 +8,7 @@ Please choose your preferred language below:
 
 <details>
     <summary>English</summary>
+    <br>
     
 
 **Overview**  
@@ -54,6 +55,7 @@ Starting the App will give you the option to start on an emulator or scan the QR
 
 <details>
     <summary>Português</summary>
+    <br>
 
 **Visão Geral**  
 <p align="justify">O PEJO é um aplicativo inovador que promove conexões significativas ao combinar desafios sociais com a missão de superar a timidez. Ele oferece desafios personalizados, compartilhamento de experiências, comunidade de apoio, conselhos de especialistas, desafios em grupo, recompensas e eventos ao vivo.</p>
