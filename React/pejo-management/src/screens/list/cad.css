@@ -1,0 +1,79 @@
+/* cad.css */
+
+.card {
+    margin-top: 30px;
+    background-color: white;
+    color: black;
+    box-shadow: 20px 20px 20px rgba(0, 0, 0, 0.377);
+}
+
+.card.light {
+    background-color: rgb(68, 67, 67);
+    color: white;
+    box-shadow: 20px 20px 20px rgba(0, 0, 0, 0.377);
+}
+
+.card-header {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+label {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.blockquote {
+    display: flex;
+    flex-direction: column;
+    margin: 1rem 0;
+}
+
+.blockquote input,
+.blockquote textarea {
+    width: 100%;
+    margin-bottom: 1rem;
+}
+
+.blockquote .difficulty {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.blockquote .difficulty input[type="range"] {
+    margin-left: 0.5rem;
+    width: 80%;
+}
+
+.blockquote .difficulty label {
+    width: 20%;
+}
+
+.buttons {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.buttons button {
+    padding: 1rem 1rem;
+    font-weight: bold;
+}
+
+.difficulty #difficultyRange {
+    width: 200px;
+    position: relative;
+    top: 6px;
+}
+
+.difficulty {
+    width: 350px;
+}
+
+.difficulty span {
+    position: relative;
+    top: -4px;
+    margin-left: 0.8rem;
+    margin-right: 0px;
+}
