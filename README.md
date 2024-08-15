@@ -2,6 +2,10 @@
 
 ![Mídia Indoor](assets/imgs/git/Projeto%20DEV.png)
 
+***Here is the complete control panel for the app: [PejoApp Dashboard](https://github.com/Otavig/PejoApp-Dashboard)***
+
+**LEIA ACIMA / READ UP**
+
 ## Language Selection
 
 Please choose your preferred language below:
