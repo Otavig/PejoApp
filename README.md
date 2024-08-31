@@ -58,3 +58,74 @@ Certifique-se de ter o Node.js e o Expo CLI instalados. Caso não tenha, siga as
 * Node.js e npm
   ```sh
   https://nodejs.org/
+
+* Expo CLI
+  ```sh
+  npm install -g expo-cli
+
+* Clone o repositório
+  ```sh
+  git clone https://github.com/username/pejo.git
+
+* Navegue até o diretório do projeto
+  ```sh
+  cd pejo
+  
+* Instale as dependências
+  ```sh
+  npm install
+
+* Inicie o aplicativo com o Expo
+  ```sh
+  expo start
+  
+<p align="right">(<a href="#readme-top">voltar ao topo</a>)</p> <!-- USAGE EXAMPLES -->
+
+# Utilização
+
+### Após iniciar o aplicativo, você pode:
+
+Navegar pelos desafios disponíveis.
+Participar de eventos ao vivo.
+Compartilhar suas experiências e interagir com a comunidade.
+Receber conselhos de especialistas para superar a timidez.
+Consulte a Documentação para mais detalhes.
+
+<p align="right">(<a href="#readme-top">voltar ao topo</a>)</p> <!-- ROADMAP -->
+Roadmap
+ Adicionar Desafios Personalizados
+ Implementar Compartilhamento de Experiências
+ Melhorar Interface de Usuário
+ Adicionar Novos Tipos de Desafios
+ Suporte para Eventos ao Vivo
+Veja a lista de issues abertas para mais detalhes sobre as futuras melhorias e correções.
+
+<p align="right">(<a href="#readme-top">voltar ao topo</a>)</p> <!-- CONTRIBUTING -->
+
+# Contribuindo
+* Contribuições são bem-vindas! Para contribuir:
+* Faça um Fork do Projeto
+* Crie uma Nova Branch (git checkout -b feature/NovaFuncionalidade)
+* Faça o Commit das Suas Mudanças (git commit -m 'Adiciona nova funcionalidade')
+* Envie a Branch (git push origin feature/NovaFuncionalidade)
+* Abra um Pull Request
+
+# Principais colaboradores:
+* @Otavig - Otávio Garcia
+* @aneliseZarate - aneliseZarate
+* @tavinZO - tavinZO
+  
+<p align="right">(<a href="#readme-top">voltar ao topo</a>)</p> <!-- LICENSE -->
+Licença
+
+<p align="right">(<a href="#readme-top">voltar ao topo</a>)</p> <!-- CONTACT -->
+
+# Contato
+Otávio [Otavig] - http://linootivi@gmail.com/
+
+Link do Projeto: https://github.com/otavig/pejo
+
+<p align="right">(<a href="#readme-top">voltar ao topo</a>)</p> <!-- ACKNOWLEDGMENTS -->
+
+# Agradecimentos
+Agradecimentos a todos os que contribuíram para este projeto e forneceram recursos úteis
