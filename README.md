@@ -65,7 +65,7 @@ Certifique-se de ter o Node.js e o Expo CLI instalados. Caso não tenha, siga as
 
 * Clone o repositório
   ```sh
-  git clone https://github.com/username/pejo.git
+  git clone https://github.com/otavig/pejo.git
 
 * Navegue até o diretório do projeto
   ```sh
@@ -115,9 +115,6 @@ Veja a lista de issues abertas para mais detalhes sobre as futuras melhorias e c
 * @aneliseZarate - aneliseZarate
 * @tavinZO - tavinZO
   
-<p align="right">(<a href="#readme-top">voltar ao topo</a>)</p> <!-- LICENSE -->
-Licença
-
 <p align="right">(<a href="#readme-top">voltar ao topo</a>)</p> <!-- CONTACT -->
 
 # Contato
