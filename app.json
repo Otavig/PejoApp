@@ -6,14 +6,6 @@
     "orientation": "portrait",
     "icon": "./assets/imgs/icon.png",
     "userInterfaceStyle": "light",
-    "plugins": [
-      [
-        "expo-calendar",
-        {
-          "calendarPermission": "The app needs to access your calendar."
-        }
-      ]
-    ],
     "splash": {
       "image": "./assets/imgs/splash.png",
       "resizeMode": "contain",

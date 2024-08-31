@@ -5,13 +5,13 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import LoginScreen from './src/screens/LoginScreen';
-import RegisterScreen from './src/screens/RegisterScreen';
-import HomeScreen from './src/screens/HomeScreen';
-import ChallengeScreen from './src/screens/ChallengeScreen';
-import RecoveryScreen from './src/screens/RecoveryScreen';
-import ProfileScreen from './src/screens/ProfileScreen';
-import ChosenScreen from './src/screens/ChosenScreen';
+import LoginScreen from './src/LoginScreen';
+import RegisterScreen from './src/RegisterScreen';
+import HomeScreen from './src/HomeScreen';
+import ChallengeScreen from './src/ChallengeScreen';
+import RecoveryScreen from './src/RecoveryScreen';
+import ProfileScreen from './src/ProfileScreen';
+import ChosenScreen from './src/ChosenScreen';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -41,24 +41,24 @@ const App = () => {
       <Stack.Navigator>
         {!user ? (
           <>
-            <Stack.Screen 
+            <Stack.Screen
               name="Chosen"
               component={ChosenScreen}
               options={{ headerShown: false }}
             />
-            <Stack.Screen 
+            <Stack.Screen
               name="Login"
               options={{ headerShown: false }}
             >
               {(props) => <LoginScreen {...props} setUser={setUser} />}
             </Stack.Screen>
-            <Stack.Screen 
-              name="Register" 
+            <Stack.Screen
+              name="Register"
               component={RegisterScreen}
               options={{ headerShown: false }}
             />
-            <Stack.Screen 
-              name="Recovery" 
+            <Stack.Screen
+              name="Recovery"
               component={RecoveryScreen}
               options={{ headerShown: false }}
             />
@@ -96,20 +96,20 @@ const App = () => {
                     },
                   }}
                 >
-                  <Tab.Screen 
-                    name="Home" 
+                  <Tab.Screen
+                    name="Home"
                     options={{ headerShown: false, tabBarLabel: 'Home' }}
                   >
                     {(props) => <HomeScreen {...props} setUser={setUser} />}
                   </Tab.Screen>
-                  <Tab.Screen 
-                    name="Desafios" 
-                    component={ChallengeScreen} 
+                  <Tab.Screen
+                    name="Desafios"
+                    component={ChallengeScreen}
                     options={{ headerShown: false, tabBarLabel: 'Desafios' }}
                   />
-                  <Tab.Screen 
-                    name="Perfil" 
-                    component={ProfileScreen} 
+                  <Tab.Screen
+                    name="Perfil"
+                    component={ProfileScreen}
                     options={{ headerShown: false, tabBarLabel: 'Perfil' }}
                     initialParams={{ handleLogout }}
                   />
