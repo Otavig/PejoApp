@@ -34,41 +34,13 @@ const LoginScreen = ({ navigation, setUser }) => {
     };
 
     const renderAnimatedInput = (inputName, placeholder, value, onChangeText, secureTextEntry = false) => {
-        const animatedLabel = new Animated.Value(isFocused[inputName] || value ? 1 : 0);
         const animatedBorderColor = new Animated.Value(isFocused[inputName] ? 1 : 0);
-
-        Animated.timing(animatedLabel, {
-            toValue: isFocused[inputName] || value ? 1 : 0,
-            duration: 200,
-            useNativeDriver: false,
-        }).start();
 
         Animated.timing(animatedBorderColor, {
             toValue: isFocused[inputName] ? 1 : 0,
             duration: 200,
             useNativeDriver: false,
         }).start();
-
-        const labelStyle = {
-            position: 'absolute',
-            left: 10,
-            top: animatedLabel.interpolate({
-                inputRange: [0, 1],
-                outputRange: [15, 3],
-            }),
-            fontSize: animatedLabel.interpolate({
-                inputRange: [0, 1],
-                outputRange: [14, 12],
-            }),
-            color: animatedLabel.interpolate({
-                inputRange: [0, 1],
-                outputRange: ['#aaa', '#0088CC'],
-            }),
-            opacity: animatedLabel.interpolate({
-                inputRange: [0, 1],
-                outputRange: [1, 0.9],
-            }),
-        };
 
         const borderColor = animatedBorderColor.interpolate({
             inputRange: [0, 1],
@@ -77,7 +49,6 @@ const LoginScreen = ({ navigation, setUser }) => {
 
         return (
             <View style={styles.inputContainer}>
-                <Animated.Text style={labelStyle}>{placeholder}</Animated.Text>
                 <Animated.View style={[styles.inputWrapper, { borderColor }]}>
                     <TextInput
                         style={styles.input}
@@ -86,6 +57,8 @@ const LoginScreen = ({ navigation, setUser }) => {
                         secureTextEntry={secureTextEntry}
                         onFocus={() => handleFocus(inputName)}
                         onBlur={() => handleBlur(inputName)}
+                        placeholder={placeholder}
+                        placeholderTextColor="#aaa"
                     />
                     {inputName === 'password' && (
                         <TouchableOpacity
@@ -117,7 +90,8 @@ const LoginScreen = ({ navigation, setUser }) => {
         }
 
         try {
-            const response = await fetch('http://10.111.9.24:3006/login', {
+            console.log('Enviando requisição de login:', { identifier, password });
+            const response = await fetch('http://10.111.9.50:3006/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -125,17 +99,44 @@ const LoginScreen = ({ navigation, setUser }) => {
                 body: JSON.stringify({ identifier, password }),
             });
 
+            const data = await response.json();
+            console.log('Resposta do servidor:', data);
+
             if (!response.ok) {
-                throw new Error('Credenciais inválidas');
+                throw new Error(data.error || 'Credenciais inválidas');
             }
 
-            const data = await response.json();
-            await AsyncStorage.setItem('user', JSON.stringify(data.user));
-            setUser(data.user);
-            navigation.navigate('Home'); // Navegue para a tela Home ou Main
+            // Check if the user's role is "user" or "adm"
+            if (data.user.cargo === 'user' || data.user.cargo === 'adm') {
+                await AsyncStorage.setItem('user', JSON.stringify(data.user));
+                setUser(data.user);
+                navigation.navigate('Home');
+            } else if (data.user.cargo === 'pendente') {
+                Alert.alert(
+                    'Conta não confirmada',
+                    'Por favor, confirme seu email antes de fazer login.',
+                    [
+                        { text: 'OK' },
+                        { text: 'Reenviar confirmação', onPress: () => navigation.navigate('ResendConfirmation', { email: data.user.email }) }
+                    ]
+                );
+            } else {
+                Alert.alert('Acesso Negado', 'Você não tem permissão para acessar o aplicativo. Por favor, entre em contato com o suporte.');
+            }
         } catch (error) {
             console.error('Erro no login:', error);
-            Alert.alert('Login Falhou', 'Credenciais inválidas');
+            if (error.message === 'Credenciais inválidas') {
+                Alert.alert(
+                    'Login Falhou',
+                    'Credenciais inválidas. Você gostaria de se cadastrar?',
+                    [
+                        { text: 'Não' },
+                        { text: 'Sim', onPress: () => navigation.navigate('Register') }
+                    ]
+                );
+            } else {
+                Alert.alert('Erro', 'Ocorreu um erro ao tentar fazer login. Por favor, tente novamente mais tarde.');
+            }
         }
     };
 
@@ -159,19 +160,6 @@ const LoginScreen = ({ navigation, setUser }) => {
                         <Text style={styles.linkText}>Recuperar senha</Text>
                     </TouchableOpacity>
                 </View>
-
-                <View style={styles.separatorContainer}>
-                </View>
-                <View style={styles.separator} />
-
-                <View style={styles.socialButtonsContainer}>
-                    <TouchableOpacity style={styles.socialButton}>
-                        <Image style={styles.socialIcon} source={require('../assets/imgs/options/google.png')} />
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.socialButton}>
-                        <Image style={styles.socialIcon} source={require('../assets/imgs/options/facebook.png')} />
-                    </TouchableOpacity>
-                </View>
             </Animated.View>
         </SafeAreaView>
     );
@@ -181,101 +169,66 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#FFF',
-        padding: 20,
+        padding: 25, // Increased padding
     },
     title: {
-        fontSize: 32,
+        fontSize: 36, // Increased font size
         fontWeight: 'bold',
         color: '#023047',
-        marginBottom: 10,
+        marginBottom: 15, // Increased margin
     },
     description: {
-        fontSize: 14,
+        fontSize: 16, // Increased font size
         color: '#666',
-        marginBottom: 25,
+        marginBottom: 30, // Increased margin
     },
     inputContainer: {
-        width: '80%',
-        marginBottom: 20,
-        position: 'relative',
+        width: '90%', // Increased width
+        marginBottom: 25, // Increased margin
     },
     logo: {
-        width: 80,
-        height: 80,
-        marginBottom: 10,
+        width: 130, // Increased size
+        height: 130, // Increased size
+        marginBottom: 15, // Increased margin
         resizeMode: 'contain',
     },
     inputWrapper: {
         borderWidth: 1,
-        borderRadius: 4,
     },
     input: {
         width: '100%',
-        padding: 10,
-        fontSize: 13,
+        padding: 18, // Increased padding
+        fontSize: 15, // Increased font size
     },
     eyeIcon: {
         position: 'absolute',
-        right: 15,
-        top: 15,
+        right: 18,
+        top: 20,
     },
     button: {
         backgroundColor: '#0088CC',
-        borderRadius: 8,
-        width: '80%',
-        paddingVertical: 10,
+        width: '90%', // Increased width
+        paddingVertical: 12, // Increased padding
         alignItems: 'center',
-        marginTop: 10,
+        marginTop: 13, // Increased margin
     },
     buttonText: {
         color: '#FFF',
-        fontSize: 18,
+        fontSize: 20, // Increased font size
         fontWeight: 'bold',
     },
     linksContainer: {
         flexDirection: 'row',
         justifyContent: 'center',
-        width: '75%',
+        width: '88%', // Increased width
         justifyContent: 'space-between',
     },
     linkButton: {
-        marginTop: 10,
+        marginTop: 15, // Increased margin
     },
     linkText: {
         color: 'black',
-        fontSize: 12,
-    },
-    separatorContainer: {
-        alignItems: 'center',
-        marginBottom: 15,
-        marginTop: 15,
-    },
-    separatorText: {
-        fontSize: 14,
-        color: '#666',
-    },
-    separator: {
-        height: 1,
-        backgroundColor: '#ccc',
-        width: '80%',
-    },
-    socialButtonsContainer: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        width: '80%',
-    },
-    socialButton: {
-        width: 50,
-        height: 50,
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderColor: '#ccc',
-        marginHorizontal: 10,
-        marginTop: 20,
-    },
-    socialIcon: {
-        width: 30,
-        height: 30,
+        fontSize: 14, // Increased font size
     },
 });
 

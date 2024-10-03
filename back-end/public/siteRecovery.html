@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redefinir Senha - PejoApp</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        h1 {
+            color: #0088CC;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #0088CC;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #006699;
+        }
+        .password-container {
+            position: relative;
+            width: 100%;
+        }
+        .toggle-password {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+        }
+        #errorMessage {
+            color: red;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Redefinir Senha</h1>
+        <p>Digite sua nova senha abaixo:</p>
+        <form id="resetForm">
+            <div class="password-container">
+                <input type="password" id="newPassword" placeholder="Nova senha" required>
+                <span class="toggle-password" onclick="togglePassword('newPassword')">👁️</span>
+            </div>
+            <div class="password-container">
+                <input type="password" id="confirmPassword" placeholder="Confirme a nova senha" required>
+                <span class="toggle-password" onclick="togglePassword('confirmPassword')">👁️</span>
+            </div>
+            <button type="submit">Redefinir Senha</button>
+        </form>
+        <div id="errorMessage"></div>
+    </div>
+
+    <script>
+        function togglePassword(inputId) {
+            var input = document.getElementById(inputId);
+            if (input.type === "password") {
+                input.type = "text";
+            } else {
+                input.type = "password";
+            }
+        }
+
+        document.getElementById('resetForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            var newPassword = document.getElementById('newPassword').value;
+            var confirmPassword = document.getElementById('confirmPassword').value;
+            var errorMessage = document.getElementById('errorMessage');
+
+            if (newPassword !== confirmPassword) {
+                alert('As senhas não coincidem. Por favor, tente novamente.');
+                return;
+            }
+
+            var urlParams = new URLSearchParams(window.location.search);
+            var token = urlParams.get('token');
+
+            fetch('/reset-password', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ token: token, newPassword: newPassword }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.mensagem) {
+                    alert('Senha redefinida com sucesso!');
+                    window.close();
+                } else {
+                    alert('Erro ao redefinir senha: ' + (data.erro || 'Erro desconhecido'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Erro ao redefinir senha. Por favor, tente novamente mais tarde.');
+            });
+        });
+    </script>
+</body>
+</html>

@@ -4,6 +4,9 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
+import { AppRegistry } from 'react-native';
+
 
 import LoginScreen from './src/LoginScreen';
 import RegisterScreen from './src/RegisterScreen';
@@ -11,7 +14,6 @@ import HomeScreen from './src/HomeScreen';
 import ChallengeScreen from './src/ChallengeScreen';
 import RecoveryScreen from './src/RecoveryScreen';
 import ProfileScreen from './src/ProfileScreen';
-import ChosenScreen from './src/ChosenScreen';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -33,7 +35,7 @@ const App = () => {
   const handleLogout = async (navigation) => {
     await AsyncStorage.removeItem('user');
     setUser(null);
-    navigation.navigate('Chosen'); // Navega para a tela ChosenScreen
+    navigation.navigate('Login');
   };
 
   return (
@@ -41,11 +43,6 @@ const App = () => {
       <Stack.Navigator>
         {!user ? (
           <>
-            <Stack.Screen
-              name="Chosen"
-              component={ChosenScreen}
-              options={{ headerShown: false }}
-            />
             <Stack.Screen
               name="Login"
               options={{ headerShown: false }}
@@ -65,7 +62,7 @@ const App = () => {
           </>
         ) : (
           <>
-            <Stack.Screen name="Main" options={{ headerShown: false }}>
+            <Stack.Screen name="main" options={{ headerShown: false }}>
               {({ navigation }) => (
                 <Tab.Navigator
                   screenOptions={({ route }) => ({
@@ -84,23 +81,30 @@ const App = () => {
                     },
                     tabBarLabelStyle: { fontSize: 12, marginBottom: 5, opacity: 0 },
                     tabBarShowLabel: false,
-                  })}
-                  tabBarOptions={{
-                    activeTintColor: '#0088CC',
-                    inactiveTintColor: 'gray',
-                    style: {
+                    tabBarActiveTintColor: '#0088CC',
+                    tabBarInactiveTintColor: 'gray', 
+                    tabBarStyle: { 
                       borderTopWidth: 0,
-                      height: 65,
-                      backgroundColor: '#ffffff',
+                      position: 'absolute',
+                      top: '88%',
+                      height: 60,
+                      borderRadius: 200,
+                      width: '90%',
                       elevation: 10,
+                      shadowColor: '#000', // Adiciona sombra
+                      shadowOffset: { width: 0, height: 2 }, // Offset da sombra
+                      shadowOpacity: 0.3, // Opacidade da sombra
+                      shadowRadius: 4, // Raio da sombra
+                      marginLeft: 'auto', // Adiciona margem automática à esquerda
+                      marginRight: 'auto', // Adiciona margem automática à direita
                     },
-                  }}
+                  })}
                 >
                   <Tab.Screen
                     name="Home"
                     options={{ headerShown: false, tabBarLabel: 'Home' }}
                   >
-                    {(props) => <HomeScreen {...props} setUser={setUser} />}
+                    {(props) => <HomeScreen {...props} setUser={setUser} user={user} />}
                   </Tab.Screen>
                   <Tab.Screen
                     name="Desafios"
@@ -122,5 +126,7 @@ const App = () => {
     </NavigationContainer>
   );
 };
+
+AppRegistry.registerComponent('main', () => App); // Adicione isso se não estiver presente
 
 export default App;

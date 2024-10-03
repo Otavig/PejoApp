@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, TextInput, StyleSheet, Alert, Text, TouchableOpacity, Dimensions, Animated } from 'react-native';
+import { View, TextInput, StyleSheet, Alert, Text, TouchableOpacity, Dimensions, Animated, ScrollView, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons'; // Certifique-se de ter esta biblioteca instalada para o ícone de olho
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 
 const largura = Dimensions.get('screen').width;
 
 const RegisterScreen = ({ navigation }) => {
-    const [name, setName] = useState('');
+    const [fullName, setFullName] = useState('');
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
     const [password, setPassword] = useState('');
@@ -16,7 +16,7 @@ const RegisterScreen = ({ navigation }) => {
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] = useState(false);
     const [isFocused, setIsFocused] = useState({
-        name: false,
+        fullName: false,
         email: false,
         phone: false,
         password: false,
@@ -24,6 +24,7 @@ const RegisterScreen = ({ navigation }) => {
     });
     const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
     const [fadeAnim] = useState(new Animated.Value(0));
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         Animated.timing(fadeAnim, {
@@ -82,64 +83,23 @@ const RegisterScreen = ({ navigation }) => {
         return age;
     };
 
-    const renderAnimatedInput = (inputName, placeholder, value, onChangeText, secureTextEntry = false, isPasswordField = false) => {
-        const animatedLabel = new Animated.Value(isFocused[inputName] || value ? 1 : 0);
+    const renderAnimatedInput = (inputName, placeholder, value, onChangeText, secureTextEntry = false) => {
         const animatedBorderColor = new Animated.Value(isFocused[inputName] ? 1 : 0);
-    
-        if (isFocused[inputName]) {
-            Animated.timing(animatedLabel, {
-                toValue: 1,
-                duration: 200,
-                useNativeDriver: false,
-            }).start();
-            Animated.timing(animatedBorderColor, {
-                toValue: 1,
-                duration: 200,
-                useNativeDriver: false,
-            }).start();
-        } else {
-            Animated.timing(animatedLabel, {
-                toValue: value ? 1 : 0,
-                duration: 200,
-                useNativeDriver: false,
-            }).start();
-            Animated.timing(animatedBorderColor, {
-                toValue: 0,
-                duration: 200,
-                useNativeDriver: false,
-            }).start();
-        }
-    
-        const labelStyle = {
-            position: 'absolute',
-            left: 10,
-            top: animatedLabel.interpolate({
-                inputRange: [0, 1],
-                outputRange: [15, 3],
-            }),
-            fontSize: animatedLabel.interpolate({
-                inputRange: [0, 1],
-                outputRange: [14, 12],
-            }),
-            color: animatedLabel.interpolate({
-                inputRange: [0, 1],
-                outputRange: ['#aaa', '#0088CC'],
-            }),
-            opacity: animatedLabel.interpolate({
-                inputRange: [0, 1],
-                outputRange: [1, 0.9],
-            }),
-        };
-    
+
+        Animated.timing(animatedBorderColor, {
+            toValue: isFocused[inputName] ? 1 : 0,
+            duration: 200,
+            useNativeDriver: false,
+        }).start();
+
         const borderColor = animatedBorderColor.interpolate({
             inputRange: [0, 1],
             outputRange: ['#ccc', '#0088CC'],
         });
-    
+
         return (
             <View style={styles.inputContainer}>
-                <Animated.Text style={labelStyle}>{placeholder}</Animated.Text>
-                <Animated.View style={{ ...styles.inputWrapper, borderColor }}>
+                <Animated.View style={[styles.inputWrapper, { borderColor }]}>
                     <TextInput
                         style={styles.input}
                         value={value}
@@ -147,9 +107,10 @@ const RegisterScreen = ({ navigation }) => {
                         secureTextEntry={secureTextEntry}
                         onFocus={() => handleFocus(inputName)}
                         onBlur={() => handleBlur(inputName)}
-                        maxLength={inputName === 'phone' ? 15 : undefined}
+                        placeholder={placeholder}
+                        placeholderTextColor="#aaa"
                     />
-                    {isPasswordField && (
+                    {(inputName === 'password' || inputName === 'confirmPassword') && (
                         <TouchableOpacity
                             style={styles.eyeIcon}
                             onPress={() => {
@@ -171,12 +132,13 @@ const RegisterScreen = ({ navigation }) => {
             </View>
         );
     };
-    
+
     const handleRegister = async () => {
+        setIsLoading(true);
         try {
-            if (name && email && phone && password && confirmPassword && birthDate) {
+            if (fullName && email && phone && password && confirmPassword && birthDate) {
                 const phoneNumber = phone.replace(/\D/g, ''); // Remove formatação
-    
+
                 if (phoneNumber.length !== 11) {
                     throw new Error('Número de telefone inválido');
                 }
@@ -187,93 +149,120 @@ const RegisterScreen = ({ navigation }) => {
                 if (age < 13) {
                     throw new Error('Você deve ter pelo menos 13 anos para se registrar');
                 }
-    
+
                 // Verifica se o telefone já está registrado
-                const checkPhoneResponse = await fetch(`http://10.111.9.24:3006/check-phone/${phoneNumber}`);
+                const checkPhoneResponse = await fetch(`http://10.111.9.50:3006/check-phone/${phoneNumber}`);
                 const checkPhoneData = await checkPhoneResponse.json();
-    
+
                 if (checkPhoneData.exists) {
                     throw new Error('Número de telefone já registrado');
                 }
-    
-                if (name.length > 50) {
+
+                if (fullName.trim().length > 50) {
                     throw new Error('Nome passou do limite de 50 caracteres');
                 }
-    
+
                 if (password !== confirmPassword) {
                     throw new Error('As senhas não coincidem');
                 }
-    
+
                 if (password.length < 6) {
                     throw new Error('Senha precisa de mais do que 6 Caracteres');
                 }
-    
+
                 const formData = {
-                    nome: name,
+                    nome: fullName.trim(),
                     email: email,
                     senha: password,
                     telefone: phoneNumber,
                     data_nascimento: birthDate,
                 };
-    
-                const response = await fetch('http://10.111.9.24:3006/register', {
+
+                const response = await fetch('http://10.111.9.50:3006/register', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify(formData),
                 });
-    
+
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
                 }
-    
-                navigation.replace('Login');
+
+                const result = await response.json();
+                
+                // Show success message
+                Alert.alert(
+                    'Cadastro realizado com sucesso',
+                    'Por favor, verifique seu email para confirmar o cadastro.',
+                    [{ text: 'OK', onPress: () => navigation.navigate('Login') }]
+                );
             } else {
                 throw new Error('Todos os campos são obrigatórios');
             }
         } catch (error) {
             console.error('Registration error:', error);
             Alert.alert('Registro falhou', `Error: ${error.message}`);
+        } finally {
+            setIsLoading(false);
         }
     };
 
+    const renderDateInput = () => {
+        return (
+            <View style={styles.inputContainer}>
+                <TouchableOpacity onPress={showDatePicker} style={styles.datePickerContainer}>
+                    <Text style={[styles.dateInput, { color: birthDate ? '#000' : '#aaa' }]}>
+                        {birthDate || datePlaceholder}
+                    </Text>
+                </TouchableOpacity>
+            </View>
+        );
+    };
+
     return (
-        <View style={styles.container}>
-            <Text style={[styles.title, { marginBottom: 30 }]}>Cadastro</Text>
-            {renderAnimatedInput('name', 'Nome', name, setName)}
-            {renderAnimatedInput('email', 'Email', email, setEmail)}
-            {renderAnimatedInput('phone', 'Telefone', phone, handlePhoneChange)}
-            <TouchableOpacity onPress={showDatePicker} style={styles.datePickerContainer}>
-                <TextInput
-                    style={[styles.input, { color: birthDate ? '#000' : '#aaa' }]} // Atualiza a cor do texto
-                    value={birthDate}
-                    editable={false}
-                    placeholder={datePlaceholder}
-                    placeholderTextColor="#aaa"
-                />
-            </TouchableOpacity>
-            {renderAnimatedInput('password', 'Senha', password, setPassword, !isPasswordVisible, true)}
-            {renderAnimatedInput('confirmPassword', 'Confirmar Senha', confirmPassword, setConfirmPassword, !isConfirmPasswordVisible, true)}
-            <TouchableOpacity style={styles.button} onPress={handleRegister}>
-                <Text style={styles.buttonText}>Cadastrar-se</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.linkButton} onPress={() => navigation.navigate('Login')}>
-                <Text style={[styles.linkText, { marginBottom: 20 }]}>Já tem uma conta? Entre</Text>
-            </TouchableOpacity>
-            <DateTimePickerModal
-                isVisible={isDatePickerVisible}
-                mode="date"
-                onConfirm={handleDateChange}
-                onCancel={hideDatePicker}
-            />
-        </View>
+        <ScrollView contentContainerStyle={styles.scrollContainer}>
+            <View style={styles.container}>
+                {isLoading ? (
+                    <View style={styles.loadingContainer}>
+                        <ActivityIndicator size="large" color="#0088CC" />
+                    </View>
+                ) : (
+                    <>
+                        <Text style={styles.title}>Cadastro</Text>
+                        {renderAnimatedInput('fullName', 'Nome e Sobrenome', fullName, setFullName)}
+                        {renderAnimatedInput('email', 'Email', email, setEmail)}
+                        {renderAnimatedInput('phone', 'Telefone', phone, handlePhoneChange)}
+                        {renderDateInput()}
+                        {renderAnimatedInput('password', 'Senha', password, setPassword, !isPasswordVisible)}
+                        {renderAnimatedInput('confirmPassword', 'Confirmar Senha', confirmPassword, setConfirmPassword, !isConfirmPasswordVisible)}
+                        <TouchableOpacity style={styles.button} onPress={handleRegister}>
+                            <Text style={styles.buttonText}>Cadastrar-se</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.linkButton} onPress={() => navigation.navigate('Login')}>
+                            <Text style={styles.linkText}>Já tem uma conta? Entre</Text>
+                        </TouchableOpacity>
+                        <DateTimePickerModal
+                            isVisible={isDatePickerVisible}
+                            mode="date"
+                            onConfirm={handleDateChange}
+                            onCancel={hideDatePicker}
+                        />
+                    </>
+                )}
+            </View>
+        </ScrollView>
     );
 };
 
 export default RegisterScreen;
 
 const styles = StyleSheet.create({
+    scrollContainer: {
+        flexGrow: 1,
+        justifyContent: 'center',
+    },
     container: {
         flex: 1,
         backgroundColor: '#FFF',
@@ -282,57 +271,70 @@ const styles = StyleSheet.create({
         padding: 20,
     },
     title: {
-        fontSize: 30,
+        fontSize: 28,
         fontWeight: 'bold',
         color: '#023047',
-        marginBottom: 0,
+        marginBottom: 20,
     },
     inputContainer: {
-        width: '80%',
-        marginBottom: 14,
+        width: '90%',
+        marginBottom: 20,
     },
     inputWrapper: {
         borderWidth: 1,
-        borderRadius: 4,
-        position: 'relative',
+
     },
     input: {
         width: '100%',
-        padding: 10,
-        fontSize: 13,
+        padding: 15,
+        fontSize: 15,
+        color: '#000',
     },
     eyeIcon: {
         position: 'absolute',
-        right: 15,
-        top: 15,
+        right: 18,
+        top: 20,
     },
     button: {
         backgroundColor: '#0088CC',
-        borderRadius: 8,
-        width: '80%',
-        paddingVertical: 10,
+        width: '90%',
+        paddingVertical: 12,
         alignItems: 'center',
-        marginTop: 10,
-        marginBottom: 10
+        marginTop: 5,
+        marginBottom: 10,
     },
     buttonText: {
         color: '#FFF',
-        fontSize: 18,
+        fontSize: 16,
         fontWeight: 'bold',
     },
     linkButton: {
         alignItems: 'center',
+        marginTop: 5,
     },
     linkText: {
         color: 'black',
-        fontSize: 12,
+        fontSize: 14,
     },
     datePickerContainer: {
-        width: '80%',
-        marginBottom: 15,
+        width: '100%',
+        height: 59,
         borderWidth: 1,
-        borderRadius: 4,
         borderColor: '#ccc',
         justifyContent: 'center',
+        paddingHorizontal: 15,
+    },
+    dateLabel: {
+        fontSize: 12,
+        color: '#0088CC',
+        marginBottom: 4,
+    },
+    dateInput: {
+        fontSize: 15,
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
 });

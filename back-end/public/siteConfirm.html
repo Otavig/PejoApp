@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmar E-mail - PejoApp</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        h1 {
+            color: #0088CC;
+        }
+        button {
+            background-color: #0088CC;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        #message {
+            margin-top: 1rem;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Confirmar E-mail</h1>
+        <p>Clique no botão abaixo para confirmar seu e-mail:</p>
+        <button onclick="confirmEmail()">Confirmar E-mail</button>
+        <div id="message"></div>
+    </div>
+
+    <script>
+        async function confirmEmail() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const token = urlParams.get('token');
+            const messageElement = document.getElementById('message');
+
+            try {
+                const response = await fetch('/confirm-email', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ token }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    messageElement.style.color = 'green';
+                    alert(data.mensagem);
+                    window.close();
+                } else {
+                    messageElement.style.color = 'red';
+                    messageElement.textContent = data.erro;
+                }
+            } catch (error) {
+                messageElement.style.color = 'red';
+                messageElement.textContent = 'Erro ao confirmar e-mail. Tente novamente.';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { View, Image, TextInput, StyleSheet, Alert, Text, TouchableOpacity, Animated } from 'react-native';
-import { Dimensions } from 'react-native';
+import axios from 'axios';
+import { Linking } from 'react-native';
 
-const largura = Dimensions.get('screen').width;
-
-const ForgotPasswordScreen = ({ navigation }) => {
+const RecoveryScreen = ({ navigation }) => {
     const [email, setEmail] = useState('');
     const [isFocused, setIsFocused] = useState(false);
     const [fadeAnim] = useState(new Animated.Value(0));
@@ -17,16 +16,10 @@ const ForgotPasswordScreen = ({ navigation }) => {
         }).start();
     }, []);
 
-    const handleFocus = () => {
-        setIsFocused(true);
-    };
-
-    const handleBlur = () => {
-        setIsFocused(false);
-    };
+    const handleFocus = () => setIsFocused(true);
+    const handleBlur = () => setIsFocused(false);
 
     const validateEmail = (email) => {
-        // Regex para validação de email
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return emailRegex.test(email);
     };
@@ -37,60 +30,33 @@ const ForgotPasswordScreen = ({ navigation }) => {
             return;
         }
 
-        // Implementar lógica de envio de email para recuperação de senha aqui
-        // incluir validações antes de enviar o email
-
-        Alert.alert('Email enviado', 'Verifique seu email para instruções de recuperação de senha');
+        try {
+            const response = await axios.post('http://10.111.9.50:3006/forgot-password', { email });
+            Alert.alert(
+                'Email Enviado',
+                'Um link de recuperação de senha foi enviado para o seu email.',
+                [
+                    { text: 'OK', onPress: () => navigation.navigate('Login') }
+                ]
+            );
+        } catch (error) {
+            console.error('Error sending password reset email:', error);
+            let errorMessage = 'Ocorreu um erro ao enviar o email de recuperação.';
+            if (error.response) {
+                errorMessage += ` Detalhes: ${error.response.data.message || error.response.data.error}`;
+            }
+            Alert.alert('Erro', errorMessage);
+        }
     };
 
-    const renderAnimatedInput = (placeholder, value, onChangeText) => {
-        const animatedLabel = new Animated.Value(isFocused || value ? 1 : 0);
+    const renderAnimatedInput = () => {
         const animatedBorderColor = new Animated.Value(isFocused ? 1 : 0);
 
-        if (isFocused) {
-            Animated.timing(animatedLabel, {
-                toValue: 1,
-                duration: 200,
-                useNativeDriver: false,
-            }).start();
-            Animated.timing(animatedBorderColor, {
-                toValue: 1,
-                duration: 200,
-                useNativeDriver: false,
-            }).start();
-        } else {
-            Animated.timing(animatedLabel, {
-                toValue: value ? 1 : 0,
-                duration: 200,
-                useNativeDriver: false,
-            }).start();
-            Animated.timing(animatedBorderColor, {
-                toValue: 0,
-                duration: 200,
-                useNativeDriver: false,
-            }).start();
-        }
-
-        const labelStyle = {
-            position: 'absolute',
-            left: 10,
-            top: animatedLabel.interpolate({
-                inputRange: [0, 1],
-                outputRange: [15, 3],
-            }),
-            fontSize: animatedLabel.interpolate({
-                inputRange: [0, 1],
-                outputRange: [14, 12],
-            }),
-            color: animatedLabel.interpolate({
-                inputRange: [0, 1],
-                outputRange: ['#aaa', '#0088CC'],
-            }),
-            opacity: animatedLabel.interpolate({
-                inputRange: [0, 1],
-                outputRange: [1, 0.9],
-            }),
-        };
+        Animated.timing(animatedBorderColor, {
+            toValue: isFocused ? 1 : 0,
+            duration: 200,
+            useNativeDriver: false,
+        }).start();
 
         const borderColor = animatedBorderColor.interpolate({
             inputRange: [0, 1],
@@ -99,14 +65,15 @@ const ForgotPasswordScreen = ({ navigation }) => {
 
         return (
             <View style={styles.inputContainer}>
-                <Animated.Text style={labelStyle}>{placeholder}</Animated.Text>
-                <Animated.View style={{ ...styles.inputWrapper, borderColor }}>
+                <Animated.View style={[styles.inputWrapper, { borderColor }]}>
                     <TextInput
                         style={styles.input}
-                        value={value}
-                        onChangeText={onChangeText}
+                        value={email}
+                        onChangeText={setEmail}
                         onFocus={handleFocus}
                         onBlur={handleBlur}
+                        placeholder="Email"
+                        placeholderTextColor="#aaa"
                     />
                 </Animated.View>
             </View>
@@ -117,18 +84,16 @@ const ForgotPasswordScreen = ({ navigation }) => {
         <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
             <Image style={{ height: 110, width: 110, marginBottom: 20}} source={require('../assets/imgs/icon.png')} />
             <Text style={styles.title}>Recuperar Senha</Text>
-            {renderAnimatedInput('Email', email, setEmail)}
+            {renderAnimatedInput()}
             <TouchableOpacity style={styles.button} onPress={handlePasswordReset}>
-                <Text style={styles.buttonText}>Enviar</Text>
+                <Text style={styles.buttonText}>Enviar Link de Recuperação</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.linkButton, { marginTop: 10 }]} onPress={() => navigation.navigate('Login')}>
-                <Text style={styles.linkText}>Lembrei a senha</Text>
+            <TouchableOpacity style={styles.linkButton} onPress={() => navigation.navigate('Login')}>
+                <Text style={styles.linkText}>Voltar para o Login</Text>
             </TouchableOpacity>
         </Animated.View>
     );
 };
-
-export default ForgotPasswordScreen;
 
 const styles = StyleSheet.create({
     container: {
@@ -139,47 +104,44 @@ const styles = StyleSheet.create({
         padding: 20,
     },
     title: {
-        fontSize: 32,
+        fontSize: 28,
         fontWeight: 'bold',
         color: '#023047',
         marginBottom: 20,
     },
-    description: {
-        fontSize: 12.5,
-        color: '#666',
-        marginBottom: 15,
-        maxWidth: '80%'
-    },
     inputContainer: {
-        width: '80%',
-        alignItems: 'center',
+        width: '90%',
         marginBottom: 20,
     },
     inputWrapper: {
         borderWidth: 1,
-        borderRadius: 4,
-        width: '100%',
     },
     input: {
         width: '100%',
-        padding: 10,
-        fontSize: 13,
-    },
-    linkText: {
-        color: 'black',
-        fontSize: 12,
+        padding: 15,
+        fontSize: 15,
+        color: '#000',
     },
     button: {
         backgroundColor: '#0088CC',
-        borderRadius: 8,
-        width: '80%',
-        paddingVertical: 10,
+        width: '90%',
+        paddingVertical: 12,
         alignItems: 'center',
-        marginTop: 10,
+        marginTop: 5,
+        marginBottom: 10,
     },
     buttonText: {
         color: '#FFF',
-        fontSize: 18,
+        fontSize: 16,
         fontWeight: 'bold',
     },
+    linkButton: {
+        marginTop: 15,
+    },
+    linkText: {
+        color: 'black',
+        fontSize: 14,
+    },
 });
+
+export default RecoveryScreen;
