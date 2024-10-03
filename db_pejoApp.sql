@@ -28,13 +28,18 @@ CREATE TABLE IF NOT EXISTS `cadastros` (
   `email` varchar(256) NOT NULL,
   `cargo` varchar(50) NOT NULL DEFAULT 'user',
   `data_nascimento` date DEFAULT NULL,
+  `confirmation_token` varchar(255) DEFAULT NULL,
+  `token_expiration` timestamp NULL DEFAULT NULL,
+  `reset_token` varchar(255) DEFAULT NULL,
+  `reset_token_expires` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Copiando dados para a tabela db_pejo.cadastros: ~2 rows (aproximadamente)
-INSERT INTO `cadastros` (`id`, `nome`, `telefone`, `senha`, `email`, `cargo`, `data_nascimento`) VALUES
-	(9, 'otavio', '18996666665', '$2b$10$a15qRHficy7NBIFFET6f5esJfmTbuJsD2jQchekGXJZq2vhLG.DsG', 'otavio@gmail.com', 'user', '2024-08-29'),
-	(10, 'Matheus', '18996665555', '$2b$10$KfWk..ptvS3JllfaEO4pB.lrEM.zlpEfRYi/FhJ.em7dFqq6Q1B0G', 'matheus@gmail.com', 'user', '1965-08-29');
+-- Copiando dados para a tabela db_pejo.cadastros: ~3 rows (aproximadamente)
+INSERT INTO `cadastros` (`id`, `nome`, `telefone`, `senha`, `email`, `cargo`, `data_nascimento`, `confirmation_token`, `token_expiration`, `reset_token`, `reset_token_expires`) VALUES
+	(9, 'otavio', '18996666665', '$2b$10$a15qRHficy7NBIFFET6f5esJfmTbuJsD2jQchekGXJZq2vhLG.DsG', 'otavio@gmail.com', 'user', '2024-08-29', NULL, NULL, NULL, NULL),
+	(10, 'Matheus', '18996665555', '$2b$10$KfWk..ptvS3JllfaEO4pB.lrEM.zlpEfRYi/FhJ.em7dFqq6Q1B0G', 'matheus.oi@gmail.com', 'user', '1965-08-29', NULL, NULL, NULL, NULL),
+	(11, 'Anelise dos Anjos Zárate', '18997679022', '$2b$10$oSaB5wnyvpZ5bGYAWDni9.5T.TufaExO1V2cWCEFo2/R/HBZ75Sp2', 'anelisezarateanjos2018@gmail.com', 'user', '2006-11-16', NULL, NULL, NULL, NULL);
 
 -- Copiando estrutura para tabela db_pejo.comentarios
 CREATE TABLE IF NOT EXISTS `comentarios` (
@@ -58,7 +63,7 @@ CREATE TABLE IF NOT EXISTS `desafios` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Copiando dados para a tabela db_pejo.desafios: ~1 rows (aproximadamente)
+-- Copiando dados para a tabela db_pejo.desafios: ~0 rows (aproximadamente)
 INSERT INTO `desafios` (`id`, `desafio_nome`, `desafio_descricao`, `desafio_nivel`) VALUES
 	(6, 'Ir para rua', 'Vá para rua de noite 00:00 em um lugar não público, em um beco escuro e se encontre com 2 homens (provavel assalto)', 'hard');
 
