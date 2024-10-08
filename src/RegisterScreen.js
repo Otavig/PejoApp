@@ -151,7 +151,7 @@ const RegisterScreen = ({ navigation }) => {
                 }
 
                 // Verifica se o telefone já está registrado
-                const checkPhoneResponse = await fetch(`http://10.111.9.50:3006/check-phone/${phoneNumber}`);
+                const checkPhoneResponse = await fetch(`http://10.111.9.44:3006/check-phone/${phoneNumber}`);
                 const checkPhoneData = await checkPhoneResponse.json();
 
                 if (checkPhoneData.exists) {
@@ -178,7 +178,7 @@ const RegisterScreen = ({ navigation }) => {
                     data_nascimento: birthDate,
                 };
 
-                const response = await fetch('http://10.111.9.50:3006/register', {
+                const response = await fetch('http://10.111.9.44:3006/register', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

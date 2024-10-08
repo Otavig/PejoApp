@@ -54,7 +54,7 @@ const ProfileScreen = ({ navigation, route }) => {
                 setDataNascimento(parsedUser.data_nascimento || '');
                 setBio(parsedUser.bio || ''); // Adicione esta linha
 
-                const response = await fetch(`http://10.111.9.50:3006/user/${parsedUser.id}`);
+                const response = await fetch(`http://10.111.9.44:3006/user/${parsedUser.id}`);
                 const data = await response.json();
                 if (response.ok) {
                     const updatedUser = { ...parsedUser, ...data.user };
@@ -106,9 +106,9 @@ const ProfileScreen = ({ navigation, route }) => {
                 name: 'profile_picture.jpg'
             });
 
-            console.log('Enviando requisição para:', `http://10.111.9.50:3006/user/${user.id}/profile-picture`);
+            console.log('Enviando requisição para:', `10.111.9.44:3006/user/${user.id}/profile-picture`);
 
-            const response = await fetch(`http://10.111.9.50:3006/user/${user.id}/profile-picture`, {
+            const response = await fetch(`http://10.111.9.44:3006/user/${user.id}/profile-picture`, {
                 method: 'POST',
                 body: formData,
                 headers: {
@@ -165,7 +165,7 @@ const ProfileScreen = ({ navigation, route }) => {
 
     const handleSave = async () => {
         try {
-            const response = await fetch(`http://10.111.9.50:3006/user/${user.id}`, {
+            const response = await fetch(`http://10.111.9.44:3006/user/${user.id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
