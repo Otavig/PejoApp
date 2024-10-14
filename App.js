@@ -82,21 +82,21 @@ const App = () => {
                     tabBarLabelStyle: { fontSize: 12, marginBottom: 5, opacity: 0 },
                     tabBarShowLabel: false,
                     tabBarActiveTintColor: '#0088CC',
-                    tabBarInactiveTintColor: 'gray', 
-                    tabBarStyle: { 
+                    tabBarInactiveTintColor: 'gray',
+                    tabBarStyle: {
                       borderTopWidth: 0,
                       position: 'absolute',
-                      top: '88%',
+                      bottom: 20, // Define a barra 20px acima do final da tela
                       height: 60,
                       borderRadius: 200,
                       width: '90%',
                       elevation: 10,
-                      shadowColor: '#000', // Adiciona sombra
-                      shadowOffset: { width: 0, height: 2 }, // Offset da sombra
-                      shadowOpacity: 0.3, // Opacidade da sombra
-                      shadowRadius: 4, // Raio da sombra
-                      marginLeft: 'auto', // Adiciona margem automática à esquerda
-                      marginRight: 'auto', // Adiciona margem automática à direita
+                      shadowColor: '#000',
+                      shadowOffset: { width: 0, height: 2 },
+                      shadowOpacity: 0.3,
+                      shadowRadius: 4,
+                      left: '5%', // Centraliza a barra horizontalmente
+                      right: '5%'
                     },
                   })}
                 >

@@ -1,13 +1,30 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, Alert, TextInput, Modal, ScrollView, Dimensions, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, Alert, TextInput, Modal, ScrollView, Dimensions, SafeAreaView, FlatList,  StyleSheeSafeAreaView,  StatusBar, } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
 import { FontAwesome } from '@expo/vector-icons';
 import Icon from 'react-native-vector-icons/FontAwesome'; // Importando a biblioteca de ícones
 import { ImageBackground } from 'react-native'; // Adicione esta importação
 
-
 const { width, height } = Dimensions.get('window');
+
+const DATA = [
+    {
+      id: 'bd7acbea-c1b1-46c2-aed5-3ad53abb28ba',
+      title: 'First Item',
+    },
+    {
+      id: '3ac68afc-c605-48d3-a4f8-fbd91aa97f63',
+      title: 'Second Item',
+    },
+    {
+    
+      id: '58694a0f-3da1-471f-bd96-145571e29d72',
+      title: 'Third Item',
+    },
+  ];
+
+
 
 const formatDateForDisplay = (dateString) => {
     if (!dateString) return 'Data de nascimento não disponível';
@@ -39,6 +56,8 @@ const ProfileScreen = ({ navigation, route }) => {
     const [isEditMenuVisible, setIsEditMenuVisible] = useState(false);
     const [email, setEmail] = useState('');
     const [bio, setBio] = useState(''); // Adicione esta linha para armazenar a bio
+    const [desafio, setdesafio] = useState(''); // Adicione esta linha para armazenar os desafios
+    const [descricao, setdescricao] = useState(''); // Adicione esta linha para armazenar os desafios
     const [editBio, setEditBio] = useState(''); // Adicione esta linha para armazenar a bio editada
     const [editedEmail, setEditedEmail] = useState('');
     const [dataNascimento, setDataNascimento] = useState('');
@@ -53,6 +72,8 @@ const ProfileScreen = ({ navigation, route }) => {
                 setProfilePicture(parsedUser.imagem_url);
                 setDataNascimento(parsedUser.data_nascimento || '');
                 setBio(parsedUser.bio || ''); // Adicione esta linha
+                setdesafio(parsedUser.desafio || ''); 
+                setdescricao(parsedUser.descricao  || ''); 
 
                 const response = await fetch(`http://10.111.9.50:3006/user/${parsedUser.id}`);
                 const data = await response.json();
@@ -204,24 +225,28 @@ const ProfileScreen = ({ navigation, route }) => {
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.profileContainer}>
-                <TouchableOpacity style={styles.logoutButton} onPress={handleLogoutPress}>
-                    <FontAwesome name="sign-out" size={20} color="#fff" />
-                </TouchableOpacity>
-                <Image
-                    style={[styles.profileImage, {marginTop: 50}]}
-                    source={profilePicture ? { uri: profilePicture } : require('../assets/imgs/defaultProfile.png')}
-                />
-                <Text style={styles.profileName}>{user?.nome || 'Nome aqui'}</Text>
-                <TouchableOpacity style={styles.editButton} onPress={handleEdit}>
-                    <FontAwesome name="edit" size={20} color="#fff" />
-                </TouchableOpacity>
+                <View style={styles.imageContainer}>
+                    <Image
+                        style={styles.profileImage}
+                        source={profilePicture ? { uri: profilePicture } : require('../assets/imgs/defaultProfile.png')}
+                    />
+                    <Text style={styles.profileName}>{user?.nome || 'Nome aqui'}</Text>
+                </View>
+                <View style={styles.buttonsContainer}>
+                    <TouchableOpacity style={styles.logoutButton} onPress={handleLogoutPress}>
+                        <FontAwesome name="sign-out" size={20} color="#fff" />
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.editButton} onPress={handleEdit}>
+                        <FontAwesome name="edit" size={20} color="#fff" />
+                    </TouchableOpacity>
+                </View>
             </View>
             <View style={styles.infoContainer}>
                 <Text style={styles.infoTitle}>Sobre Mim</Text>
                 <Text style={styles.infoDescription}>
                     {bio || 'Bio não disponível'}
                 </Text>
-                <Text style={[styles.infoTitle, {marginTop: 20}]}>Informações</Text>
+                <Text style={[styles.infoTitle, { marginTop: 20 }]}>Informações</Text>
                 <Text style={styles.infoDescription}>
                     {email || 'E-mail não disponível'}
                 </Text>
@@ -229,7 +254,22 @@ const ProfileScreen = ({ navigation, route }) => {
                     Data de Nascimento: {dataNascimento || 'Data não disponível'}
                 </Text>
             </View>
+            <View style={styles.dasafiosFavContainer}>
+                <Text style={styles.infoTitle}>Desafios Favoritos</Text>
+                <Text style={styles.infoDescription}>
+                    {desafio || 'Desafio não disponível'}
+                </Text>
+                <Text style={[styles.infoTitle, { marginTop: 20 }]}>Descrição</Text>
+                <Text style={styles.infoDescription}>
+                    {descricao || 'Descrição não disponível'}
+                </Text>
+            </View>
+
+
             {/* Adicionando o Modal para edição */}
+
+            
+
             <Modal
                 visible={isEditMenuVisible}
                 animationType="slide"
@@ -273,42 +313,53 @@ const ProfileScreen = ({ navigation, route }) => {
 
 export default ProfileScreen;
 
+// Estilos atualizados
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#0088CC',
+        backgroundColor: '#004060',
     },
     profileContainer: {
-        alignItems: 'center',
+        flexDirection: 'row', // Mantendo a direção do flex
+        alignItems: 'center', // Centralizando verticalmente
         backgroundColor: '#fff',
         paddingVertical: 20,
         marginBottom: 10,
         borderWidth: 2,
         borderColor: '#80D4FF',
-        borderRadius: 40
+        borderRadius: 40,
+        paddingHorizontal: 20, // Adicionando padding horizontal
+    },
+    imageContainer: {
+        flex: 1, // Permitindo que a imagem e o nome ocupem o espaço necessário
+        alignItems: 'center',
+    },
+    buttonsContainer: {
+        flexDirection: 'column', // Alterado para coluna para empilhar os botões
+        alignItems: 'flex-end', // Alinhando os botões à direita
+        marginLeft: 'auto', // Alinhando à direita
     },
     profileImage: {
         width: 100,
         height: 100,
+        start: -100,
+        marginTop: 20,
         borderRadius: 50,
     },
     profileName: {
-        fontSize: 24,
+        fontSize: 15,
+        start: -60,
         fontWeight: 'bold',
         marginTop: 10,
+        textAlign: 'center', // Centralizando o texto
     },
     editButton: {
-        position: 'absolute',
-        top: 35,
-        right: 20,
         backgroundColor: '#007bff',
         padding: 10,
         borderRadius: 20,
+        marginTop: 10, // Adicionando espaço entre os botões
     },
     logoutButton: {
-        position: 'absolute',
-        top: 35,
-        left: 20,
         backgroundColor: '#ff4d4d',
         padding: 10,
         borderRadius: 20,
@@ -319,6 +370,14 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         marginBottom: 10,
         borderRadius: 30,
+        borderWidth: 2,
+        borderColor: "#80D4FF"
+    },
+    dasafiosFavContainer: {
+        paddingHorizontal: 20,
+        paddingVertical: 15,
+        backgroundColor: '#fff',
+        marginBottom: 10,
         borderWidth: 2,
         borderColor: "#80D4FF"
     },

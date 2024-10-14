@@ -1,64 +1,113 @@
-import React, { useState } from 'react'; // Adicionado useState
-import { View, Text, StyleSheet, FlatList } from 'react-native'; // Alterado ScrollView para FlatList
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, FlatList, Dimensions, Image } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { NavigationContainer } from '@react-navigation/native';
-import { Calendar } from 'react-native-calendars'; // Adicione esta importação
+import { Calendar } from 'react-native-calendars';
+const MyCarousel = ({ images }) => {
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const flatListRef = useRef(null);
+    const width = Dimensions.get('window').width;
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrentIndex(prevIndex => (prevIndex + 1) % images.length);
+        }, 5000); // Trocar a imagem a cada 5 segundos
+
+        return () => clearInterval(interval); // Limpar o intervalo ao desmontar
+    }, [images.length]);
+
+    useEffect(() => {
+        if (flatListRef.current) {
+            flatListRef.current.scrollToIndex({ index: currentIndex, animated: true });
+        }
+    }, [currentIndex]);
+
+    const renderItem = ({ item }) => (
+        <View style={styles.imageContainer}>
+            <Image source={{ uri: item }} style={styles.image} />
+        </View>
+    );
+
+    return (
+        <View style={styles.carouselContainer}>
+            <FlatList
+                ref={flatListRef}
+                data={images}
+                renderItem={renderItem}
+                keyExtractor={(item) => item}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                pagingEnabled
+                scrollEnabled={false} // Desabilita o scroll manual
+                style={{ width }} // Para manter a largura do carrossel
+                getItemLayout={(data, index) => (
+                    { length: width, offset: width * index, index }
+                )}
+                onScrollToIndexFailed={() => {}}
+            />
+        </View>
+    );
+};
 
 const HomeScreen = () => {
-    const [markedDates, setMarkedDates] = useState({}); // Estado para datas marcadas
-    const [currentMonth, setCurrentMonth] = useState('SET'); // Estado para o mês atual
+    const [markedDates, setMarkedDates] = useState({});
+    const [currentMonth, setCurrentMonth] = useState('SET');
 
     const data = [
         { key: 'header' },
+        { key: 'carousel' },
         { key: 'calendar' },
         { key: 'eventsTitle', title: 'Eventos do mês:' },
         { key: 'event1', date: '18 de set.', time: '15:25', title: 'Palestra de fobia social' },
     ];
 
-    const months = [
-        'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
-        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-    ]; 
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    const images = [
+        'assets/imgs/propagandas/1.jpeg',
+        'assets/imgs/propagandas/2.jpeg',
+        'assets/imgs/propagandas/3.jpeg',
+        'assets/imgs/propagandas/1.jpeg',
+        'assets/imgs/propagandas/2.jpeg',
+        'assets/imgs/propagandas/3.jpeg',
+    ];
 
     const handleDayPress = (day) => {
         const dateString = day.dateString;
-        const hasEvent = data.some(event => event.date === dateString); // Verifica se há evento
+        const hasEvent = data.some(event => event.date === dateString);
         setMarkedDates({
             [dateString]: { selected: true, marked: hasEvent, selectedColor: hasEvent ? 'green' : 'blue' },
         });
-        const monthIndex = parseInt(day.dateString.split('-')[1], 10) - 1; // Obtém o índice do mês
-        setCurrentMonth(months[monthIndex]); // Atualiza o mês atual baseado no índice
-        
+        const monthIndex = parseInt(day.dateString.split('-')[1], 10) - 1;
+        setCurrentMonth(months[monthIndex]);
     };
 
     const renderItem = ({ item }) => {
         switch (item.key) {
             case 'header':
                 return <View style={styles.header}></View>;
+            case 'carousel':
+                return <MyCarousel images={images} />;
             case 'calendar':
                 return (
                     <View style={styles.calendarContainer}>
-                        <Text style={styles.monthText}>{currentMonth}</Text> 
-                        <View style={styles.calendar}>
-                            <Calendar 
-                                onDayPress={handleDayPress} // Atualizado para usar a nova função
-                                markedDates={markedDates} // Usando o estado para marcar datas
-                                theme={{
-                                    textDayFontFamily: 'sans-serif',
-                                    textMonthFontFamily: 'sans-serif-bold',
-                                    todayTextColor: 'red',
-                                    monthTextColor: '#006064',
-                                }}
-                            />
-                        </View>
+                        <Text style={styles.monthText}>{currentMonth}</Text>
+                        <Calendar 
+                            onDayPress={handleDayPress}
+                            markedDates={markedDates}
+                            theme={{
+                                textDayFontFamily: 'sans-serif',
+                                textMonthFontFamily: 'sans-serif-bold',
+                                todayTextColor: 'red',
+                                monthTextColor: '#006064',
+                            }}
+                        />
                     </View>
                 );
             case 'eventsTitle':
-                return <Text style={[styles.eventsTitle, {marginBottom: 10}]}>{item.title}</Text>;
+                return <Text style={[styles.eventsTitle, { marginBottom: 10 }]}>{item.title}</Text>;
             case 'event1':
                 return (
-                    <View style={[styles.event]}>
+                    <View style={styles.event}>
                         <Text>{item.date}</Text>
                         <Text>{item.time}</Text>
                         <MaterialCommunityIcons name="calendar" size={20} color="red" />
@@ -80,31 +129,34 @@ const HomeScreen = () => {
     );
 };
 
-export default HomeScreen;
-
 const styles = StyleSheet.create({
     container: {
         flexGrow: 1,
-        padding: 20,
-        backgroundColor: '#f0f4f8', // Cor de fundo mais clara e suave
+        backgroundColor: '#f0f4f8',
+    },
+    carouselContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '100%', // Para garantir que ocupe toda a largura
     },
     header: {
         alignItems: 'center',
         marginBottom: 20,
-        // Removendo sombra para um visual mais limpo
     },
     calendarContainer: {
         marginVertical: 20,
-        padding: 20,
         borderRadius: 15,
-        backgroundColor: '#ffffff', // Fundo branco para um visual mais limpo
+        backgroundColor: '#ffffff',
         alignItems: 'center',
-        elevation: 3, // Sombra mais sutil
-        borderWidth: 1, // Adicionando borda sutil
-        borderColor: '#e0e0e0', // Cor da borda
+        elevation: 3,
+        borderWidth: 1,
+        borderColor: '#e0e0e0',
+        width: '90%', // Definindo uma largura simétrica
+        alignSelf: 'center', // Centraliza o calendário na tela
+        padding: 10, // Padding interno para melhor visualização
     },
     monthText: {
-        fontSize: 32, // Aumentando o tamanho da fonte
+        fontSize: 32,
         fontWeight: 'bold',
         color: '#00796b',
         marginBottom: 10,
@@ -119,57 +171,22 @@ const styles = StyleSheet.create({
         marginBottom: 10,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1, // Sombra mais leve
+        shadowOpacity: 0.1,
         shadowRadius: 2,
-        borderWidth: 1, // Adicionando borda sutil
-        borderColor: '#e0e0e0', // Cor da borda
+        borderWidth: 1,
+        borderColor: '#e0e0e0',
+        width: '100%',
     },
-    closeButton: {
-        marginTop: 20,
-        padding: 10,
-        backgroundColor: '#00796b',
-        borderRadius: 5,
-        // Removendo animação de transição para simplicidade
+    imageContainer: {
+        width: Dimensions.get('window').width,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
-    closeButtonText: {
-        color: '#fff',
-        fontWeight: 'bold', // Aumentando a legibilidade
-    },
-    challenge: {
-        padding: 15,
-        backgroundColor: '#e0f7fa',
-        borderRadius: 10,
-        marginBottom: 10,
-    },
-    challengeTitle: {
-        fontWeight: 'bold',
-        fontSize: 18,
-    },
-    tipsTitle: {
-        fontWeight: 'bold',
-        fontSize: 18,
-        marginTop: 20,
-    },
-    tip: {
-        padding: 10,
-        backgroundColor: '#f1f8e9',
-        borderRadius: 5,
-        marginBottom: 5,
-    },
-    tipsContainer: {
-        marginTop: 20,
-        padding: 15,
-        backgroundColor: '#e0f7fa',
-        borderRadius: 10,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
-        elevation: 3,
-    },
-    tipsSubtitle: {
-        fontSize: 16,
-        color: '#00796b',
-        marginBottom: 10,
+    image: {
+        width: '100%',
+        height: 200, // ajuste conforme necessário
     },
 });
+
+
+export default HomeScreen;
