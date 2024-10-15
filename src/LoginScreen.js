@@ -91,7 +91,7 @@ const LoginScreen = ({ navigation, setUser }) => {
 
         try {
             console.log('Enviando requisição de login:', { identifier, password });
-            const response = await fetch('http://10.111.9.50:3006/login', {
+            const response = await fetch('http://10.111.9.44:3006/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -31,7 +31,7 @@ const RecoveryScreen = ({ navigation }) => {
         }
 
         try {
-            const response = await axios.post('http://10.111.9.50:3006/forgot-password', { email });
+            const response = await axios.post('http://10.111.9.44:3006/forgot-password', { email });
             Alert.alert(
                 'Email Enviado',
                 'Um link de recuperação de senha foi enviado para o seu email.',
