@@ -88,12 +88,8 @@ app.post('/register', async (req, res) => {
             console.log('Usuário inserido no banco de dados com sucesso');
 
             // Enviar e-mail de confirmação
-<<<<<<< HEAD
-            const confirmationLink = `http://10.111.9.50:3006/confirm-email?token=${confirmationToken}`;
-=======
             const confirmationLink = `http://10.111.9.44:3006/confirm-email?token=${confirmationToken}`;
->>>>>>> 7f43a027f5f4c430d6329a46544059249e6ca2b2
-            const mailOptions = {
+                const mailOptions = {
                 from: 'pejoapp@gmail.com',
                 to: email,
                 subject: 'Confirmação de E-mail - PejoApp',
@@ -299,11 +295,7 @@ app.post('/forgot-password', (req, res) => {
             return res.status(404).json({ erro: 'Usuário não encontrado' });
         }
 
-<<<<<<< HEAD
-        const resetLink = `http://10.111.9.50:3006/reset-password?token=${token}`;
-=======
         const resetLink = `http://10.111.9.44:3006/reset-password?token=${token}`;
->>>>>>> 7f43a027f5f4c430d6329a46544059249e6ca2b2
         const mailOptions = {
             from: 'pejoapp@gmail.com',
             to: email,
@@ -417,11 +409,9 @@ app.post('/user/:id/profile-picture', upload.single('profile_picture'), (req, re
     console.log('Arquivo recebido:', file);
 
     const query = 'UPDATE cadastros SET imagem_url = ? WHERE id = ?';
-<<<<<<< HEAD
-    const profilePictureUrl = `http://10.111.9.50:3006/uploads/${file.filename}`;
-=======
+
     const profilePictureUrl = `http://10.111.9.44:3006/uploads/${file.filename}`;
->>>>>>> 7f43a027f5f4c430d6329a46544059249e6ca2b2
+
 
     db.query(query, [profilePictureUrl, userId], (err, result) => {
         if (err) {

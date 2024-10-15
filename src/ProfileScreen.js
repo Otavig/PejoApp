@@ -1,66 +1,28 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, Alert, TextInput, Modal, ScrollView, Dimensions, SafeAreaView, FlatList,  StyleSheeSafeAreaView,  StatusBar, } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, TextInput, Modal, Dimensions, SafeAreaView, FlatList, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as ImagePicker from 'expo-image-picker';
 import { FontAwesome } from '@expo/vector-icons';
-import Icon from 'react-native-vector-icons/FontAwesome'; // Importando a biblioteca de ícones
-import { ImageBackground } from 'react-native'; // Adicione esta importação
 
 const { width, height } = Dimensions.get('window');
 
-const DATA = [
-    {
-      id: 'bd7acbea-c1b1-46c2-aed5-3ad53abb28ba',
-      title: 'First Item',
-    },
-    {
-      id: '3ac68afc-c605-48d3-a4f8-fbd91aa97f63',
-      title: 'Second Item',
-    },
-    {
-    
-      id: '58694a0f-3da1-471f-bd96-145571e29d72',
-      title: 'Third Item',
-    },
-  ];
+// Exemplo de dados para o carrossel
+const CAROUSEL_DATA = [
+    { id: '1', title: 'Desafio 1' },
+    { id: '2', title: 'Desafio 2' },
+    { id: '3', title: 'Desafio 3' },
+    { id: '4', title: 'Desafio 4' },
+    { id: '5', title: 'Desafio 5' },
+];
 
-
-
-const formatDateForDisplay = (dateString) => {
-    if (!dateString) return 'Data de nascimento não disponível';
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) {
-        // Se a data for inválida, tenta um parse manual
-        const parts = dateString.split('-');
-        if (parts.length === 3) {
-            const newDate = new Date(parts[0], parts[1] - 1, parseInt(parts[2]) + 1);
-            return `${newDate.getDate().toString().padStart(2, '0')}/${(newDate.getMonth() + 1).toString().padStart(2, '0')}/${newDate.getFullYear()}`;
-        }
-        return 'Data inválida';
-    }
-    date.setDate(date.getDate() + 1); // Adiciona 1 dia
-    return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
-};
-
-const formatDateForDatabase = (dateString) => {
-    if (!dateString) return '';
-    const [day, month, year] = dateString.split('/');
-    return `${year}-${month}-${day}`;
-};
-
-const ProfileScreen = ({ navigation, route }) => {
+const ProfileScreen = ({ navigation }) => {
     const [profilePicture, setProfilePicture] = useState(null);
     const [user, setUser] = useState(null);
-    const [isEditing, setIsEditing] = useState(false);
-    const [editedName, setEditedName] = useState('');
-    const [isEditMenuVisible, setIsEditMenuVisible] = useState(false);
-    const [email, setEmail] = useState('');
-    const [bio, setBio] = useState(''); // Adicione esta linha para armazenar a bio
-    const [desafio, setdesafio] = useState(''); // Adicione esta linha para armazenar os desafios
-    const [descricao, setdescricao] = useState(''); // Adicione esta linha para armazenar os desafios
-    const [editBio, setEditBio] = useState(''); // Adicione esta linha para armazenar a bio editada
-    const [editedEmail, setEditedEmail] = useState('');
+    const [bio, setBio] = useState('');
     const [dataNascimento, setDataNascimento] = useState('');
+    const [email, setEmail] = useState('');
+    const [nome, setNome] = useState('');
+    const [isEditing, setIsEditing] = useState(false);
+    const [isLogoutVisible, setIsLogoutVisible] = useState(false);
 
     useEffect(() => {
         const loadUser = async () => {
@@ -68,158 +30,36 @@ const ProfileScreen = ({ navigation, route }) => {
             if (userData) {
                 const parsedUser = JSON.parse(userData);
                 setUser(parsedUser);
-                setEmail(parsedUser.email);
-                setProfilePicture(parsedUser.imagem_url);
-                setDataNascimento(parsedUser.data_nascimento || '');
-                setBio(parsedUser.bio || ''); // Adicione esta linha
-                setdesafio(parsedUser.desafio || ''); 
-                setdescricao(parsedUser.descricao  || ''); 
-
-                const response = await fetch(`http://10.111.9.44:3006/user/${parsedUser.id}`);
-                const data = await response.json();
-                if (response.ok) {
-                    const updatedUser = { ...parsedUser, ...data.user };
-                    setUser(updatedUser);
-                    setEmail(updatedUser.email);
-                    setDataNascimento(updatedUser.data_nascimento || '');
-                    if (updatedUser.imagem_url) {
-                        setProfilePicture(updatedUser.imagem_url);
-                    }
-                    // Atualizar o AsyncStorage com os dados mais recentes
-                    await AsyncStorage.setItem('user', JSON.stringify(updatedUser));
-                } else {
-                    console.error('Erro ao buscar detalhes do usuário:', data.error);
-                }
+                setBio(parsedUser.bio || '');
+                setEmail(parsedUser.email || '');
+                setNome(parsedUser.nome || '');
+                setDataNascimento(parsedUser.dataNascimento || '');
             }
         };
 
         loadUser();
     }, []);
 
-    const pickImage = async () => {
-        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        if (status !== 'granted') {
-            Alert.alert('Permissão negada', 'Precisamos de permissão para acessar a galeria!');
-            return;
-        }
-
-        const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            allowsEditing: true,
-            aspect: [4, 3],
-            quality: 1,
-        });
-
-        if (!result.cancelled) {
-            setProfilePicture(result.uri);
-            await uploadProfilePicture(result.uri);
-        }
+    const saveProfile = async () => {
+        const updatedUser = { ...user, bio, email, nome, dataNascimento };
+        setUser(updatedUser);
+        await AsyncStorage.setItem('user', JSON.stringify(updatedUser));
+        setIsEditing(false);
     };
 
-    const uploadProfilePicture = async (uri) => {
-        try {
-            console.log('Starting upload process for uri:', uri);
-
-            const formData = new FormData();
-            formData.append('profile_picture', {
-                uri: uri,
-                type: 'image/jpeg',
-                name: 'profile_picture.jpg'
-            });
-
-            console.log('Enviando requisição para:', `10.111.9.44:3006/user/${user.id}/profile-picture`);
-
-            const response = await fetch(`http://10.111.9.44:3006/user/${user.id}/profile-picture`, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
-
-            console.log('Resposta recebida:', response.status);
-
-            if (response.ok) {
-                const data = await response.json();
-                setProfilePicture(data.imagem_url);
-                const updatedUser = { ...user, imagem_url: data.imagem_url };
-                await AsyncStorage.setItem('user', JSON.stringify(updatedUser));
-                setUser(updatedUser);
-                Alert.alert('Sucesso', 'Foto de perfil atualizada com sucesso!');
-            } else {
-                const errorData = await response.json();
-                console.error('Erro na resposta do servidor:', errorData);
-                Alert.alert('Erro', 'Não foi possível atualizar a foto de perfil.');
-            }
-        } catch (error) {
-            console.error('Erro ao enviar foto de perfil:', error);
-            Alert.alert('Erro', 'Ocorreu um erro ao enviar a foto de perfil. Por favor, tente novamente.');
-        }
+    const handleLogout = async () => {
+        await AsyncStorage.removeItem('user');
+        navigation.replace('LoginScreen');  // Redireciona para a tela de login
     };
 
-    const { handleLogout } = route.params;
-
-    const handleLogoutPress = () => {
-        Alert.alert(
-            'Confirmar Logout',
-            'Tem certeza que deseja sair?',
-            [
-                { text: 'Cancelar', style: 'cancel' },
-                {
-                    text: 'Sair',
-                    onPress: async () => {
-                        await AsyncStorage.removeItem('user');
-                        route.params.handleLogout(navigation); 
-                    },
-                },
-            ],
-            { cancelable: false }
-        );
+    const validateDate = (date) => {
+        const regex = /^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/(\d{4})$/;
+        return regex.test(date);
     };
 
-    const handleEdit = () => {
-        setEditBio(bio);
-        setIsEditMenuVisible(true);
-        setEditedName(user?.nome || '');
-        setEditedEmail(user?.email || '');
-    };
-
-    const handleSave = async () => {
-        try {
-            const response = await fetch(`http://10.111.9.44:3006/user/${user.id}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    nome: editedName,
-                    email: editedEmail,
-                    bio: editBio, 
-                }),
-            });
-
-            if (response.ok) {
-                const updatedUser = { ...user, nome: editedName, email: editedEmail, bio: editBio };
-                setUser(updatedUser);
-                setEmail(editedEmail);
-                setBio(editBio);
-                await AsyncStorage.setItem('user', JSON.stringify(updatedUser));
-                setIsEditMenuVisible(false);
-                Alert.alert('Sucesso', 'Informações atualizadas com sucesso!');
-            } else {
-                Alert.alert('Erro', 'Não foi possível atualizar as informações.');
-            }
-        } catch (error) {
-            console.error('Erro ao atualizar informações:', error);
-            Alert.alert('Erro', 'Ocorreu um erro ao atualizar as informações.');
-        }
-    };
-
-    const handleCancel = () => {
-        setIsEditMenuVisible(false);
-        setEditBio(bio);
-        setEditedName(user?.nome || '');
-        setEditedEmail(user?.email || '');
+    const handleDateChange = (date) => {
+        // Permite qualquer entrada, mas mantém a data válida
+        setDataNascimento(date);
     };
 
     return (
@@ -230,78 +70,99 @@ const ProfileScreen = ({ navigation, route }) => {
                         style={styles.profileImage}
                         source={profilePicture ? { uri: profilePicture } : require('../assets/imgs/defaultProfile.png')}
                     />
-                    <Text style={styles.profileName}>{user?.nome || 'Nome aqui'}</Text>
+                    <Text style={styles.profileName}>{nome || 'Nome aqui'}</Text>
                 </View>
                 <View style={styles.buttonsContainer}>
-                    <TouchableOpacity style={styles.logoutButton} onPress={handleLogoutPress}>
+                    <TouchableOpacity style={styles.logoutButton} onPress={() => setIsLogoutVisible(true)}>
                         <FontAwesome name="sign-out" size={20} color="#fff" />
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.editButton} onPress={handleEdit}>
+                    <TouchableOpacity style={styles.editButton} onPress={() => setIsEditing(true)}>
                         <FontAwesome name="edit" size={20} color="#fff" />
                     </TouchableOpacity>
                 </View>
             </View>
+
             <View style={styles.infoContainer}>
                 <Text style={styles.infoTitle}>Sobre Mim</Text>
-                <Text style={styles.infoDescription}>
-                    {bio || 'Bio não disponível'}
-                </Text>
+                <Text style={styles.infoDescription}>{bio || 'Bio não disponível'}</Text>
                 <Text style={[styles.infoTitle, { marginTop: 20 }]}>Informações</Text>
-                <Text style={styles.infoDescription}>
-                    {email || 'E-mail não disponível'}
-                </Text>
+                <Text style={styles.infoDescription}>{email || 'E-mail não disponível'}</Text>
                 <Text style={styles.infoDescription}>
                     Data de Nascimento: {dataNascimento || 'Data não disponível'}
                 </Text>
             </View>
+
             <View style={styles.dasafiosFavContainer}>
                 <Text style={styles.infoTitle}>Desafios Favoritos</Text>
-                <Text style={styles.infoDescription}>
-                    {desafio || 'Desafio não disponível'}
-                </Text>
-                <Text style={[styles.infoTitle, { marginTop: 20 }]}>Descrição</Text>
-                <Text style={styles.infoDescription}>
-                    {descricao || 'Descrição não disponível'}
-                </Text>
+                <FlatList
+                    data={CAROUSEL_DATA} // Os dados para o carrossel
+                    horizontal={true} // Permite o scroll horizontal
+                    showsHorizontalScrollIndicator={false} // Oculta a barra de scroll
+                    keyExtractor={(item) => item.id}
+                    renderItem={({ item }) => (
+                        <View style={styles.card}>
+                            <Text style={styles.cardTitle}>{item.title}</Text>
+                        </View>
+                    )}
+                />
             </View>
 
-
-            {/* Adicionando o Modal para edição */}
-
-            
-
-            <Modal
-                visible={isEditMenuVisible}
-                animationType="slide"
-                transparent={true}
-            >
+            {/* Modal para Edição de Perfil */}
+            <Modal visible={isEditing} animationType="slide" transparent={true}>
                 <View style={styles.modalContainer}>
                     <View style={styles.modalContent}>
-                        <Text style={{textAlign: 'center', fontWeight: 'bold', marginBottom: 20}}>Editar informações</Text>
+                        <Text style={styles.modalTitle}>Editar Perfil</Text>
+
                         <TextInput
-                            placeholder="Bio"
-                            value={editBio} 
-                            onChangeText={setEditBio}
                             style={styles.input}
-                        />
-                        <TextInput
                             placeholder="Nome"
-                            value={editedName}
-                            onChangeText={setEditedName}
-                            style={styles.input}
+                            value={nome}
+                            onChangeText={setNome}
                         />
                         <TextInput
-                            placeholder="E-mail"
-                            value={editedEmail}
-                            onChangeText={setEditedEmail}
                             style={styles.input}
+                            placeholder="Bio"
+                            value={bio}
+                            onChangeText={setBio}
                         />
-                        <View style={styles.containerButtons}>
-                            <TouchableOpacity onPress={handleCancel} style={styles.cancelButton}>
-                                <Icon name="close" size={20} color="white" />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="E-mail"
+                            value={email}
+                            onChangeText={setEmail}
+                        />
+                        {/* Campo de data de nascimento */}
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Data de Nascimento (DD/MM/YYYY)"
+                            value={dataNascimento}
+                            onChangeText={handleDateChange}
+                        />
+
+                        <View style={styles.modalButtons}>
+                            <TouchableOpacity style={styles.saveButton} onPress={saveProfile}>
+                                <Text style={styles.saveButtonText}>Salvar</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity onPress={handleSave} style={styles.saveButton}>
-                                <Icon name="save" size={20} color="white" /> 
+                            <TouchableOpacity style={styles.cancelButton} onPress={() => setIsEditing(false)}>
+                                <Text style={styles.cancelButtonText}>Cancelar</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
+
+            {/* Modal para confirmação de logout */}
+            <Modal visible={isLogoutVisible} animationType="fade" transparent={true}>
+                <View style={styles.modalContainer}>
+                    <View style={styles.modalContent}>
+                        <Text style={styles.modalTitle}>Tem certeza que deseja sair?</Text>
+
+                        <View style={styles.modalButtons}>
+                            <TouchableOpacity style={styles.saveButton} onPress={handleLogout}>
+                                <Text style={styles.saveButtonText}>Sim</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={styles.cancelButton} onPress={() => setIsLogoutVisible(false)}>
+                                <Text style={styles.cancelButtonText}>Não</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -313,51 +174,48 @@ const ProfileScreen = ({ navigation, route }) => {
 
 export default ProfileScreen;
 
-// Estilos atualizados
 const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#004060',
     },
     profileContainer: {
-        flexDirection: 'row', // Mantendo a direção do flex
-        alignItems: 'center', // Centralizando verticalmente
+        flexDirection: 'row',
+        alignItems: 'center',
         backgroundColor: '#fff',
         paddingVertical: 20,
         marginBottom: 10,
         borderWidth: 2,
         borderColor: '#80D4FF',
         borderRadius: 40,
-        paddingHorizontal: 20, // Adicionando padding horizontal
+        paddingHorizontal: 20,
     },
     imageContainer: {
-        flex: 1, // Permitindo que a imagem e o nome ocupem o espaço necessário
+        flex: 1,
         alignItems: 'center',
     },
     buttonsContainer: {
-        flexDirection: 'column', // Alterado para coluna para empilhar os botões
-        alignItems: 'flex-end', // Alinhando os botões à direita
-        marginLeft: 'auto', // Alinhando à direita
+        flexDirection: 'column',
+        alignItems: 'flex-end',
+        marginLeft: 'auto',
     },
     profileImage: {
         width: 100,
         height: 100,
-        start: -100,
         marginTop: 20,
         borderRadius: 50,
     },
     profileName: {
         fontSize: 15,
-        start: -60,
         fontWeight: 'bold',
         marginTop: 10,
-        textAlign: 'center', // Centralizando o texto
+        textAlign: 'center',
     },
     editButton: {
         backgroundColor: '#007bff',
         padding: 10,
         borderRadius: 20,
-        marginTop: 10, // Adicionando espaço entre os botões
+        marginTop: 10,
     },
     logoutButton: {
         backgroundColor: '#ff4d4d',
@@ -371,7 +229,7 @@ const styles = StyleSheet.create({
         marginBottom: 10,
         borderRadius: 30,
         borderWidth: 2,
-        borderColor: "#80D4FF"
+        borderColor: '#80D4FF',
     },
     dasafiosFavContainer: {
         paddingHorizontal: 20,
@@ -379,16 +237,17 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         marginBottom: 10,
         borderWidth: 2,
-        borderColor: "#80D4FF"
+        borderColor: '#80D4FF',
+        borderRadius: 30,
     },
     infoTitle: {
         fontSize: 18,
         fontWeight: 'bold',
+        marginBottom: 10,
     },
     infoDescription: {
         fontSize: 16,
-        color: '#777',
-        marginTop: 5,
+        marginBottom: 5,
     },
     modalContainer: {
         flex: 1,
@@ -397,40 +256,61 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(0, 0, 0, 0.5)',
     },
     modalContent: {
-        width: '80%',
-        backgroundColor: 'white',
+        width: width * 0.8,
+        backgroundColor: '#fff',
+        borderRadius: 20,
         padding: 20,
-        borderRadius: 10,
+        alignItems: 'center',
+    },
+    modalTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 20,
     },
     input: {
-        height: 40,
-        borderColor: 'gray',
+        width: '100%',
         borderWidth: 1,
-        marginBottom: 10,
-        paddingHorizontal: 10,
+        borderColor: '#80D4FF',
+        borderRadius: 10,
+        padding: 10,
+        marginBottom: 15,
+    },
+    modalButtons: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        width: '100%',
     },
     saveButton: {
         backgroundColor: '#007bff',
         padding: 10,
+        borderRadius: 20,
+        flex: 1,
+        marginRight: 10,
         alignItems: 'center',
-        borderRadius: 5,
-        marginBottom: 10,
-        width: '45%',
-        height: '80%'
+    },
+    saveButtonText: {
+        color: '#fff',
+        fontWeight: 'bold',
     },
     cancelButton: {
         backgroundColor: '#ff4d4d',
         padding: 10,
+        borderRadius: 20,
+        flex: 1,
         alignItems: 'center',
-        borderRadius: 5,
-        width: '45%',
-        height: '80%'
     },
-    containerButtons:{
-        flexDirection: 'row',
-        width: '100%',
-        gap: 28,
-        marginLeft: 'auto',
-        marginRight: 'auto'
-    }
+    cancelButtonText: {
+        color: '#fff',
+        fontWeight: 'bold',
+    },
+    card: {
+        backgroundColor: '#80D4FF',
+        padding: 20,
+        borderRadius: 10,
+        marginRight: 10,
+    },
+    cardTitle: {
+        fontSize: 16,
+        color: '#fff',
+    },
 });

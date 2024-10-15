@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, FlatList, Dimensions, Image } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Calendar } from 'react-native-calendars';
+
 const MyCarousel = ({ images }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const flatListRef = useRef(null);
@@ -10,20 +11,21 @@ const MyCarousel = ({ images }) => {
     useEffect(() => {
         const interval = setInterval(() => {
             setCurrentIndex(prevIndex => (prevIndex + 1) % images.length);
-        }, 5000); // Trocar a imagem a cada 5 segundos
+        }, 5000);
 
-        return () => clearInterval(interval); // Limpar o intervalo ao desmontar
+        return () => clearInterval(interval);
     }, [images.length]);
 
     useEffect(() => {
-        if (flatListRef.current) {
+        console.log('Current Index:', currentIndex);
+        if (flatListRef.current && currentIndex < images.length) {
             flatListRef.current.scrollToIndex({ index: currentIndex, animated: true });
         }
     }, [currentIndex]);
 
     const renderItem = ({ item }) => (
         <View style={styles.imageContainer}>
-            <Image source={{ uri: item }} style={styles.image} />
+            <Image source={item} style={styles.image} />
         </View>
     );
 
@@ -33,12 +35,12 @@ const MyCarousel = ({ images }) => {
                 ref={flatListRef}
                 data={images}
                 renderItem={renderItem}
-                keyExtractor={(item) => item}
+                keyExtractor={(item, index) => index.toString()}
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 pagingEnabled
-                scrollEnabled={false} // Desabilita o scroll manual
-                style={{ width }} // Para manter a largura do carrossel
+                scrollEnabled={false}
+                style={{ width }}
                 getItemLayout={(data, index) => (
                     { length: width, offset: width * index, index }
                 )}
@@ -63,13 +65,12 @@ const HomeScreen = () => {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
     const images = [
-        'assets/imgs/propagandas/1.jpeg',
-        'assets/imgs/propagandas/2.jpeg',
-        'assets/imgs/propagandas/3.jpeg',
-        'assets/imgs/propagandas/1.jpeg',
-        'assets/imgs/propagandas/2.jpeg',
-        'assets/imgs/propagandas/3.jpeg',
+        require('../assets/imgs/propagandas/1.jpeg'),
+        require('../assets/imgs/propagandas/2.jpeg'),
+        require('../assets/imgs/propagandas/3.jpeg'),
+        // Adicione mais imagens se necessário
     ];
+    
 
     const handleDayPress = (day) => {
         const dateString = day.dateString;
@@ -137,8 +138,10 @@ const styles = StyleSheet.create({
     carouselContainer: {
         alignItems: 'center',
         justifyContent: 'center',
-        width: '100%', // Para garantir que ocupe toda a largura
-    },
+        width: '100%',
+        borderColor: 'red', // Temporário para verificar
+        borderWidth: 1, // Temporário para verificar
+    },    
     header: {
         alignItems: 'center',
         marginBottom: 20,
