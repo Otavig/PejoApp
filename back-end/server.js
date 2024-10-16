@@ -9,6 +9,13 @@ const crypto = require('crypto');
 const multer = require('multer');
 const fs = require('fs');
 
+require('dotenv').config();
+
+console.log('DB_HOST:', process.env.DB_HOST);
+console.log('DB_USER:', process.env.DB_USER);
+console.log('DB_PASSWORD:', process.env.DB_PASSWORD);
+console.log('DB_NAME:', process.env.DB_NAME);
+
 const app = express();
 
 app.use(cors({
@@ -20,10 +27,10 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 const db = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: '',
-    database: 'db_pejo',  // Atualizado para o nome correto do banco de dados
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
 });
 
 // Função para converter data no formato DD/MM/YYYY para YYYY-MM-DD
@@ -88,7 +95,7 @@ app.post('/register', async (req, res) => {
             console.log('Usuário inserido no banco de dados com sucesso');
 
             // Enviar e-mail de confirmação
-            const confirmationLink = `http://10.111.9.44:3006/confirm-email?token=${confirmationToken}`;
+            const confirmationLink = `${process.env.API_URL}/confirm-email?token=${confirmationToken}`;
                 const mailOptions = {
                 from: 'pejoapp@gmail.com',
                 to: email,
@@ -295,7 +302,7 @@ app.post('/forgot-password', (req, res) => {
             return res.status(404).json({ erro: 'Usuário não encontrado' });
         }
 
-        const resetLink = `http://10.111.9.44:3006/reset-password?token=${token}`;
+        const resetLink = `${process.env.API_URL}/reset-password?token=${token}`;
         const mailOptions = {
             from: 'pejoapp@gmail.com',
             to: email,
@@ -410,7 +417,7 @@ app.post('/user/:id/profile-picture', upload.single('profile_picture'), (req, re
 
     const query = 'UPDATE cadastros SET imagem_url = ? WHERE id = ?';
 
-    const profilePictureUrl = `http://10.111.9.44:3006/uploads/${file.filename}`;
+    const profilePictureUrl = `${process.env.API_URL}/uploads/${file.filename}`;
 
 
     db.query(query, [profilePictureUrl, userId], (err, result) => {

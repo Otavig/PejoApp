@@ -3,6 +3,9 @@
 # dependencies
 node_modules/
 
+# .gitignore
+.env
+
 # Expo
 .expo/
 dist/

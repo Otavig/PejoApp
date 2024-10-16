@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, Image, TextInput, StyleSheet, Alert, Text, TouchableOpacity, Animated, SafeAreaView } from 'react-native';
+import { View, Image, TextInput, StyleSheet, Alert, Text, TouchableOpacity, Animated, SafeAreaView, Dimensions } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
-import { Dimensions } from 'react-native';
+import { API_URL } from '@env';
 
-const largura = Dimensions.get('screen').width;
+const { width, height } = Dimensions.get('screen');
 
 const LoginScreen = ({ navigation, setUser }) => {
     const [identifier, setIdentifier] = useState('');
@@ -67,7 +67,7 @@ const LoginScreen = ({ navigation, setUser }) => {
                         >
                             <Ionicons
                                 name={isPasswordVisible ? 'eye-outline' : 'eye-off-outline'}
-                                size={20}
+                                size={width * 0.05}
                                 color="#aaa"
                             />
                         </TouchableOpacity>
@@ -90,8 +90,7 @@ const LoginScreen = ({ navigation, setUser }) => {
         }
 
         try {
-            console.log('Enviando requisição de login:', { identifier, password });
-            const response = await fetch('http://10.111.9.44:3006/login', {
+            const response = await fetch(`${API_URL}/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -100,13 +99,11 @@ const LoginScreen = ({ navigation, setUser }) => {
             });
 
             const data = await response.json();
-            console.log('Resposta do servidor:', data);
 
             if (!response.ok) {
                 throw new Error(data.error || 'Credenciais inválidas');
             }
 
-            // Check if the user's role is "user" or "adm"
             if (data.user.cargo === 'user' || data.user.cargo === 'adm') {
                 await AsyncStorage.setItem('user', JSON.stringify(data.user));
                 setUser(data.user);
@@ -124,7 +121,6 @@ const LoginScreen = ({ navigation, setUser }) => {
                 Alert.alert('Acesso Negado', 'Você não tem permissão para acessar o aplicativo. Por favor, entre em contato com o suporte.');
             }
         } catch (error) {
-            console.error('Erro no login:', error);
             if (error.message === 'Credenciais inválidas') {
                 Alert.alert(
                     'Login Falhou',
@@ -156,7 +152,7 @@ const LoginScreen = ({ navigation, setUser }) => {
                     <TouchableOpacity style={styles.linkButton} onPress={() => navigation.navigate('Register')}>
                         <Text style={styles.linkText}>Não tem uma conta?</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={[styles.linkButton, { marginLeft: 10 }]} onPress={() => navigation.navigate('Recovery')}>
+                    <TouchableOpacity style={[styles.linkButton, { marginLeft: width * 0.02 }]} onPress={() => navigation.navigate('Recovery')}>
                         <Text style={styles.linkText}>Recuperar senha</Text>
                     </TouchableOpacity>
                 </View>
@@ -169,27 +165,27 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#FFF',
-        padding: 25, // Increased padding
+        padding: width * 0.05,
     },
     title: {
-        fontSize: 36, // Increased font size
+        fontSize: width * 0.09,
         fontWeight: 'bold',
         color: '#023047',
-        marginBottom: 15, // Increased margin
+        marginBottom: height * 0.02,
     },
     description: {
-        fontSize: 16, // Increased font size
+        fontSize: width * 0.04,
         color: '#666',
-        marginBottom: 30, // Increased margin
+        marginBottom: height * 0.04,
     },
     inputContainer: {
-        width: '90%', // Increased width
-        marginBottom: 25, // Increased margin
+        width: '90%',
+        marginBottom: height * 0.03,
     },
     logo: {
-        width: 130, // Increased size
-        height: 130, // Increased size
-        marginBottom: 15, // Increased margin
+        width: width * 0.35,
+        height: width * 0.35,
+        marginBottom: height * 0.02,
         resizeMode: 'contain',
     },
     inputWrapper: {
@@ -197,38 +193,38 @@ const styles = StyleSheet.create({
     },
     input: {
         width: '100%',
-        padding: 18, // Increased padding
-        fontSize: 15, // Increased font size
+        padding: height * 0.02,
+        fontSize: width * 0.04,
     },
     eyeIcon: {
         position: 'absolute',
-        right: 18,
-        top: 20,
+        right: width * 0.05,
+        top: height * 0.025,
     },
     button: {
         backgroundColor: '#0088CC',
-        width: '90%', // Increased width
-        paddingVertical: 12, // Increased padding
+        width: '90%',
+        paddingVertical: height * 0.02,
         alignItems: 'center',
-        marginTop: 13, // Increased margin
+        marginTop: height * 0.02,
     },
     buttonText: {
         color: '#FFF',
-        fontSize: 20, // Increased font size
+        fontSize: width * 0.05,
         fontWeight: 'bold',
     },
     linksContainer: {
         flexDirection: 'row',
         justifyContent: 'center',
-        width: '88%', // Increased width
+        width: '88%',
         justifyContent: 'space-between',
     },
     linkButton: {
-        marginTop: 15, // Increased margin
+        marginTop: height * 0.02,
     },
     linkText: {
         color: 'black',
-        fontSize: 14, // Increased font size
+        fontSize: width * 0.035,
     },
 });
 

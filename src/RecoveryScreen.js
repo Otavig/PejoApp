@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Image, TextInput, StyleSheet, Alert, Text, TouchableOpacity, Animated } from 'react-native';
 import axios from 'axios';
 import { Linking } from 'react-native';
+import { API_URL } from '@env';
 
 const RecoveryScreen = ({ navigation }) => {
     const [email, setEmail] = useState('');
@@ -31,7 +32,7 @@ const RecoveryScreen = ({ navigation }) => {
         }
 
         try {
-            const response = await axios.post('http://10.111.9.44:3006/forgot-password', { email });
+            const response = await axios.post(`${API_URL}/forgot-password`, { email });
             Alert.alert(
                 'Email Enviado',
                 'Um link de recuperação de senha foi enviado para o seu email.',

@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { View, TextInput, StyleSheet, Alert, Text, TouchableOpacity, Dimensions, Animated, ScrollView, ActivityIndicator } from 'react-native';
-import { Ionicons } from '@expo/vector-icons'; // Certifique-se de ter esta biblioteca instalada para o ícone de olho
+import { Ionicons } from '@expo/vector-icons';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
+import { API_URL } from '@env';
 
-const largura = Dimensions.get('screen').width;
+const { width: largura, height: altura } = Dimensions.get('screen');
 
 const RegisterScreen = ({ navigation }) => {
     const [fullName, setFullName] = useState('');
@@ -58,7 +59,7 @@ const RegisterScreen = ({ navigation }) => {
     const handleDateChange = (date) => {
         const formattedDate = date.toISOString().split('T')[0].split('-').reverse().join('/');
         setBirthDate(formattedDate);
-        setDatePlaceholder(formattedDate); // Atualiza o placeholder para a data selecionada
+        setDatePlaceholder(formattedDate);
         setDatePickerVisibility(false);
     };
 
@@ -137,21 +138,19 @@ const RegisterScreen = ({ navigation }) => {
         setIsLoading(true);
         try {
             if (fullName && email && phone && password && confirmPassword && birthDate) {
-                const phoneNumber = phone.replace(/\D/g, ''); // Remove formatação
+                const phoneNumber = phone.replace(/\D/g, '');
 
                 if (phoneNumber.length !== 11) {
                     throw new Error('Número de telefone inválido');
                 }
 
-                // Verifica a idade
                 const birthDateISO = new Date(birthDate.split('/').reverse().join('-')).toISOString().split('T')[0];
                 const age = calculateAge(birthDateISO);
                 if (age < 13) {
                     throw new Error('Você deve ter pelo menos 13 anos para se registrar');
                 }
 
-                // Verifica se o telefone já está registrado
-                const checkPhoneResponse = await fetch(`http://10.111.9.44:3006/check-phone/${phoneNumber}`);
+                const checkPhoneResponse = await fetch(`${API_URL}/check-phone/${phoneNumber}`);
                 const checkPhoneData = await checkPhoneResponse.json();
 
                 if (checkPhoneData.exists) {
@@ -178,7 +177,7 @@ const RegisterScreen = ({ navigation }) => {
                     data_nascimento: birthDate,
                 };
 
-                const response = await fetch('http://10.111.9.44:3006/register', {
+                const response = await fetch(`${API_URL}/register`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -191,8 +190,7 @@ const RegisterScreen = ({ navigation }) => {
                 }
 
                 const result = await response.json();
-                
-                // Show success message
+
                 Alert.alert(
                     'Cadastro realizado com sucesso',
                     'Por favor, verifique seu email para confirmar o cadastro.',
@@ -238,103 +236,94 @@ const RegisterScreen = ({ navigation }) => {
                         {renderAnimatedInput('password', 'Senha', password, setPassword, !isPasswordVisible)}
                         {renderAnimatedInput('confirmPassword', 'Confirmar Senha', confirmPassword, setConfirmPassword, !isConfirmPasswordVisible)}
                         <TouchableOpacity style={styles.button} onPress={handleRegister}>
-                            <Text style={styles.buttonText}>Cadastrar-se</Text>
+                            <Text style={styles.buttonText}>Cadastrar</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.linkButton} onPress={() => navigation.navigate('Login')}>
-                            <Text style={styles.linkText}>Já tem uma conta? Entre</Text>
+                        <TouchableOpacity style={[styles.backButton, {marginTop: 10}]} onPress={() => navigation.goBack()}>
+                            <Text style={styles.backButtonText}>Tenho uma conta!</Text>
                         </TouchableOpacity>
-                        <DateTimePickerModal
-                            isVisible={isDatePickerVisible}
-                            mode="date"
-                            onConfirm={handleDateChange}
-                            onCancel={hideDatePicker}
-                        />
                     </>
                 )}
+                <DateTimePickerModal
+                    isVisible={isDatePickerVisible}
+                    mode="date"
+                    onConfirm={handleDateChange}
+                    onCancel={hideDatePicker}
+                    locale="pt-BR"
+                />
             </View>
         </ScrollView>
     );
 };
 
-export default RegisterScreen;
-
 const styles = StyleSheet.create({
-    scrollContainer: {
-        flexGrow: 1,
-        justifyContent: 'center',
-    },
     container: {
         flex: 1,
-        backgroundColor: '#FFF',
         justifyContent: 'center',
         alignItems: 'center',
-        padding: 20,
+        padding: 16,
+        backgroundColor: 'white'
+    },
+    scrollContainer: {
+        flexGrow: 1,
     },
     title: {
-        fontSize: 28,
+        fontSize: 24,
         fontWeight: 'bold',
-        color: '#023047',
-        marginBottom: 20,
+        marginBottom: 10,
     },
     inputContainer: {
-        width: '90%',
-        marginBottom: 20,
+        marginVertical: 10,
+        width: '100%',
     },
     inputWrapper: {
         borderWidth: 1,
-
+        padding: 10,
+        backgroundColor: '#fff',
     },
     input: {
-        width: '100%',
-        padding: 15,
-        fontSize: 15,
-        color: '#000',
+        height: 30,
+        fontSize: 16,
     },
     eyeIcon: {
         position: 'absolute',
-        right: 18,
-        top: 20,
+        right: 10,
+        top: 12,
+    },
+    datePickerContainer: {
+        borderWidth: 1,
+        padding: 10,
+        backgroundColor: '#fff',
+        justifyContent: 'center',
+        height: 50,
+    },
+    dateInput: {
+        fontSize: 16,
     },
     button: {
         backgroundColor: '#0088CC',
-        width: '90%',
-        paddingVertical: 12,
-        alignItems: 'center',
-        marginTop: 5,
-        marginBottom: 10,
+        paddingVertical: 15,
+        paddingHorizontal: 30,
+        marginTop: 20,
+        width: '100%'
     },
     buttonText: {
-        color: '#FFF',
+        color: '#fff',
         fontSize: 16,
-        fontWeight: 'bold',
+        textAlign: 'center',
+        fontWeight: 'bold'
     },
-    linkButton: {
-        alignItems: 'center',
-        marginTop: 5,
+    backButton: {
+        marginBottom: 20,
     },
-    linkText: {
+    backButtonText: {
         color: 'black',
         fontSize: 14,
     },
-    datePickerContainer: {
-        width: '100%',
-        height: 59,
-        borderWidth: 1,
-        borderColor: '#ccc',
-        justifyContent: 'center',
-        paddingHorizontal: 15,
-    },
-    dateLabel: {
-        fontSize: 12,
-        color: '#0088CC',
-        marginBottom: 4,
-    },
-    dateInput: {
-        fontSize: 15,
-    },
     loadingContainer: {
-        flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
+        flex: 1,
     },
 });
+
+export default RegisterScreen;

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, FlatList, Dimensions, Image } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Calendar } from 'react-native-calendars';
+import { API_URL } from '@env';
 
 const MyCarousel = ({ images }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -179,6 +180,7 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#e0e0e0',
         width: '100%',
+        marginBottom: '50%'
     },
     imageContainer: {
         width: Dimensions.get('window').width,

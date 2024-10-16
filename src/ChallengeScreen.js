@@ -2,22 +2,29 @@ import React from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image, Dimensions, FlatList } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
-const { width } = Dimensions.get('window'); // Obtendo a largura da tela
+const { width, height } = Dimensions.get('window');
 
 const challenges = [
     { id: '1', title: 'Desafio 1', description: 'Descrição do Desafio 1', difficulty: 'Fácil' },
     { id: '2', title: 'Desafio 2', description: 'Descrição do Desafio 2', difficulty: 'Médio' },
     { id: '3', title: 'Desafio 3', description: 'Descrição do Desafio 3', difficulty: 'Difícil' },
     { id: '4', title: 'Desafio 4', description: 'Descrição do Desafio 4', difficulty: 'Muito Difícil' },
-    // Adicione mais itens conforme necessário
 ];
+
+// Mapeando dificuldades para imagens
+const difficultyImages = {
+    'Fácil': require('../assets/imgs/icon.png'), // Imagem para desafios fáceis
+    'Médio': require('../assets/imgs/icon.png'), // Imagem para desafios médios
+    'Difícil': require('../assets/imgs/icon.png'), // Imagem para desafios difíceis
+    'Muito Difícil': require('../assets/imgs/icon.png'), // Imagem para desafios muito difíceis
+};
 
 const ChallengeScreen = () => {
     const [difficulty, setDifficulty] = React.useState('');
 
     const renderItem = ({ item }) => (
         <View style={styles.challengeContainer}>
-            <Image style={styles.image} source={require('../assets/imgs/icon.png')} />
+            <Image style={styles.image} source={difficultyImages[item.difficulty]} />
             <View style={styles.textContainer}>
                 <Text style={styles.challengeTitle}>{item.title}</Text>
                 <Text style={styles.challengeDescription}>{item.description}</Text>
@@ -28,8 +35,7 @@ const ChallengeScreen = () => {
 
     return (
         <View style={styles.container}>
-            {/* Card do desafio no topo */}
-            <View style={styles.challengeContainer}>
+            <View style={styles.cardContainer}>
                 <Image style={styles.image} source={require('../assets/imgs/icon.png')} />
                 <View style={styles.textContainer}>
                     <Text style={styles.challengeTitle}>Título do Desafio</Text>
@@ -42,18 +48,18 @@ const ChallengeScreen = () => {
                 <TextInput 
                     style={styles.searchInput} 
                     placeholder="Pesquisar desafios..." 
+                    placeholderTextColor="#B0B0B0"
                 />
                 <TouchableOpacity style={styles.btn}>
                     <Icon name="paper-plane" size={20} color="white" />
                 </TouchableOpacity>
             </View>
 
-            {/* FlatList para exibir a lista de desafios */}
             <FlatList
                 data={challenges}
                 renderItem={renderItem}
                 keyExtractor={item => item.id}
-                contentContainerStyle={{ paddingBottom: 20 }}
+                contentContainerStyle={styles.listContainer} // Add a style for the list container
             />
         </View>
     );
@@ -66,67 +72,88 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'flex-start',
         alignItems: 'center',
-        backgroundColor: '#ffffff',
-        paddingTop: 40, // Adicionando um padding-top para evitar sobreposição no topo
+        backgroundColor: '#f0f4f8',
+        paddingTop: height * 0.05,
+        paddingHorizontal: width * 0.05, // Add horizontal padding to the main container
     },
-    challengeContainer: {
+    cardContainer: {
         flexDirection: 'row',
-        marginVertical: 10,
-        width: '90%', // Usando 90% da largura da tela
+        marginVertical: height * 0.02,
+        width: '100%', // Use full width of the container
         alignItems: 'center',
-        padding: 20,
-        backgroundColor: '#f9f9f9',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.2,
-        shadowRadius: 6,
-        elevation: 6,
+        padding: width * 0.05,
+        backgroundColor: '#ffffff',
         borderRadius: 15,
-        marginTop: 10, // Mantendo uma margem para o topo
+        elevation: 4,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        height: height * 0.18, // Increased height for the card
     },
     textContainer: {
         flex: 1,
-        marginLeft: 15,
+        marginLeft: width * 0.03,
     },
     challengeTitle: {
-        fontSize: width * 0.05, // 5% da largura da tela
+        fontSize: width * 0.06,
         fontWeight: 'bold',
+        color: '#333',
     },
     challengeDescription: {
-        fontSize: width * 0.04, // 4% da largura da tela
+        fontSize: width * 0.045,
+        color: '#666',
     },
     difficulty: {
-        fontSize: width * 0.035, // 3.5% da largura da tela
-        color: 'gray',
+        fontSize: width * 0.04,
+        color: '#999',
     },
     searchInput: {
-        height: 40,
-        borderColor: 'gray',
+        height: height * 0.05,
+        borderColor: '#ccc',
         borderWidth: 1,
-        borderRadius: 5,
-        paddingHorizontal: 5,
-        width: '80%', // Ajustando para 80% da largura da tela
+        borderRadius: 10,
+        paddingHorizontal: 10,
+        width: '80%',
+        backgroundColor: '#ffffff',
     },
     buttonContainer: {
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
-        width: '90%',
-        marginVertical: 10,
+        width: '100%', // Use full width for button container
+        marginVertical: height * 0.02,
     },
     btn: {
         backgroundColor: '#4A90E2',
         padding: 10,
-        height: 40,
-        width: 40,
+        height: height * 0.05,
+        width: height * 0.05,
         justifyContent: 'center',
         alignItems: 'center',
-        borderRadius: 120,
-        marginLeft: 10,
+        borderRadius: 50,
+        marginLeft: width * 0.02,
     },
     image: {
-        width: width * 0.25, // 25% da largura da tela
-        height: width * 0.25, // Mantendo proporção
-        marginRight: 15,
+        width: width * 0.25,
+        height: width * 0.25,
+        marginRight: width * 0.05,
+        borderRadius: 10,
+    },
+    challengeContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginVertical: 10,
+        padding: 10,
+        backgroundColor: '#ffffff',
+        borderRadius: 10,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        height: height * 0.15, // Ensure the challenge card has a fixed height
+    },
+    listContainer: {
+        paddingBottom: 20, // Space for the bottom of the list
     },
 });
