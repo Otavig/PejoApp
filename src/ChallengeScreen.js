@@ -2,21 +2,22 @@ import React from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image, Dimensions, FlatList } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
-const { width, height } = Dimensions.get('window');
+const { width, height } = Dimensions.get('screen');
 
 const challenges = [
     { id: '1', title: 'Desafio 1', description: 'Descrição do Desafio 1', difficulty: 'Fácil' },
     { id: '2', title: 'Desafio 2', description: 'Descrição do Desafio 2', difficulty: 'Médio' },
     { id: '3', title: 'Desafio 3', description: 'Descrição do Desafio 3', difficulty: 'Difícil' },
-    { id: '4', title: 'Desafio 4', description: 'Descrição do Desafio 4', difficulty: 'Muito Difícil' },
+
 ];
+
+
 
 // Mapeando dificuldades para imagens
 const difficultyImages = {
     'Fácil': require('../assets/imgs/icon.png'), // Imagem para desafios fáceis
     'Médio': require('../assets/imgs/icon.png'), // Imagem para desafios médios
     'Difícil': require('../assets/imgs/icon.png'), // Imagem para desafios difíceis
-    'Muito Difícil': require('../assets/imgs/icon.png'), // Imagem para desafios muito difíceis
 };
 
 const ChallengeScreen = () => {
@@ -79,7 +80,7 @@ const styles = StyleSheet.create({
     cardContainer: {
         flexDirection: 'row',
         marginVertical: height * 0.02,
-        width: '100%', // Use full width of the container
+        width: width/1.1, // Use full width of the container
         alignItems: 'center',
         padding: width * 0.05,
         backgroundColor: '#ffffff',
@@ -152,6 +153,7 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 4,
         height: height * 0.15, // Ensure the challenge card has a fixed height
+        width: width/1.1
     },
     listContainer: {
         paddingBottom: 20, // Space for the bottom of the list

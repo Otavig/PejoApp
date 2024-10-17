@@ -42,6 +42,12 @@ const ProfileScreen = ({ navigation }) => {
     }, []);
 
     const saveProfile = async () => {
+        // Valida a data de nascimento antes de salvar
+        if (!validateDate(dataNascimento)) {
+            Alert.alert('Erro', 'Data de nascimento inválida. Use o formato DD/MM/YYYY.');
+            return;
+        }
+
         const updatedUser = { ...user, bio, email, nome, dataNascimento };
         setUser(updatedUser);
         await AsyncStorage.setItem('user', JSON.stringify(updatedUser));
@@ -59,8 +65,21 @@ const ProfileScreen = ({ navigation }) => {
     };
 
     const handleDateChange = (date) => {
-        // Permite qualquer entrada, mas mantém a data válida
-        setDataNascimento(date);
+        // Remover qualquer caractere que não seja número
+        let formattedDate = date.replace(/\D/g, '');
+
+        // Inserir barras automaticamente em posições específicas
+        if (formattedDate.length > 2) {
+            formattedDate = formattedDate.slice(0, 2) + '/' + formattedDate.slice(2);
+        }
+        if (formattedDate.length > 5) {
+            formattedDate = formattedDate.slice(0, 5) + '/' + formattedDate.slice(5);
+        }
+
+        // Limitar a 10 caracteres (DD/MM/YYYY)
+        if (formattedDate.length <= 10) {
+            setDataNascimento(formattedDate);
+        }
     };
 
     return (
@@ -178,18 +197,26 @@ export default ProfileScreen;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#004060',
+        backgroundColor: '#E0F7FA', // Alteração da cor de fundo
     },
     profileContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#fff',
+        backgroundColor: '#ffffff',
         paddingVertical: 20,
         marginBottom: 10,
         borderWidth: 2,
         borderColor: '#80D4FF',
         borderRadius: 40,
         paddingHorizontal: 20,
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 5, // Para Android
     },
     imageContainer: {
         flex: 1,
@@ -205,9 +232,11 @@ const styles = StyleSheet.create({
         height: 100,
         marginTop: 20,
         borderRadius: 50,
+        borderWidth: 2,
+        borderColor: '#80D4FF', // Adicionando borda à imagem
     },
     profileName: {
-        fontSize: 15,
+        fontSize: 18, // Aumentando o tamanho da fonte
         fontWeight: 'bold',
         marginTop: 10,
         textAlign: 'center',
@@ -216,7 +245,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#007bff',
         padding: 10,
         borderRadius: 20,
-        marginTop: 10,
+        marginBottom: 10,
     },
     logoutButton: {
         backgroundColor: '#ff4d4d',
@@ -224,22 +253,13 @@ const styles = StyleSheet.create({
         borderRadius: 20,
     },
     infoContainer: {
-        paddingHorizontal: 20,
-        paddingVertical: 15,
-        backgroundColor: '#fff',
-        marginBottom: 10,
-        borderRadius: 30,
+        backgroundColor: '#ffffff',
+        padding: 20,
+        borderRadius: 20,
+        marginHorizontal: 20,
         borderWidth: 2,
         borderColor: '#80D4FF',
-    },
-    dasafiosFavContainer: {
-        paddingHorizontal: 20,
-        paddingVertical: 15,
-        backgroundColor: '#fff',
-        marginBottom: 10,
-        borderWidth: 2,
-        borderColor: '#80D4FF',
-        borderRadius: 30,
+        marginBottom: 20,
     },
     infoTitle: {
         fontSize: 18,
@@ -250,17 +270,39 @@ const styles = StyleSheet.create({
         fontSize: 16,
         marginBottom: 5,
     },
+    dasafiosFavContainer: {
+        backgroundColor: '#ffffff',
+        padding: 20,
+        borderRadius: 20,
+        marginHorizontal: 20,
+        borderWidth: 2,
+        borderColor: '#80D4FF',
+        marginBottom: 20,
+    },
+    card: {
+        width: width * 0.6, // Controla o tamanho do card
+        height: height * 0.15, // Controla a altura do card
+        backgroundColor: '#E0F7FA',
+        marginRight: 15,
+        borderRadius: 20,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    cardTitle: {
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
     modalContainer: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        backgroundColor: 'rgba(0,0,0,0.5)',
     },
     modalContent: {
-        width: width * 0.8,
-        backgroundColor: '#fff',
-        borderRadius: 20,
+        width: '80%',
+        backgroundColor: '#ffffff',
         padding: 20,
+        borderRadius: 20,
         alignItems: 'center',
     },
     modalTitle: {
@@ -270,11 +312,12 @@ const styles = StyleSheet.create({
     },
     input: {
         width: '100%',
-        borderWidth: 1,
+        height: 40,
         borderColor: '#80D4FF',
+        borderWidth: 1,
         borderRadius: 10,
-        padding: 10,
-        marginBottom: 15,
+        paddingHorizontal: 10,
+        marginBottom: 10,
     },
     modalButtons: {
         flexDirection: 'row',
@@ -298,20 +341,11 @@ const styles = StyleSheet.create({
         padding: 10,
         borderRadius: 20,
         flex: 1,
+        marginLeft: 10,
         alignItems: 'center',
     },
     cancelButtonText: {
         color: '#fff',
         fontWeight: 'bold',
-    },
-    card: {
-        backgroundColor: '#80D4FF',
-        padding: 20,
-        borderRadius: 10,
-        marginRight: 10,
-    },
-    cardTitle: {
-        fontSize: 16,
-        color: '#fff',
     },
 });
