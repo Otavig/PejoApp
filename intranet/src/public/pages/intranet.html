@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intranet Pejo</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../../css/intranet.css">
+</head>
+
+<body>
+    <div class="loading" id="loading">
+        <svg class="pl" width="240" height="240" viewBox="0 0 240 240">
+            <circle class="pl__ring pl__ring--a" cx="120" cy="120" r="105" fill="none" stroke="#000" stroke-width="20"
+                stroke-dasharray="0 660" stroke-dashoffset="-330" stroke-linecap="round"></circle>
+            <circle class="pl__ring pl__ring--b" cx="120" cy="120" r="35" fill="none" stroke="#000" stroke-width="20"
+                stroke-dasharray="0 220" stroke-dashoffset="-110" stroke-linecap="round"></circle>
+            <circle class="pl__ring pl__ring--c" cx="85" cy="120" r="70" fill="none" stroke="#000" stroke-width="20"
+                stroke-dasharray="0 440" stroke-linecap="round"></circle>
+            <circle class="pl__ring pl__ring--d" cx="155" cy="120" r="70" fill="none" stroke="#000" stroke-width="20"
+                stroke-dasharray="0 440" stroke-linecap="round"></circle>
+        </svg>
+    </div>
+
+    <div id="bg-blur"></div>
+
+    <nav>
+        <h1>PejoControl</h1>
+
+        <div>
+            <a href="#" class="nav-link" data-target="dashboard">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M7 8V10C7 10.5523 7.44772 11 8 11H10C10.5523 11 11 10.5523 11 10V8C11 7.44771 10.5523 7 10 7H8C7.44772 7 7 7.44771 7 8Z"
+                        stroke="#2c4766" />
+                    <path
+                        d="M7 2.00001V4.00001C7 4.55229 7.44772 5.00001 8 5.00001H10C10.5523 5.00001 11 4.55229 11 4.00001V2.00001C11 1.44772 10.5523 1.00001 10 1.00001H8C7.44772 1.00001 7 1.44772 7 2.00001Z"
+                        stroke="#2c4766" />
+                    <path
+                        d="M1 2V4C1 4.55228 1.44772 5 2 5H4C4.55228 5 5 4.55228 5 4V2C5 1.44772 4.55228 1 4 1H2C1.44772 1 1 1.44772 1 2Z"
+                        stroke="#2c4766" />
+                    <path
+                        d="M1 8V10C1 10.5523 1.44772 11 2 11H4C4.55228 11 5 10.5523 5 10V8C5 7.44771 4.55228 7 4 7H2C1.44772 7 1 7.44771 1 8Z"
+                        stroke="#2c4766" />
+                </svg>
+                Dashboard
+            </a>
+            <a href="#" class="nav-link" data-target="desafios">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+                    <path
+                        d="M5 5C5 4.44772 4.55228 4 4 4C3.44772 4 3 4.44772 3 5L3 13.9998C3 13.9999 3 14.0001 3 14.0002V19C3 19.5523 3.44772 20 4 20H20C20.5523 20 21 19.5523 21 19C21 18.4477 20.5523 18 20 18H5V14.4142L9 10.4142L12.2929 13.7071C12.6834 14.0976 13.3166 14.0976 13.7071 13.7071L19 8.41421V11C19 11.5523 19.4477 12 20 12C20.5523 12 21 11.5523 21 11V6C21 5.44772 20.5523 5 20 5H15C14.4477 5 14 5.44772 14 6C14 6.55228 14.4477 7 15 7H17.5858L13 11.5858L9.70711 8.29289C9.31658 7.90237 8.68342 7.90237 8.29289 8.29289L5 11.5858V5Z"
+                        fill="#9F9F9F" />
+                </svg>
+                Desafios
+            </a>
+            <a href="#" class="nav-link" data-target="usuarios">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path
+                        d="M3.0156 10H6.99999M3.0156 10V6M3.0156 10L6.34315 6.34315C9.46734 3.21895 14.5327 3.21895 17.6569 6.34315C20.781 9.46734 20.781 14.5327 17.6569 17.6569C14.5327 20.781 9.46734 20.781 6.34315 17.6569C5.55928 16.873 4.97209 15.9669 4.58158 15M12 9V13L15 14.5"
+                        stroke="#9F9F9F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                Usuarios
+            </a>
+            <!-- <a href="#">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="#9F9F9F" viewBox="0 0 24 24">
+                    <path
+                        d="M20.89,9.78h-.65a1.16,1.16,0,0,1-1-.74V9a1.13,1.13,0,0,1,.22-1.26l.46-.46a1.13,1.13,0,0,0,0-1.58L18.29,4.14a1.13,1.13,0,0,0-1.58,0l-.46.46A1.13,1.13,0,0,1,15,4.82h0a1.16,1.16,0,0,1-.74-1V3.11A1.11,1.11,0,0,0,13.11,2H10.89A1.11,1.11,0,0,0,9.78,3.11v.65a1.16,1.16,0,0,1-.74,1H9A1.13,1.13,0,0,1,7.75,4.6l-.46-.46a1.13,1.13,0,0,0-1.58,0L4.14,5.71a1.13,1.13,0,0,0,0,1.58l.46.46A1.13,1.13,0,0,1,4.82,9V9a1.16,1.16,0,0,1-1,.74H3.11A1.11,1.11,0,0,0,2,10.89v2.22a1.11,1.11,0,0,0,1.11,1.11h.65a1.16,1.16,0,0,1,1,.74v0a1.13,1.13,0,0,1-.22,1.26l-.46.46a1.13,1.13,0,0,0,0,1.58l1.57,1.57a1.13,1.13,0,0,0,1.58,0l.46-.46A1.13,1.13,0,0,1,9,19.18H9a1.16,1.16,0,0,1,.74,1v.65A1.11,1.11,0,0,0,10.89,22h2.22a1.11,1.11,0,0,0,1.11-1.11v-.65a1.16,1.16,0,0,1,.74-1h0a1.13,1.13,0,0,1,1.26.22l.46.46a1.13,1.13,0,0,0,1.58,0l1.57-1.57a1.13,1.13,0,0,0,0-1.58l-.46-.46A1.13,1.13,0,0,1,19.18,15v0a1.16,1.16,0,0,1,1-.74h.65A1.11,1.11,0,0,0,22,13.11V10.89A1.11,1.11,0,0,0,20.89,9.78ZM12,16a4,4,0,1,1,4-4A4,4,0,0,1,12,16Z" />
+                </svg>
+                Settings
+            </a> -->
+        </div>
+        <span id="user-email"
+            style="color: #2c4766; font-weight: bold; text-align: center; margin-bottom: 20px;"></span>
+        <!-- Email Display -->
+        <button onclick="logout()">Sair</button>
+    </nav>
+
+    <!-- Contêiner Principal -->
+    <main>
+        <!-- Telas do painel -->
+        <div id="dashboard" class="screen">
+            <!-- <h2>Dashboard</h2>
+            <p>Bem-vindo ao painel de controle do Dashboard.</p> -->
+            <div class="card-container">
+                <div class="card"></div>
+                <div class="card"></div>
+            </div>            
+        </div>
+        <!-- Tela de Desafios -->
+        <div id="desafios" class="screen">
+            <div class="search-container ">
+                <input class="search" type="text" id="desafiosSearch" placeholder="Pesquisar Desafios" onkeyup="searchTable('desafiosTable', this.value)">
+                <button name="Criar um novo"><i class="fa fa-plus"></i></button>
+            </div>
+            <table id="desafiosTable">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Descrição</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Desafio 1</td>
+                        <td>Descrição do Desafio 1</td>
+                        <td>
+                            <button onclick="editItem('desafio1')">✏️</button>
+                            <button onclick="deleteItem('desafio1')">🗑️</button>
+                        </td>
+                    </tr>
+                    <!-- Adicione mais linhas conforme necessário -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Tela de Usuários -->
+        <div id="usuarios" class="screen">
+            <div class="search-container ">
+                <input class="search" type="text" id="desafiosSearch" placeholder="Pesquisar Desafios" onkeyup="searchTable('desafiosTable', this.value)">
+                <button>
+                    <i class="fa fa-plus"></i>
+                </button>
+            </div>
+            <table id="usuariosTable">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Email</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Usuário 1</td>
+                        <td>usuario1@exemplo.com</td>
+                        <td>
+                            <button onclick="editItem('usuario1')">✏️</button>
+                            <button onclick="deleteItem('usuario1')">🗑️</button>
+                        </td>
+                    </tr>
+                    <!-- Adicione mais linhas conforme necessário -->
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+
+    <script src="../../js/intranet.js"></script>
+</body>
+
+</html>
