@@ -20,9 +20,13 @@
             border-radius: 5px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
             text-align: center;
+            max-width: 400px;
+            width: 100%;
         }
         h1 {
             color: #0088CC;
+            font-size: 24px;
+            margin-bottom: 20px;
         }
         input {
             width: 100%;
@@ -40,6 +44,7 @@
             border-radius: 4px;
             cursor: pointer;
             transition: background-color 0.3s;
+            width: 100%;
         }
         button:hover {
             background-color: #006699;
@@ -87,17 +92,28 @@
 
         document.getElementById('resetForm').addEventListener('submit', function(e) {
             e.preventDefault();
+
             var newPassword = document.getElementById('newPassword').value;
             var confirmPassword = document.getElementById('confirmPassword').value;
             var errorMessage = document.getElementById('errorMessage');
 
+            // Limpar mensagens de erro anteriores
+            errorMessage.textContent = '';
+
+            // Verificação se as senhas coincidem
             if (newPassword !== confirmPassword) {
-                alert('As senhas não coincidem. Por favor, tente novamente.');
+                errorMessage.textContent = 'As senhas não coincidem. Por favor, tente novamente.';
                 return;
             }
 
             var urlParams = new URLSearchParams(window.location.search);
             var token = urlParams.get('token');
+
+            // Validar token
+            if (!token) {
+                errorMessage.textContent = 'Token de redefinição inválido.';
+                return;
+            }
 
             fetch('/reset-password', {
                 method: 'POST',
@@ -110,14 +126,14 @@
             .then(data => {
                 if (data.mensagem) {
                     alert('Senha redefinida com sucesso!');
-                    window.close();
+                    window.location.href = '/login';  // Redirecionar para a página de login
                 } else {
-                    alert('Erro ao redefinir senha: ' + (data.erro || 'Erro desconhecido'));
+                    errorMessage.textContent = data.erro || 'Erro desconhecido. Tente novamente mais tarde.';
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Erro ao redefinir senha. Por favor, tente novamente mais tarde.');
+                errorMessage.textContent = 'Erro ao redefinir senha. Por favor, tente novamente mais tarde.';
             });
         });
     </script>

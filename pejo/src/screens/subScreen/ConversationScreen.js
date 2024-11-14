@@ -7,7 +7,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'; // Import 
 
 import prohibitedWords from './../../assets/json/prohibitedWords.json';
 
-const socket = io('http://10.111.9.7:3000'); // Altere o endereço conforme necessário
+const socket = io('http://10.111.9.44:3000'); // Altere o endereço conforme necessário
 const SECRET_KEY = 'pejoapp_22_10_20024'; // A mesma chave usada no servidor
 
 const PROHIBITED_WORDS = prohibitedWords.words;

@@ -1,13 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, KeyboardAvoidingView, ScrollView, Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 export default function LoginScreen() {
     const navigation = useNavigation();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+
+    // Função para verificar se o valor digitado é um telefone ou e-mail
+    const handleInputChange = (inputValue) => {
+        setEmail(inputValue); // Atualiza o estado com o valor digitado (sem formatação)
+    };
 
     const handleLogin = async () => {
         if (!email || !password) {
@@ -16,7 +23,7 @@ export default function LoginScreen() {
         }
 
         try {
-            const response = await axios.post('http://10.111.9.61:3000/login', {
+            const response = await axios.post('http://10.111.9.44:3000/login', {
                 identificador: email,
                 senha: password
             });
@@ -30,12 +37,11 @@ export default function LoginScreen() {
                     return;
                 }
 
-                // Armazenando o token de usuário, o email e o nome
-                const userToken = Math.random().toString(36).substring(2); // Gera um token aleatório
-                await AsyncStorage.setItem('userToken', userToken); // Armazena o token
+                const userToken = Math.random().toString(36).substring(2);
+                await AsyncStorage.setItem('userToken', userToken); 
                 await AsyncStorage.setItem('userEmail', email);
-                await AsyncStorage.setItem('userName', nome); // Armazena o nome
-                navigation.navigate('HomeScreen', { userName: nome }); 
+                await AsyncStorage.setItem('userName', nome); 
+                navigation.navigate('HomeScreen', { userName: nome });
             }
         } catch (error) {
             console.error('Erro no login:', error);
@@ -46,7 +52,7 @@ export default function LoginScreen() {
     const checkLoginStatus = async () => {
         const userToken = await AsyncStorage.getItem('userToken');
         if (userToken) {
-            navigation.navigate('HomeScreen', { userName: nome });
+            navigation.navigate('HomeScreen');
         }
     };
 
@@ -55,28 +61,44 @@ export default function LoginScreen() {
     }, []);
 
     return (
-        <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-            <ScrollView contentContainerStyle={styles.scrollViewContent}>
-                <View style={styles.loginSection}>
-                    <Image style={styles.logo} source={require('../assets/PEJOTITLE.png')} />
-                    <TextInput style={styles.input} placeholder="Email ou Telefone" placeholderTextColor="#888" value={email} onChangeText={setEmail} />
-                    <TextInput style={styles.input} placeholder="Senha" placeholderTextColor="#888" secureTextEntry value={password} onChangeText={setPassword} />
-                    <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-                        <Text style={styles.loginButtonText}>Acessar</Text>
+        <ScrollView contentContainerStyle={styles.scrollViewContent}>
+            <View style={styles.loginSection}>
+                <Image style={styles.logo} source={require('../assets/PEJOTITLE.png')} />
+                <TextInput
+                    style={styles.input}
+                    placeholder="Email ou Telefone"
+                    placeholderTextColor="#888"
+                    value={email}
+                    onChangeText={handleInputChange}
+                />
+                <View style={styles.passwordContainer}>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Senha"
+                        placeholderTextColor="#888"
+                        secureTextEntry={!showPassword}
+                        value={password}
+                        onChangeText={setPassword}
+                    />
+                    <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeIcon}>
+                        <Icon name={showPassword ? 'eye' : 'eye-slash'} size={20} color="#3498db" />
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.forgotPasswordButton} onPress={() => navigation.navigate('ForgotPassword')}>
-                        <Text style={styles.forgotPasswordText}>Esqueci a Senha</Text>
-                    </TouchableOpacity>
-                    <View style={styles.separator} />
                 </View>
+                <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
+                    <Text style={styles.loginButtonText}>Acessar</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.forgotPasswordButton} onPress={() => navigation.navigate('ForgotPassword')}>
+                    <Text style={styles.forgotPasswordText}>Esqueci a Senha</Text>
+                </TouchableOpacity>
+                <View style={styles.separator} />
+            </View>
 
-                <View style={styles.footer}>
-                    <TouchableOpacity style={styles.createAccountButton} onPress={() => navigation.navigate('Register')}>
-                        <Text style={styles.createAccountText}>Não tem uma conta? Crie uma</Text>
-                    </TouchableOpacity>
-                </View>
-            </ScrollView>
-        </KeyboardAvoidingView>
+            <View style={styles.footer}>
+                <TouchableOpacity style={styles.createAccountButton} onPress={() => navigation.navigate('Register')}>
+                    <Text style={styles.createAccountText}>Não tem uma conta? Crie uma</Text>
+                </TouchableOpacity>
+            </View>
+        </ScrollView>
     );
 }
 
@@ -87,13 +109,15 @@ const styles = StyleSheet.create({
     },
     scrollViewContent: {
         flexGrow: 1,
-        justifyContent: 'center', // Mantém os itens centralizados
+        backgroundColor: '#ffffff',
+        justifyContent: 'center',
         paddingHorizontal: 30,
+        paddingBottom: 30,
     },
     logo: {
         height: 200,
         width: 200,
-        marginBottom: 0,
+        marginBottom: 20,
     },
     loginSection: {
         flex: 1,
@@ -112,8 +136,18 @@ const styles = StyleSheet.create({
         marginBottom: 15,
         color: '#333',
     },
+    passwordContainer: {
+        position: 'relative',
+        width: '100%',
+    },
+    eyeIcon: {
+        position: 'absolute',
+        right: 20,
+        top: '35%',
+        transform: [{ translateY: -10 }],
+    },
     loginButton: {
-        backgroundColor: '#3897f0', // Azul vibrante
+        backgroundColor: '#3897f0',
         borderRadius: 10,
         paddingVertical: 12,
         width: '100%',
@@ -133,7 +167,7 @@ const styles = StyleSheet.create({
         marginTop: 15,
     },
     forgotPasswordText: {
-        color: '#0277BD', 
+        color: '#0277BD',
         fontSize: 16,
         fontWeight: 'bold',
     },
@@ -145,7 +179,7 @@ const styles = StyleSheet.create({
     },
     footer: {
         paddingHorizontal: 30,
-        paddingBottom: 20, 
+        paddingBottom: 20,
     },
     createAccountButton: {
         backgroundColor: '#ffffff',
@@ -156,7 +190,7 @@ const styles = StyleSheet.create({
         borderColor: '#ddd',
     },
     createAccountText: {
-        color: '#0277BD', 
+        color: '#0277BD',
         fontSize: 14,
         fontWeight: 'bold',
     },

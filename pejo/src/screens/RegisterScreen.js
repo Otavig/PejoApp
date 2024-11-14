@@ -12,14 +12,12 @@ export default function RegisterScreen() {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const navigation = useNavigation();
 
     // Função para formatar a data no formato 'DD/MM/YYYY'
     const handleDateChange = (text) => {
-        // Filtra apenas números
         const formattedDate = text.replace(/\D/g, '');
-
-        // Formata a data no formato 'DD/MM/YYYY'
         if (formattedDate.length <= 2) {
             setBirthDate(formattedDate);
         } else if (formattedDate.length <= 4) {
@@ -29,7 +27,22 @@ export default function RegisterScreen() {
         }
     };
 
-    // Função para verificar se a data de nascimento é válida
+    // Função para formatar o número de telefone no formato (XX) XXXXX-XXXX
+    const handlePhoneChange = (text) => {
+        // Remove todos os caracteres não numéricos
+        const phoneNumber = text.replace(/\D/g, '');
+        
+        // Formata o número conforme o padrão (XX) XXXXX-XXXX
+        if (phoneNumber.length <= 2) {
+            setPhone(`(${phoneNumber}`);
+        } else if (phoneNumber.length <= 7) {
+            setPhone(`(${phoneNumber.slice(0, 2)}) ${phoneNumber.slice(2)}`);
+        } else {
+            setPhone(`(${phoneNumber.slice(0, 2)}) ${phoneNumber.slice(2, 7)}-${phoneNumber.slice(7, 11)}`);
+        }
+    };
+
+    // Função para calcular a idade
     const calculateAge = (birthDate) => {
         const [day, month, year] = birthDate.split('/');
         const birth = new Date(`${year}-${month}-${day}`);
@@ -49,60 +62,63 @@ export default function RegisterScreen() {
     };
 
     // Função para verificar se a senha é forte o suficiente
-const isStrongPassword = (password) => {
-    const passwordRegex = /^(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{6,}$/;
-    return passwordRegex.test(password);
-};
-
-// Função para registrar o usuário
-const handleRegister = async () => {
-    if (!isStrongPassword(password)) {
-        Alert.alert('Erro', 'A senha deve ter no mínimo 6 caracteres, incluir pelo menos um número e uma letra maiúscula.');
-        return;
-    }
-
-    if (password !== confirmPassword) {
-        Alert.alert('Erro', 'As senhas não coincidem.');
-        return;
-    }
-
-    if (!isValidEmail(email)) {
-        Alert.alert('Erro', 'Por favor, insira um email válido.');
-        return;
-    }
-
-    if (name === '' || email === '' || phone === '' || birthDate === '' || password === '' || confirmPassword === '') {
-        Alert.alert('Erro', 'Todos os campos devem ser preenchidos.');
-        return;
-    }
-
-    const age = calculateAge(birthDate);
-    if (age < 16) {
-        Alert.alert('Erro', 'Você deve ter no mínimo 16 anos para se registrar.');
-        return;
-    }
-
-    const [day, month, year] = birthDate.split('/');
-    const formattedBirthDate = `${year}-${month}-${day}`;
-
-    const data = {
-        nome: name,
-        email: email,
-        senha: password,
-        telefone: phone,
-        data_nascimento: formattedBirthDate,
-        tipo_usuario: 'confirmação',
+    const isStrongPassword = (password) => {
+        const passwordRegex = /^(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{6,}$/;
+        return passwordRegex.test(password);
     };
 
-    try {
-        const response = await axios.post('http://10.111.9.61:3000/register', data);
-        Alert.alert('Sucesso', response.data.mensagem);
-        navigation.navigate('Login');
-    } catch (error) {
-        console.error('Erro ao registrar:', error);
-        Alert.alert('Erro', 'Ocorreu um erro ao registrar, tente novamente.');
-    }
-};
+    // Função para registrar o usuário
+    const handleRegister = async () => {
+        if (!isStrongPassword(password)) {
+            Alert.alert('Erro', 'A senha deve ter no mínimo 6 caracteres, incluir pelo menos um número e uma letra maiúscula.');
+            return;
+        }
+
+        if (password !== confirmPassword) {
+            Alert.alert('Erro', 'As senhas não coincidem.');
+            return;
+        }
+
+        if (!isValidEmail(email)) {
+            Alert.alert('Erro', 'Por favor, insira um email válido.');
+            return;
+        }
+
+        if (name === '' || email === '' || phone === '' || birthDate === '' || password === '' || confirmPassword === '') {
+            Alert.alert('Erro', 'Todos os campos devem ser preenchidos.');
+            return;
+        }
+
+        const age = calculateAge(birthDate);
+        if (age < 16) {
+            Alert.alert('Erro', 'Você deve ter no mínimo 16 anos para se registrar.');
+            return;
+        }
+
+        const [day, month, year] = birthDate.split('/');
+        const formattedBirthDate = `${year}-${month}-${day}`;
+
+        // Remover formatação do telefone antes de enviar
+        const rawPhone = phone.replace(/\D/g, '');
+
+        const data = {
+            nome: name,
+            email: email,
+            senha: password,
+            telefone: rawPhone, // Enviando o telefone sem formatação
+            data_nascimento: formattedBirthDate,
+            tipo_usuario: 'confirmação',
+        };
+
+        try {
+            const response = await axios.post('http://10.111.9.44:3000/register', data);
+            Alert.alert('Sucesso', response.data.mensagem);
+            navigation.navigate('Login');
+        } catch (error) {
+            console.error('Erro ao registrar:', error);
+            Alert.alert('Erro', 'Ocorreu um erro ao registrar, tente novamente.');
+        }
+    };
 
     return (
         <ScrollView contentContainerStyle={styles.container}>
@@ -130,7 +146,8 @@ const handleRegister = async () => {
                     style={styles.input}
                     placeholder="Telefone"
                     value={phone}
-                    onChangeText={setPhone}
+                    onChangeText={handlePhoneChange}  // Atualizando a função de telefone
+                    keyboardType="numeric"
                 />
                 <TextInput
                     style={styles.input}
@@ -157,10 +174,10 @@ const handleRegister = async () => {
                         placeholder="Confirmar Senha"
                         value={confirmPassword}
                         onChangeText={setConfirmPassword}
-                        secureTextEntry={!showPassword}
+                        secureTextEntry={!showConfirmPassword} // Agora é controlado por showConfirmPassword
                     />
-                    <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.iconButton}>
-                        <Icon name={showPassword ? 'eye' : 'eye-slash'} size={20} color="#3498db" />
+                    <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)} style={styles.iconButton}>
+                        <Icon name={showConfirmPassword ? 'eye' : 'eye-slash'} size={20} color="#3498db" />
                     </TouchableOpacity>
                 </View>
                 <TouchableOpacity onPress={handleRegister} style={styles.registerButton}>

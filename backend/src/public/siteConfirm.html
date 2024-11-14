@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,16 +15,19 @@
             margin: 0;
             background-color: #f0f0f0;
         }
+
         .container {
             background-color: white;
             padding: 2rem;
             border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             text-align: center;
         }
+
         h1 {
             color: #0088CC;
         }
+
         button {
             background-color: #0088CC;
             color: white;
@@ -32,12 +36,14 @@
             border-radius: 4px;
             cursor: pointer;
         }
+
         #message {
             margin-top: 1rem;
             font-weight: bold;
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>Confirmar E-mail</h1>
@@ -52,30 +58,39 @@
             const token = urlParams.get('token');
             const messageElement = document.getElementById('message');
 
+            if (!token) {
+                messageElement.style.color = 'red';
+                messageElement.textContent = 'Token inválido. Não foi possível confirmar o e-mail.';
+                return;
+            }
+
             try {
+                // Enviar o token para o backend para validação
                 const response = await fetch('/confirm-email', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ token }),
+                    body: JSON.stringify({ token })
                 });
 
                 const data = await response.json();
 
                 if (response.ok) {
                     messageElement.style.color = 'green';
-                    alert(data.mensagem);
-                    window.close();
+                    alert(data.mensagem);  // Alerta de sucesso
+                    window.close();  // Fecha a janela após confirmação
                 } else {
                     messageElement.style.color = 'red';
-                    messageElement.textContent = data.erro;
+                    messageElement.textContent = data.erro;  // Exibe erro
                 }
             } catch (error) {
                 messageElement.style.color = 'red';
-                messageElement.textContent = 'Erro ao confirmar e-mail. Tente novamente.';
+                messageElement.textContent = 'Erro ao confirmar e-mail. Tente novamente.';  // Exibe erro se não conseguir fazer a requisição
             }
         }
+
     </script>
 </body>
+
 </html>

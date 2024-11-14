@@ -15,9 +15,10 @@ require('dotenv').config();
 const db = mysql.createConnection({
     host: "localhost",
     user: "root",
-    password: "root",
+    password: "",
     database: "db_pejo"
 });
+
 
 db.connect((err) => {
     if (err) {
@@ -39,6 +40,9 @@ const transporter = nodemailer.createTransport({
         user: "pejoapp@gmail.com",
         pass: "ebwh dzei junm ypev",
     },
+    tls: {
+        rejectUnauthorized: false  // Ignorar problemas com certificados SSL (use com cuidado)
+    }
 });
 
 // Função para enviar email de confirmação
@@ -64,6 +68,7 @@ const sendConfirmationEmail = async (email, nome, confirmationLink) => {
         console.error('Erro ao enviar email de confirmação:', error);
     }
 };
+
 
 // Função para registrar usuário
 const register = async (req, res) => {
@@ -102,7 +107,7 @@ const register = async (req, res) => {
                     return res.status(500).json({ erro: 'Erro ao registrar usuário' });
                 }
 
-                const confirmationLink = `http://10.111.9.61:3000/confirm-email?token=${confirmationToken}`;
+                const confirmationLink = `http://10.111.9.44:3000/confirm-email?token=${confirmationToken}`;
                 await sendConfirmationEmail(email, nome, confirmationLink);
 
                 res.json({ mensagem: 'Usuário registrado com sucesso. Verifique seu e-mail para confirmar.' });
@@ -117,30 +122,33 @@ const register = async (req, res) => {
 
 // Função para confirmar o e-mail
 const confirmEmail = async (req, res) => {
-    const { token } = req.body;
+    const { token } = req.query;
 
     if (!token) {
-        return res.status(400).json({ erro: 'Token não fornecido. Acesso negado.' });
+        return res.status(400).send('Token não fornecido. Acesso negado.');
     }
 
+    // Verificar o token no banco de dados
     const query = 'SELECT * FROM usuarios WHERE token_confirmacao_email = ? AND token_expiration > ?';
     db.query(query, [token, new Date()], async (err, results) => {
         if (err || results.length === 0) {
-            return res.status(400).json({ erro: 'Link inválido ou expirado. Acesso negado.' });
+            return res.status(400).send('Link inválido ou expirado. Acesso negado.');
         }
 
-        // Token válido, atualizar o status do e-mail e tipo de usuário
+        // Token válido, atualizar o status do e-mail
         const updateQuery = 'UPDATE usuarios SET status_email = 1, tipo_usuario = "usuario", token_confirmacao_email = NULL WHERE token_confirmacao_email = ?';
         db.query(updateQuery, [token], (err) => {
             if (err) {
                 console.error('Erro ao atualizar status do e-mail:', err);
-                return res.status(500).json({ erro: 'Erro ao confirmar e-mail' });
+                return res.status(500).send('Erro ao confirmar e-mail.');
             }
 
-            res.json({ mensagem: 'E-mail confirmado com sucesso!' });
+            // Enviar o arquivo HTML de confirmação
+            res.sendFile(path.join(__dirname, 'public', 'confirm-email.html'));
         });
     });
 };
+
 
 // Função para login
 const login = (req, res) => {
@@ -185,24 +193,36 @@ const adminLogin = (req, res) => {
     });
 };
 
-// Rota pegar desafio diario
+// Rota para pegar desafios diários
 const getDesafios = (req, res) => {
-    const query = 'SELECT * FROM desafios;';
+    // Consulta para pegar os desafios diários ativos ('ativado') que estão disponíveis
+    const query = `
+        SELECT d.* 
+        FROM desafios d
+        WHERE d.estado = 'ativado'
+          AND d.tipo = 'diario'
+        ORDER BY RAND()  -- Pode ajustar para pegar desafios aleatórios
+        LIMIT 5;  -- Ajuste conforme necessário
+    `;
+
     db.query(query, (err, results) => {
         if (err) {
-            return res.status(500).json({ erro: 'Erro ao receber dados' });
-        }
-        
-        if (results.length === 0) {
-            return res.status(404).json({ erro: 'Desafios não encontrados' });
+            console.error('Erro ao buscar desafios:', err);
+            return res.status(500).json({ error: 'Erro ao buscar desafios' });
         }
 
-        // Retorna a lista de desafios
-        res.status(200).json({ mensagem: 'Dados Recebidos', desafios: results });
+        if (results.length > 0) {
+            // Retorna os desafios para o frontend
+            res.json(results);
+        } else {
+            res.json([]);  // Caso não tenha desafios disponíveis
+        }
     });
 };
 
+
 // Função para enviar e-mail de recuperação de senha
+// Função para enviar o e-mail de recuperação de senha
 const sendPasswordResetEmail = async (email, token) => {
     const mailOptions = {
         from: 'pejoapp@gmail.com',
@@ -212,7 +232,7 @@ const sendPasswordResetEmail = async (email, token) => {
             <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ccc; border-radius: 5px;">
                 <h2 style="color: #2196F3;">Redefinição de Senha</h2>
                 <p>Você solicitou a redefinição de sua senha. Clique no link abaixo para redefinir sua senha:</p>
-                <a href="http://10.111.9.61:3000/reset-password?token=${token}" style="background-color: #2196F3; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px;">Redefinir Senha</a>
+                <a href="http://10.111.9.44:3000/reset-password?token=${token}" style="background-color: #2196F3; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px;">Redefinir Senha</a>
                 <p>Se você não solicitou essa mudança, ignore este e-mail.</p>
             </div>
         `,
@@ -225,6 +245,7 @@ const sendPasswordResetEmail = async (email, token) => {
         console.error('Erro ao enviar e-mail de recuperação de senha:', error);
     }
 };
+
 
 // Rota para solicitar recuperação de senha
 const forgot_password = async (req, res) => {
@@ -244,12 +265,34 @@ const forgot_password = async (req, res) => {
     });
 };
 
+// Rota pegar desafios no intranet
+const getDesafiosIntra = async (req, res) => {
+    const query = 'SELECT * FROM desafios';
+    db.query(query, (err, results) => {
+      if (err) {
+        return res.status(500).json({ error: 'Erro ao consultar desafios', details: err });
+      }
+      res.json(results);  // Retorna os dados em formato JSON
+    });
+};
+
+// Rota pegar usuarios no intranet
+const getUsuariosIntra = async (req, res) => {
+    const query = 'SELECT * FROM usuarios';
+    db.query(query, (err, results) => {
+      if (err) {
+        return res.status(500).json({ error: 'Erro ao consultar usuários', details: err });
+      }
+      res.json(results);  // Retorna os dados em formato JSON
+    });
+};
+
 // Rota para redefinir a senha
 const resetPassword = async (req, res) => {
     const { token, newPassword } = req.body;
 
     // Verificar se o token é válido
-    const query = 'SELECT * FROM usuarios WHERE token_recuperacao_senha = ? AND token_expirate > ?';
+    const query = 'SELECT * FROM usuarios WHERE token_recuperacao_senha = ? AND token_expiration > ?';
     db.query(query, [token, new Date()], async (err, results) => {
         if (err || results.length === 0) {
             return res.status(400).json({ erro: 'Token inválido ou expirado.' });
@@ -291,6 +334,8 @@ app.get('/desafios', getDesafios);
 app.post('/forgot-password', forgot_password);
 app.post('/reset-password', resetPassword);
 app.post('/admin-login', adminLogin);
+app.get('/intra/getDesafios', getDesafiosIntra)
+app.get('/intra/getUsuarios', getUsuariosIntra)
 
 io.on('connection', (socket) => {
     console.log('Novo cliente conectado');
