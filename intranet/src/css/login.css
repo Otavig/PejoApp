@@ -12,7 +12,7 @@ body{
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    background: #000000;
+    background: linear-gradient(135deg, #1f293a, rgb(22, 22, 22));
 }
 
 .container{

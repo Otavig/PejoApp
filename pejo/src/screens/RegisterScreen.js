@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, Dimensions } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import axios from 'axios';
@@ -14,6 +14,7 @@ export default function RegisterScreen() {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const navigation = useNavigation();
+    const { width, height } = Dimensions.get('window');
 
     // Função para formatar a data no formato 'DD/MM/YYYY'
     const handleDateChange = (text) => {
@@ -111,7 +112,7 @@ export default function RegisterScreen() {
         };
 
         try {
-            const response = await axios.post('http://10.111.9.44:3000/register', data);
+            const response = await axios.post('http://192.168.0.100:3000/register', data);
             Alert.alert('Sucesso', response.data.mensagem);
             navigation.navigate('Login');
         } catch (error) {
@@ -188,7 +189,7 @@ export default function RegisterScreen() {
             {/* Footer Section */}
             <View style={styles.footer}>
                 <TouchableOpacity style={styles.loginAccountButton} onPress={() => navigation.navigate('Login')}>
-                    <Text style={styles.loginAccountText}>Já tem uma conta? Entre</Text>
+                    <Text style={styles.loginAccountText}>Já tem uma conta?</Text>
                 </TouchableOpacity>
             </View>
         </ScrollView>
@@ -229,9 +230,9 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         width: '100%',
         borderRadius: 5,
-        paddingVertical: 10,
-        paddingHorizontal: 20,
-        fontSize: 16,
+        paddingVertical: height * 0.02,
+        paddingHorizontal: width * 0.05,
+        fontSize: width * 0.04,
         marginBottom: 15,
         color: '#333',
     },
@@ -248,10 +249,10 @@ const styles = StyleSheet.create({
     registerButton: {
         backgroundColor: '#3897f0',
         borderRadius: 10,
-        paddingVertical: 12,
+        paddingVertical: height * 0.02,
         width: '100%',
         alignItems: 'center',
-        marginVertical: 10,
+        marginVertical: height * 0.02,
         shadowColor: '#3897f0',
         shadowOpacity: 0.3,
         shadowRadius: 5,
@@ -277,6 +278,6 @@ const styles = StyleSheet.create({
     loginAccountText: {
         color: '#3498db',
         fontSize: 16,
-        fontWeight: 'bold',
+        // fontWeight: 'bold',
     },
 });

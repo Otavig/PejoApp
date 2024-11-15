@@ -18,8 +18,8 @@ import EditProfile from './src/screens/subScreen/EditProfile'
 import EventList from './src/screens/subScreen/EventList'
 import ContractScreen from './src/screens/subScreen/ContractScreen'
 import LoginScreen from './src/screens/LoginScreen'; // Importando a tela de login
-import RegisterScreen from './src/screens/RegisterScreen'; // Importando a tela de registro
-import ForgotScreen from './src/screens/ForgotScreen'; // Adicionando a tela de esqueci a senha
+// import RegisterScreen from './src/screens/RegisterScreen'; // Importando a tela de registro
+// import ForgotScreen from './src/screens/ForgotScreen'; // Adicionando a tela de esqueci a senha
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -29,19 +29,7 @@ function TabNavigator() {
     <Tab.Navigator
       screenOptions={{
         tabBarStyle: { 
-          position: 'absolute', // Deixa a barra flutuante
-          backgroundColor: 'rgba(255, 255, 255, 0.85)', // Fundo branco com transparência
-          bottom: 20, // Eleva a barra em relação ao fundo
-          marginHorizontal: 20, // Margem lateral para deixar a barra menor
-          borderRadius: 25, // Borda arredondada para efeito de pill
-          height: 60, // Altura da barra
-          shadowColor: '#000', // Configurações de sombra para iOS
-          shadowOffset: { width: 0, height: 5 },
-          shadowOpacity: 0.15,
-          shadowRadius: 5,
-          elevation: 10, // Elevação para Android
-          borderWidth: 1,
-          borderColor: 'rgba(255, 255, 255, 0.2)', // Borda sutil
+          height: 60,
         },
         tabBarActiveTintColor: '#3641bf', // Cor para o ícone ativo
         tabBarInactiveTintColor: '#8E8E93', // Cor para o ícone inativo
@@ -54,7 +42,7 @@ function TabNavigator() {
         options={{ 
           headerShown: false,
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home-outline" size={size} color={color} />
+            <Ionicons name="home-outline" size={size * 1.1} color={color} />
           )
         }} 
       />
@@ -64,7 +52,7 @@ function TabNavigator() {
         options={{ 
           headerShown: false,
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person-circle-outline" size={size} color={color} />
+            <Ionicons name="person-circle-outline" size={size * 1.1} color={color} />
           )
         }} 
       />
@@ -74,7 +62,7 @@ function TabNavigator() {
         options={{ 
           headerShown: false,
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="calendar-outline" size={size} color={color} />
+            <Ionicons name="calendar-outline" size={size * 1.1} color={color} />
           )
         }} 
       />
@@ -91,11 +79,11 @@ export default function App() {
           component={LoginScreen} 
           options={{ headerShown: false }} 
         />
-        <Stack.Screen 
+        {/* <Stack.Screen 
           name="Register" 
           component={RegisterScreen} 
           options={{ title: 'Registrar', headerShown: false }} // Removendo o cabeçalho
-        />
+        /> */}
         <Stack.Screen 
           name="HomeScreen" 
           component={TabNavigator} 
@@ -136,10 +124,18 @@ export default function App() {
           component={ContractScreen} 
           options={{ title: 'Contrate um serviço' }} 
         />
-        <Stack.Screen 
+        {/* <Stack.Screen 
           name="ForgotPassword" // Adicionando a tela de esqueci a senha
           component={ForgotScreen} 
           options={{ title: 'Esqueci a Senha', headerShown: false }} 
+        /> */}
+        <Stack.Screen 
+          name="ProfileScreen" 
+          component={ProfileScreen} 
+          options={{ 
+            title: 'Perfil', 
+            headerShown: false 
+          }} 
         />
       </Stack.Navigator>
       <StatusBar style="auto" />

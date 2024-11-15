@@ -1,38 +1,75 @@
-
-import React from 'react';
-import { View, Text, StyleSheet, Image, TextInput, Switch, ScrollView } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, Image, ScrollView } from 'react-native';
 import { ProgressBar } from 'react-native-paper'; 
-import Icon from 'react-native-vector-icons/Ionicons'; // Importando a biblioteca de ícones
-import { useNavigation } from '@react-navigation/native'; // Importando o hook de navegação
+import Icon from 'react-native-vector-icons/Ionicons'; 
+import { useNavigation } from '@react-navigation/native'; 
 import AsyncStorage from '@react-native-async-storage/async-storage'; 
+import axios from 'axios';
 
 export default function ProfileScreen() {
-    const navigation = useNavigation(); // Hook de navegação
+    const navigation = useNavigation(); 
+    const [userData, setUserData] = useState(null);
 
-    // Função para deslogar o usuário
+    const fetchUserData = async () => {
+        const userId = await AsyncStorage.getItem('userId');
+        if (!userId) {
+            console.error('ID do usuário não encontrado. Redirecionando para a tela de login.');
+            await AsyncStorage.clear();
+            navigation.navigate('Login'); // Redireciona para a tela de login
+            return; // Sai da função se o ID for nulo
+        }
+        try {
+            const response = await axios.get(`http://192.168.0.100:3000/user/${userId}`);
+            setUserData({
+                id: response.data.id,
+                level: response.data.nivel,
+                name: response.data.nome,
+                email: response.data.email,
+                phone: response.data.telefone,
+                birthDate: response.data.data_nascimento,
+                bio: response.data.bio,
+                profileImage: response.data.profileImage,
+            });
+        } catch (error) {
+            if (error.response && error.response.status === 404) {
+                console.error('Usuário não encontrado. Verifique o ID do usuário:', userId);
+            } else {
+                console.error('Erro ao buscar dados do usuário:', error);
+            }
+        }
+    };
+
     const handleLogout = async () => {
-        await AsyncStorage.removeItem('userToken'); 
-        await AsyncStorage.clear(); 
-        navigation.navigate('Login'); 
+        // Clear all user data from AsyncStorage
+        await AsyncStorage.clear();
+        // Navigate to the login screen
+        navigation.navigate('Login');
     };
 
-    // Exemplo de dados do usuário
-    const userData = {
-        name: "Blake Pham",
-        birthDate: "01/01/1990",
-        age: 33,
-        email: "blake@example.com",
-        phone: "123-456-7890",
-        level: 60, 
-        bio: "This is a bio", // Adicionando a bio
+    const formatDate = (dateString) => {
+        const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
+        const date = new Date(dateString);
+        return date.toLocaleDateString('pt-BR', options).replace(/\//g, '/');
     };
+
+    useEffect(() => {
+        const unsubscribe = navigation.addListener('focus', () => {
+            fetchUserData(); // Chama a função sempre que a tela é focada
+        });
+
+        return unsubscribe; // Limpa o listener ao desmontar
+    }, [navigation]);
+
+    if (!userData) {
+        return <Text>Carregando...</Text>;
+    }
 
     return (
         <ScrollView style={styles.container}>
             <View style={[styles.profileContainer, {marginTop: 100}]}>
                 <Image
                     style={styles.profileImage}
-                    source={{ uri: 'https://example.com/profile-picture.jpg' }} 
+                    source={{ uri: userData.profileImage || 'https://example.com/default-profile-picture.jpg' }}
                 />
             </View>
 
@@ -42,7 +79,7 @@ export default function ProfileScreen() {
             </View>
 
             <View style={styles.section}>
-                <Text style={styles.label}>Level 50</Text>
+                <Text style={styles.label}>Level {userData.level}</Text>
                 <ProgressBar progress={userData.level / 100} color="#0088CC" style={styles.progressBar} />
                 <Text style={styles.info}>{userData.level}%</Text>
             </View>
@@ -59,7 +96,7 @@ export default function ProfileScreen() {
 
             <View style={styles.section}>
                 <Text style={styles.label}>Aniversário</Text>  
-                <Text style={styles.info}>{userData.birthDate}</Text>
+                <Text style={styles.info}>{formatDate(userData.birthDate)}</Text>
             </View>
 
             <View style={styles.section}>
@@ -79,7 +116,7 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#abd4ff',
+        backgroundColor: 'white',
     },
     header: {
         backgroundColor: '#666',

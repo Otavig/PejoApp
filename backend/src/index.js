@@ -10,12 +10,13 @@ const socketIo = require('socket.io');
 const bodyParser = require('body-parser');
 const path = require('path');
 require('dotenv').config();
+const multer = require('multer');
 
 // Criação da conexão com o banco de dados
 const db = mysql.createConnection({
     host: "localhost",
     user: "root",
-    password: "",
+    password: "root",
     database: "db_pejo"
 });
 
@@ -100,14 +101,14 @@ const register = async (req, res) => {
             const tokenExpiration = new Date(Date.now() + 15 * 60 * 1000);
 
             const query = 'INSERT INTO usuarios (nome, email, senha, telefone, data_nascimento, token_confirmacao_email, token_expiration) VALUES (?, ?, ?, ?, ?, ?, ?)';
-            
+
             db.query(query, [nome, email, hashedPassword, telefone, formattedDate, confirmationToken, tokenExpiration], async (err, result) => {
                 if (err) {
                     console.error('Erro ao registrar usuário:', err);
                     return res.status(500).json({ erro: 'Erro ao registrar usuário' });
                 }
 
-                const confirmationLink = `http://10.111.9.44:3000/confirm-email?token=${confirmationToken}`;
+                const confirmationLink = `http://192.168.0.100:3000/reset-password?token=${confirmationToken}`;
                 await sendConfirmationEmail(email, nome, confirmationLink);
 
                 res.json({ mensagem: 'Usuário registrado com sucesso. Verifique seu e-mail para confirmar.' });
@@ -122,7 +123,7 @@ const register = async (req, res) => {
 
 // Função para confirmar o e-mail
 const confirmEmail = async (req, res) => {
-    const { token } = req.query;
+    const { token } = req.body;
 
     if (!token) {
         return res.status(400).send('Token não fornecido. Acesso negado.');
@@ -144,7 +145,7 @@ const confirmEmail = async (req, res) => {
             }
 
             // Enviar o arquivo HTML de confirmação
-            res.sendFile(path.join(__dirname, 'public', 'confirm-email.html'));
+            res.sendFile(path.join(__dirname, 'public', 'siteConfirm.html'));
         });
     });
 };
@@ -194,7 +195,7 @@ const adminLogin = (req, res) => {
 };
 
 // Rota para pegar desafios diários
-const getDesafios = (req, res) => {
+const getDesafiosApp = (req, res) => {
     // Consulta para pegar os desafios diários ativos ('ativado') que estão disponíveis
     const query = `
         SELECT d.* 
@@ -220,6 +221,63 @@ const getDesafios = (req, res) => {
     });
 };
 
+const getDesafioIntra = (req, res) => {
+    const { id } = req.params; // Obtém o ID do desafio da URL
+    const query = 'SELECT * FROM desafios WHERE id = ?';
+
+    db.query(query, [id], (err, results) => {
+        if (err) {
+            console.error('Erro ao buscar desafio:', err);
+            return res.status(500).json({ error: 'Erro ao buscar desafio' });
+        }
+        if (results.length === 0) {
+            return res.status(404).json({ error: 'Desafio não encontrado' });
+        }
+        res.json(results[0]); // Retorna o desafio encontrado
+    });
+};
+
+// Rota para atualizar um desafio
+const updateDesafio = (req, res) => {
+    const { id } = req.params; // Obtém o ID do desafio da URL
+    const { titulo, descricao, estado, tipo, nivel } = req.body; // Obtém os dados do desafio a serem atualizados
+
+    const query = 'UPDATE desafios SET titulo = ?, descricao = ?, estado = ?, tipo = ?, nivel = ? WHERE id = ?';
+    db.query(query, [titulo, descricao, estado, tipo, nivel, id], (err) => {
+        if (err) {
+            console.error('Erro ao atualizar desafio:', err);
+            return res.status(500).json({ error: 'Erro ao atualizar desafio' });
+        }
+        res.json({ mensagem: 'Desafio atualizado com sucesso.' });
+    });
+};
+
+const deleteUsuario = (req, res) => {
+    const { id } = req.params; // Obtém o ID do usuário da URL
+    const query = 'DELETE FROM usuarios WHERE id = ?';
+
+    db.query(query, [id], (err) => {
+        if (err) {
+            console.error('Erro ao deletar usuário:', err);
+            return res.status(500).json({ error: 'Erro ao deletar usuário' });
+        }
+        res.json({ mensagem: 'Usuário deletado com sucesso.' });
+    });
+};
+
+// Rota para deletar um desafio
+const deleteDesafio = (req, res) => {
+    const { id } = req.params; // Obtém o ID do desafio da URL
+    const query = 'DELETE FROM desafios WHERE id = ?';
+
+    db.query(query, [id], (err) => {
+        if (err) {
+            console.error('Erro ao deletar desafio:', err);
+            return res.status(500).json({ error: 'Erro ao deletar desafio' });
+        }
+        res.json({ mensagem: 'Desafio deletado com sucesso.' });
+    });
+};
 
 // Função para enviar e-mail de recuperação de senha
 // Função para enviar o e-mail de recuperação de senha
@@ -232,7 +290,7 @@ const sendPasswordResetEmail = async (email, token) => {
             <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ccc; border-radius: 5px;">
                 <h2 style="color: #2196F3;">Redefinição de Senha</h2>
                 <p>Você solicitou a redefinição de sua senha. Clique no link abaixo para redefinir sua senha:</p>
-                <a href="http://10.111.9.44:3000/reset-password?token=${token}" style="background-color: #2196F3; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px;">Redefinir Senha</a>
+                <a href="http://192.168.0.100:3000/reset-password?token=${token}" style="background-color: #2196F3; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px;">Redefinir Senha</a>
                 <p>Se você não solicitou essa mudança, ignore este e-mail.</p>
             </div>
         `,
@@ -266,24 +324,24 @@ const forgot_password = async (req, res) => {
 };
 
 // Rota pegar desafios no intranet
-const getDesafiosIntra = async (req, res) => {
+const getDesafios = async (req, res) => {
     const query = 'SELECT * FROM desafios';
     db.query(query, (err, results) => {
-      if (err) {
-        return res.status(500).json({ error: 'Erro ao consultar desafios', details: err });
-      }
-      res.json(results);  // Retorna os dados em formato JSON
+        if (err) {
+            return res.status(500).json({ error: 'Erro ao consultar desafios', details: err });
+        }
+        res.json(results);  // Retorna os dados em formato JSON
     });
 };
 
 // Rota pegar usuarios no intranet
-const getUsuariosIntra = async (req, res) => {
+const getUsuarios = async (req, res) => {
     const query = 'SELECT * FROM usuarios';
     db.query(query, (err, results) => {
-      if (err) {
-        return res.status(500).json({ error: 'Erro ao consultar usuários', details: err });
-      }
-      res.json(results);  // Retorna os dados em formato JSON
+        if (err) {
+            return res.status(500).json({ error: 'Erro ao consultar usuários', details: err });
+        }
+        res.json(results);  // Retorna os dados em formato JSON
     });
 };
 
@@ -318,6 +376,66 @@ const resetPassword = async (req, res) => {
     });
 };
 
+// Rota para obter informações do usuário pelo ID
+const getUserById = (req, res) => {
+    const { id } = req.params; // Obtém o ID do usuário da URL
+    const query = 'SELECT * FROM usuarios WHERE id = ?';
+
+    db.query(query, [id], (err, results) => {
+        if (err) {
+            console.error('Erro ao buscar usuário:', err);
+            return res.status(500).json({ error: 'Erro ao buscar usuário' });
+        }
+        if (results.length === 0) {
+            return res.status(404).json({ error: 'Usuário não encontrado' });
+        }
+        res.json(results[0]); // Retorna o usuário encontrado
+    });
+};
+
+// Configuração do multer para armazenar as imagens na pasta imgs_users
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'imgs_users/'); // Pasta onde as imagens serão armazenadas
+    },
+    filename: (req, file, cb) => {
+        const userId = req.params.id; // Obtém o ID do usuário da URL
+        cb(null, `${userId}.jpg`); // Nomeia a imagem com o ID do usuário
+    },
+});
+
+const upload = multer({ storage });
+
+// Rota para atualizar informações do usuário e imagem
+const updateUser = (req, res) => {
+    const { id } = req.params; // Obtém o ID do usuário da URL
+    const { name, email, phone, bio } = req.body; // Obtém os dados do usuário a serem atualizados
+    const profileImage = req.file ? req.file.filename : null; // Obtém o nome da imagem se existir
+
+    const query = 'UPDATE usuarios SET nome = ?, email = ?, telefone = ?, bio = ?, profileImage = ? WHERE id = ?';
+    db.query(query, [name, email, phone, bio, profileImage, id], (err) => {
+        if (err) {
+            console.error('Erro ao atualizar usuário:', err);
+            return res.status(500).json({ error: 'Erro ao atualizar usuário' });
+        }
+        res.json({ mensagem: 'Usuário atualizado com sucesso.' });
+    });
+};
+
+// Rota para criar um novo desafio
+const createDesafio = (req, res) => {
+    const { titulo, descricao, estado, tipo, nivel } = req.body; // Obtém os dados do desafio a serem criados
+
+    const query = 'INSERT INTO desafios (titulo, descricao, estado, tipo, nivel) VALUES (?, ?, ?, ?, ?)';
+    db.query(query, [titulo, descricao, estado, tipo, nivel], (err) => {
+        if (err) {
+            console.error('Erro ao criar desafio:', err);
+            return res.status(500).json({ error: 'Erro ao criar desafio' });
+        }
+        res.json({ mensagem: 'Desafio criado com sucesso.' });
+    });
+};
+
 // Configuração do Express e rotas
 const app = express();
 const server = http.createServer(app);
@@ -330,12 +448,20 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.post('/login', login);
 app.post('/register', register);
 app.post('/confirm-email', confirmEmail);
-app.get('/desafios', getDesafios);
+app.get('/desafios', getDesafiosApp);
 app.post('/forgot-password', forgot_password);
 app.post('/reset-password', resetPassword);
 app.post('/admin-login', adminLogin);
-app.get('/intra/getDesafios', getDesafiosIntra)
-app.get('/intra/getUsuarios', getUsuariosIntra)
+app.get('/getDesafios', getDesafios)
+app.get('/getUsuarios', getUsuarios)
+app.get('/intra/getDesafio/:id', getDesafioIntra);
+app.put('/intra/updateDesafio/:id', updateDesafio); // Rota para atualizar um desafio
+app.delete('/intra/deleteUsuario/:id', deleteUsuario); // Rota para deletar um usuário
+app.delete('/intra/deleteDesafio/:id', deleteDesafio); // Rota para deletar um desafio
+app.get('/user/:id', getUserById); // Adiciona a rota para obter usuário
+app.put('/userEdit/:id', upload.single('profileImage'), updateUser); // Rota para atualizar informações do usuário e imagem
+app.post('/intra/createDesafio', createDesafio); // Rota para criar um novo desafio
+
 
 io.on('connection', (socket) => {
     console.log('Novo cliente conectado');

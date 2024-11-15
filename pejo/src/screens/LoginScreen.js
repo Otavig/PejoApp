@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, ScrollView, Dimensions } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import Icon from 'react-native-vector-icons/FontAwesome';
+
+const { width, height } = Dimensions.get('window');
 
 export default function LoginScreen() {
     const navigation = useNavigation();
@@ -23,13 +25,13 @@ export default function LoginScreen() {
         }
 
         try {
-            const response = await axios.post('http://10.111.9.44:3000/login', {
+            const response = await axios.post('http://192.168.0.100:3000/login', {
                 identificador: email,
                 senha: password
             });
 
             if (response.status === 200) {
-                const { tipo_usuario, nome } = response.data.usuario || {};
+                const { tipo_usuario, nome, id } = response.data.usuario || {};
                 console.log('Nome do usuário:', nome);
 
                 if (tipo_usuario === 'confirmação') {
@@ -41,6 +43,7 @@ export default function LoginScreen() {
                 await AsyncStorage.setItem('userToken', userToken); 
                 await AsyncStorage.setItem('userEmail', email);
                 await AsyncStorage.setItem('userName', nome); 
+                await AsyncStorage.setItem('userId', id.toString());
                 navigation.navigate('HomeScreen', { userName: nome });
             }
         } catch (error) {
@@ -87,16 +90,16 @@ export default function LoginScreen() {
                 <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
                     <Text style={styles.loginButtonText}>Acessar</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.forgotPasswordButton} onPress={() => navigation.navigate('ForgotPassword')}>
-                    <Text style={styles.forgotPasswordText}>Esqueci a Senha</Text>
-                </TouchableOpacity>
-                <View style={styles.separator} />
-            </View>
-
-            <View style={styles.footer}>
-                <TouchableOpacity style={styles.createAccountButton} onPress={() => navigation.navigate('Register')}>
-                    <Text style={styles.createAccountText}>Não tem uma conta? Crie uma</Text>
-                </TouchableOpacity>
+                <View style={styles.footer}>
+                    <View style={styles.footerButtonsContainer}>
+                        <TouchableOpacity style={styles.createAccountButton} onPress={() => navigation.navigate('Register')}>
+                            <Text style={styles.createAccountText}>Não tem uma conta?</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.forgotPasswordButton} onPress={() => navigation.navigate('ForgotPassword')}>
+                            <Text style={styles.forgotPasswordText}>Esqueci a Senha!</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
             </View>
         </ScrollView>
     );
@@ -115,8 +118,8 @@ const styles = StyleSheet.create({
         paddingBottom: 30,
     },
     logo: {
-        height: 200,
-        width: 200,
+        height: height * 0.25,
+        width: width * 0.5,
         marginBottom: 20,
     },
     loginSection: {
@@ -130,9 +133,9 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         width: '100%',
         borderRadius: 5,
-        paddingVertical: 10,
-        paddingHorizontal: 20,
-        fontSize: 16,
+        paddingVertical: height * 0.014,
+        paddingHorizontal: width * 0.05,
+        fontSize: width * 0.04,
         marginBottom: 15,
         color: '#333',
     },
@@ -149,10 +152,10 @@ const styles = StyleSheet.create({
     loginButton: {
         backgroundColor: '#3897f0',
         borderRadius: 10,
-        paddingVertical: 12,
+        paddingVertical: height * 0.015,
         width: '100%',
         alignItems: 'center',
-        marginVertical: 10,
+        marginVertical: height * 0.015,
         shadowColor: '#3897f0',
         shadowOpacity: 0.3,
         shadowRadius: 5,
@@ -160,22 +163,16 @@ const styles = StyleSheet.create({
     },
     loginButtonText: {
         color: '#ffffff',
-        fontSize: 18,
+        fontSize: width * 0.045,
         fontWeight: 'bold',
     },
     forgotPasswordButton: {
-        marginTop: 15,
+        
     },
     forgotPasswordText: {
         color: '#0277BD',
         fontSize: 16,
-        fontWeight: 'bold',
-    },
-    separator: {
-        width: '100%',
-        height: 1,
-        backgroundColor: '#ddd',
-        marginVertical: 20,
+        marginTop: 12.5
     },
     footer: {
         paddingHorizontal: 30,
@@ -191,7 +188,12 @@ const styles = StyleSheet.create({
     },
     createAccountText: {
         color: '#0277BD',
-        fontSize: 14,
-        fontWeight: 'bold',
+        fontSize: 16,
+    },
+    footerButtonsContainer: {
+        flexDirection: 'row',
+        justifyContent: 'flex-start',
+        width: '100%',
+        marginRight: "20%",
     },
 });

@@ -41,11 +41,12 @@ const HomeScreen = ({ route }) => {
     const fetchChallenges = async () => {
         const userId = await AsyncStorage.getItem('userId'); // Supondo que você armazene o userId no AsyncStorage
         try {
-            const response = await axios.get(`http://localhost:3000/desafios?userId=${userId}`);
+            const response = await axios.get(`http://192.168.0.100:3000/desafios?userId=${userId}`);
             setChallenges(response.data);  // Armazena os desafios no estado
         } catch (error) {
             console.error('Erro ao buscar desafios', error);
         }
+        await AsyncStorage.setItem('userId', userId); // Salva o userId no AsyncStorage
     };
     
     
