@@ -68,6 +68,21 @@ export default function RegisterScreen() {
         return passwordRegex.test(password);
     };
 
+    const generateToken = (name, id, birthDate) => {
+        const initial = name.charAt(0).toUpperCase();
+        const dateParts = birthDate.split('/');
+        const day = dateParts[0]; // Dia
+        const month = dateParts[1]; // Mês
+        const year = dateParts[2].slice(-2); // Últimos dois dígitos do ano
+
+        // Gerando 4 caracteres aleatórios (números ou letras)
+        const randomChars = Math.random().toString(36).substring(2, 6).toUpperCase();
+
+        // Montando o token
+        const token = `${initial}${id}${day}${month}${year}${randomChars}`;
+        return token;
+    };
+
     // Função para registrar o usuário
     const handleRegister = async () => {
         if (!isStrongPassword(password)) {
@@ -96,6 +111,13 @@ export default function RegisterScreen() {
             return;
         }
 
+        // Gerar um ID aleatório entre 1 e 1000 (ou qualquer intervalo desejado)
+        const randomId = Math.floor(Math.random() * 1000) + 1;
+
+        // Gerar o token usando o nome, ID aleatório e data de nascimento
+        const token = generateToken(name, randomId, birthDate);
+
+        // Formatar a data de nascimento para o banco de dados
         const [day, month, year] = birthDate.split('/');
         const formattedBirthDate = `${year}-${month}-${day}`;
 
@@ -109,6 +131,7 @@ export default function RegisterScreen() {
             telefone: rawPhone, // Enviando o telefone sem formatação
             data_nascimento: formattedBirthDate,
             tipo_usuario: 'confirmação',
+            token: token, // Adicionando o token ao objeto de dados
         };
 
         try {

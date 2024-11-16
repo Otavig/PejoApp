@@ -4,6 +4,7 @@ import io from 'socket.io-client';
 import { Buffer } from 'buffer';
 import CryptoJS from 'crypto-js';
 import AsyncStorage from '@react-native-async-storage/async-storage'; // Import AsyncStorage
+import axios from 'axios'; // Import axios para requisições HTTP
 
 import prohibitedWords from './../../assets/json/prohibitedWords.json';
 
@@ -20,10 +21,9 @@ const ConversationScreen = ({ route }) => {
     useEffect(() => {
         const loadMessages = async () => {
             try {
-                const storedMessages = await AsyncStorage.getItem(`conversationMessages_${personId}`);
-                if (storedMessages) {
-                    setMessages(JSON.parse(storedMessages));
-                }
+                // Requisição para buscar mensagens do banco de dados
+                const response = await axios.get(`http://localhost:3000/api/messages/${personId}`);
+                setMessages(response.data); // Supondo que a resposta seja um array de mensagens
             } catch (error) {
                 console.error('Failed to load messages:', error);
             }
@@ -46,6 +46,11 @@ const ConversationScreen = ({ route }) => {
     const saveMessages = async (messages) => {
         try {
             await AsyncStorage.setItem(`conversationMessages_${personId}`, JSON.stringify(messages));
+            // Enviar mensagem para o banco de dados
+            await axios.post('http://localhost:3000/api/messages', {
+                personId,
+                messages
+            });
         } catch (error) {
             console.error('Failed to save messages:', error);
         }
@@ -64,7 +69,7 @@ const ConversationScreen = ({ route }) => {
     };
 
 
-    const sendMessage = () => {
+    const sendMessage = async () => {
         if (message.trim()) {
             const lowerCaseMessage = message.toLowerCase();
             const containsProhibitedWords = PROHIBITED_WORDS.some(word => lowerCaseMessage.includes(word.toLowerCase()));
@@ -80,7 +85,7 @@ const ConversationScreen = ({ route }) => {
 
             const newMessages = [...messages, { text: message, sent: true }];
             setMessages(newMessages);
-            saveMessages(newMessages); // Save messages to JSON
+            await saveMessages(newMessages); // Save messages to JSON
             socket.emit('send_message', encryptMessage(message));
             setMessage('');
         }

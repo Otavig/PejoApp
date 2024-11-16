@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, FlatList, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, FlatList, StyleSheet, Image, TouchableOpacity, Button } from 'react-native';
 
 const mockData = [
     { id: '1', name: 'Jane Doe', details: 'Additional details 1', avatar: null },
@@ -33,6 +33,11 @@ const ChatScreen = ({ navigation }) => {
         navigation.navigate('ConversationScreen', { person });
     };
 
+    const handleAddFriend = (person) => {
+        console.log('Adding friend:', person); // Adicionado para depuração
+        // Aqui você pode implementar a lógica para adicionar amigos
+    };
+
     return (
         <View style={styles.container}>
             <TextInput
@@ -54,6 +59,10 @@ const ChatScreen = ({ navigation }) => {
                             <View style={styles.textContainer}>
                                 <Text style={styles.cardName}>{item.name}</Text>
                                 <Text style={styles.cardMessage}>{item.details}</Text>
+                                <Button 
+                                    title="Add Friend" 
+                                    onPress={() => handleAddFriend(item)} // Adicionando a funcionalidade de adicionar amigo
+                                />
                             </View>
                         </View>
                     </TouchableOpacity>

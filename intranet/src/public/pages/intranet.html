@@ -51,7 +51,8 @@
         .card .card-body {
             font-size: 16px;
             color: #666;
-            flex-grow: 1; /* Faz com que o corpo do card ocupe o espaço restante */
+            flex-grow: 1;
+            /* Faz com que o corpo do card ocupe o espaço restante */
             margin-bottom: 20px;
         }
 
@@ -60,7 +61,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-top: auto; /* Garante que o footer fique colado ao final */
+            margin-top: auto;
+            /* Garante que o footer fique colado ao final */
         }
 
         .card .card-footer button {
@@ -116,7 +118,9 @@
 
         /* Ajuste para telas menores */
         @media (max-width: 768px) {
-            .card-container, .horizontal-card-container {
+
+            .card-container,
+            .horizontal-card-container {
                 flex-direction: column;
             }
 
@@ -130,6 +134,12 @@
             width: 100%;
             height: 250px;
             margin-top: 20px;
+            display: flex;
+            /* Adiciona flexbox */
+            justify-content: center;
+            /* Centraliza horizontalmente */
+            align-items: center;
+            /* Centraliza verticalmente */
         }
 
         /* Loading */
@@ -149,19 +159,26 @@
             width: 100%;
             height: 100%;
             overflow: auto;
-            background-color: rgba(0, 0, 0, 0.7); /* Fundo mais escuro */
+            background-color: rgba(0, 0, 0, 0.7);
+            /* Fundo mais escuro */
             margin: 0 auto;
         }
 
         .modal-content {
             background-color: #ffffff;
-            margin: 10% auto; /* Ajuste para centralizar melhor */
-            padding: 30px; /* Mais espaço interno */
-            border-radius: 15px; /* Bordas arredondadas */
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); /* Sombra mais suave */
+            margin: 10% auto;
+            /* Ajuste para centralizar melhor */
+            padding: 30px;
+            /* Mais espaço interno */
+            border-radius: 15px;
+            /* Bordas arredondadas */
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            /* Sombra mais suave */
             width: 90%;
-            max-width: 500px; /* Largura máxima */
-            transition: transform 0.3s ease; /* Transição suave */
+            max-width: 500px;
+            /* Largura máxima */
+            transition: transform 0.3s ease;
+            /* Transição suave */
         }
 
         .close {
@@ -169,32 +186,37 @@
             float: right;
             font-size: 28px;
             font-weight: bold;
-            transition: color 0.3s; /* Transição suave para a cor */
+            transition: color 0.3s;
+            /* Transição suave para a cor */
         }
 
         .close:hover,
         .close:focus {
-            color: #ff0000; /* Cor ao passar o mouse */
+            color: #ff0000;
+            /* Cor ao passar o mouse */
             text-decoration: none;
             cursor: pointer;
         }
 
         /* Estilo dos botões */
         #saveEditButton {
-            background-color: #2c4766; /* Cor de fundo do botão */
+            background-color: #2c4766;
+            /* Cor de fundo do botão */
             color: white;
             border: none;
             border-radius: 5px;
             padding: 10px 15px;
             cursor: pointer;
-            transition: background-color 0.3s; /* Transição suave */
+            transition: background-color 0.3s;
+            /* Transição suave */
         }
 
         #saveEditButton:hover {
-            background-color: #1a2c45; /* Cor ao passar o mouse */
+            background-color: #1a2c45;
+            /* Cor ao passar o mouse */
         }
 
-        label{
+        label {
             color: black;
         }
 
@@ -203,26 +225,59 @@
         input[type="number"],
         textarea,
         select {
-            width: 95%; /* Largura total */
-            padding: 10px; /* Espaço interno */
-            margin-top: 5px; /* Margem superior */
-            margin-bottom: 15px; /* Margem inferior */
-            border: 1px solid #ddd; /* Borda */
-            border-radius: 5px; /* Bordas arredondadas */
-            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1); /* Sombra interna */
+            width: 95%;
+            /* Largura total */
+            padding: 10px;
+            /* Espaço interno */
+            margin-top: 5px;
+            /* Margem superior */
+            margin-bottom: 15px;
+            /* Margem inferior */
+            border: 1px solid #ddd;
+            /* Borda */
+            border-radius: 5px;
+            /* Bordas arredondadas */
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
+            /* Sombra interna */
             resize: none;
         }
 
         /* Estilo do título do modal */
         #modalTitle {
-            color: #2c4766; /* Cor do título */
-            margin-bottom: 20px; /* Margem inferior */
+            color: #2c4766;
+            /* Cor do título */
+            margin-bottom: 20px;
+            /* Margem inferior */
         }
 
-        .styled-select{
+        .styled-select {
             width: 10%;
         }
 
+        .glass-card {
+            background-color: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            width: 400px;
+            /* Aumenta a largura do card */
+            height: 500px;
+            /* Aumenta a altura do card */
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            max-height: 60%;
+        }
+
+        .glass-card .card-header,
+        .white {
+            color: white;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-5px);
+        }
     </style>
 </head>
 
@@ -255,8 +310,12 @@
             <a href="#" class="nav-link" data-target="usuarios">
                 Usuarios
             </a>
+            <a href="#" class="nav-link" data-target="eventos">
+                Eventos
+            </a>
         </div>
-        <span style="margin-bottom: 30px; word-break: break-all;" id="user-email" style="color: #2c4766; font-weight: bold;"></span>
+        <span style="margin-bottom: 30px; word-break: break-all;" id="user-email"
+            style="color: #2c4766; font-weight: bold;"></span>
         <button onclick="logout()">Sair</button>
     </nav>
 
@@ -265,15 +324,19 @@
         <!-- Telas do painel -->
         <div id="dashboard" class="screen">
             <div class="card-container">
-                <div class="card">
+                <div class="card glass-card">
                     <div class="card-header">Visão Geral</div>
                     <div class="card-body">
-                        <p>Desafios Ativos: <span id="activeChallenges">10</span></p>
-                        <p>Usuários com Nível Maior: <span id="highLevelUsers">5</span></p>
+                        <div style="margin-left: 1%;" class="white" id="activeChallenges"></div>
+                        <br>
+                        <div style="margin-left: 1%;"  class="white" id="inactiveChallenges"></div>
+                        <p class="white">Usuários: <span id="usersCount">0</span></p>
+                        <p class="white">Eventos Recentes: <span id="recentEvents"></span></p>
+                        <p class="white">Top Jogadores: <span id="topPlayers"></span></p>
                     </div>
                 </div>
 
-                <div class="card">
+                <div class="card glass-card">
                     <div class="card-header">Desafios Ativos</div>
                     <div class="card-body">
                         <div class="chart-container">
@@ -286,14 +349,17 @@
 
         <div id="desafios" class="screen">
             <div class="search-container">
-                <input class="search" type="text" id="desafiosSearch" placeholder="Pesquisar Desafios" onkeyup="searchCard('desafiosContainer', this.value)">
+                <input class="search" type="text" id="desafiosSearch" placeholder="Pesquisar Desafios"
+                    onkeyup="searchCard('desafiosContainer', this.value)">
                 <select id="sortOptions" onchange="sortCards('desafiosContainer', this.value)" class="styled-select">
                     <option value="">Ordenar por</option>
                     <option value="estado">Estado</option>
                     <option value="id">ID</option>
                     <option value="tipo">Tipo</option>
                 </select>
-                <button style="background-color: transparent;"><i class="fa fa-plus"></i> Criar</button>
+                <button id="toggleSortOrderButton" style="background-color: transparent;">Inverter Ordem</button>
+                <button style="background-color: transparent;" onclick="openCreateCardModal()"><i
+                        class="fa fa-plus"></i> Criar Desafio</button>
             </div>
 
             <div class="horizontal-card-container" id="desafiosContainer">
@@ -304,8 +370,10 @@
 
         <div id="usuarios" class="screen">
             <div class="search-container">
-                <input style="width: 80%;" class="search" type="text" id="usuariosSearch" placeholder="Pesquisar Usuários" onkeyup="searchCard('usuariosContainer', this.value)">
-                <select id="userSortOptions" onchange="sortUsers('usuariosContainer', this.value)" class="styled-select">
+                <input style="width: 80%;" class="search" type="text" id="usuariosSearch"
+                    placeholder="Pesquisar Usuários" onkeyup="searchCard('usuariosContainer', this.value)">
+                <select id="userSortOptions" onchange="sortUsers('usuariosContainer', this.value)"
+                    class="styled-select">
                     <option value="">Ordenar por</option>
                     <option value="nivel">Nível</option>
                     <option value="tipo">Tipo</option>
@@ -317,18 +385,219 @@
                 <!-- Adicione mais cards conforme necessário -->
             </div>
         </div>
+
+        <div id="eventos" class="screen" style="display: none;">
+            <div class="search-container">
+                <input style="width: 80%;" class="search" type="text" id="eventosSearch" placeholder="Pesquisar Eventos"
+                    onkeyup="searchCard('eventosContainer', this.value)">
+                <button style="background-color: transparent;" onclick="openCreateEventModal()"><i
+                        class="fa fa-plus"></i> Criar Evento</button>
+            </div>
+
+            <div class="horizontal-card-container" id="eventosContainer">
+                <!-- Card de Evento Exemplo -->
+                <!-- Adicione mais cards conforme necessário -->
+            </div>
+        </div>
     </main>
 
-    <script src="../../js/intranet.js"></script>
+    <!-- Modal de Edição de Desafio -->
+    <div id="editDesafioModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close" onclick="closeEditDesafioModal()">&times;</span>
+            <h2 id="modalTitle">Editar Desafio</h2>
+            <label for="editDesafioTitle">Título:</label>
+            <input type="text" id="editDesafioTitle" required>
 
-    <script>
-        // Simulação de dados
-        const activeChallenges = 10;
-        const highLevelUsers = 5;
+            <label for="editDesafioDescription">Descrição:</label>
+            <textarea id="editDesafioDescription" rows="5" required></textarea>
 
-        // Atualizando a visão geral com dados
-        document.getElementById('activeChallenges').textContent = activeChallenges;
-        document.getElementById('highLevelUsers').textContent = highLevelUsers;
+            <label for="editDesafioEstado">Estado:</label>
+            <select id="editDesafioEstado" required>
+                <option value="ativado">Ativo</option>
+                <option value="desativado">Inativo</option>
+            </select>
+
+            <label for="editDesafioTipo">Tipo:</label>
+            <select id="editDesafioTipo" required>
+                <option value="diario">Diário</option>
+                <option value="semanal">Semanal</option>
+                <option value="mensal">Mensal</option>
+            </select>
+
+            <label for="editDesafioDificuldade">Dificuldade:</label>
+            <select id="editDesafioDificuldade" required>
+                <option value="facil">Fácil</option>
+                <option value="media">Médio</option>
+                <option value="dificil">Difícil</option>
+            </select>
+
+            <button style="background-color: #1a2c45; color: white; border: 0px; padding: 10px; border-radius: 5px;"
+                id="saveDesafioEditButton">Salvar</button>
+        </div>
+    </div>
+
+    <!-- Modal de Edição de Usuário -->
+    <div id="editUserModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close" onclick="closeEditUserModal()">&times;</span>
+            <h2 id="userModalTitle" style="color: black;">Editar Usuário</h2>
+            <label for="editUserName">Nome:</label>
+            <input type="text" id="editUserName" required>
+
+            <label for="editUserEmail">Email:</label>
+            <input type="text" id="editUserEmail" required>
+
+            <label for="editUserPhone">Telefone:</label>
+            <input type="text" id="editUserPhone" required>
+
+            <label for="editUserType">Tipo do Usuário:</label>
+            <select id="editUserType" required>
+                <option value="admin">Admin</option>
+                <option value="usuario">Usuário</option>
+            </select>
+
+            <label for="editUserLevel">Nível:</label>
+            <input type="number" id="editUserLevel" required>
+
+            <button id="saveUserEditButton"
+                style="background-color: #1a2c45; color: white; border: 0px; padding: 10px; border-radius: 5px;">Salvar</button>
+        </div>
+    </div>
+
+    <!-- Modal para Criar Novo Desafio -->
+    <div id="createCardModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close" onclick="closeCreateCardModal()">&times;</span>
+            <h2 style="color: black;">Criar Novo Desafio</h2>
+            <label for="newCardTitle">Título:</label>
+            <input type="text" id="newCardTitle" required>
+
+            <label for="newCardDescription">Descrição:</label>
+            <textarea id="newCardDescription" rows="5" required></textarea>
+
+            <label for="newCardState">Estado:</label>
+            <select id="newCardState" required>
+                <option value="ativado">Ativo</option>
+                <option value="desativado">Inativo</option>
+            </select>
+
+            <label for="newCardType">Tipo:</label>
+            <select id="newCardType" required>
+                <option value="diario">Diário</option>
+                <option value="semanal">Semanal</option>
+                <option value="mensal">Mensal</option>
+            </select>
+
+            <label for="newCardDificuldade">Dificuldade:</label>
+            <select id="newCardDificuldade" required>
+                <option value="facil">Fácil</option>
+                <option value="media">Médio</option>
+                <option value="dificil">Difícil</option>
+            </select>
+
+            <button style="background-color: #1a2c45; color: white; border: 0px; padding: 10px; border-radius: 5px;"
+                id="createCardButton">Criar</button>
+        </div>
+    </div>
+
+    <div id="pagination" class="pagination">
+        <button id="prevPage" onclick="changePage(-1)">&#10094; Anterior</button>
+        <span id="pageInfo">Página 1</span>
+        <button id="nextPage" onclick="changePage(1)">Próximo &#10095;</button>
+    </div>
+
+    <!-- Modal para Criar Novo Evento -->
+    <div id="createEventModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close" onclick="closeCreateEventModal()">&times;</span>
+            <h2 style="color: black;">Criar Novo Evento</h2>
+            <label for="eventName">Nome:</label>
+            <input type="text" id="eventName" required>
+
+            <label for="eventDescription">Descrição:</label>
+            <textarea id="eventDescription" rows="5" required></textarea>
+
+            <label for="eventDate">Data do Evento:</label>
+            <input type="datetime-local" id="eventDate" required>
+
+            <label for="eventLocation">Local:</label>
+            <input type="text" id="eventLocation" placeholder="Ex: São Paulo" required>
+
+            <label for="eventImages">Imagem:</label>
+            <input type="file" id="eventImages" multiple accept="image/*">
+
+            <button style="background-color: #1a2c45; color: white; border: 0px; padding: 10px; border-radius: 5px;"
+                id="createEventButton">Criar</button>
+        </div>
+    </div>
+
+    <!-- Modal de Edição de Evento -->
+    <div id="editEventModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close" onclick="closeEditEventModal()">&times;</span>
+            <h2 id="modalTitle">Editar Evento</h2>
+            <label for="updateEventName">Nome:</label>
+            <input type="text" id="updateEventName" required>
+
+            <label for="updateEventDescription">Descrição:</label>
+            <textarea id="updateEventDescription" rows="5" required></textarea>
+
+            <label for="updateEventDate">Data do Evento:</label>
+            <input type="datetime-local" id="updateEventDate" required>
+
+            <label for="updateEventLocation">Local:</label>
+            <input type="text" id="updateEventLocation" placeholder="Ex: São Paulo" required>
+
+            <button style="background-color: #1a2c45; color: white; border: 0px; padding: 10px; border-radius: 5px;"
+                id="saveEventEditButton">Salvar</button>
+        </div>
+    </div>
+</body>
+<script src="../../js/intranet.js"></script>
+
+<script>
+    // Função para buscar dados de desafios da API
+    async function fetchChallenges() {
+        try {
+            const response = await fetch('http://localhost:3000/api/challenges');
+            const data = await response.json();
+            return data; // Supondo que a API retorne um objeto com os dados necessários
+        } catch (error) {
+            console.error('Erro ao buscar desafios:', error);
+            return { desafiosAtivos: 0, desafiosDesativados: 0 }; // Valores padrão em caso de erro
+        }
+    }
+
+    // Função para buscar usuários da API
+    async function fetchUsers() {
+        try {
+            const response = await fetch('http://localhost:3000/getUsuarios');
+            const data = await response.json();
+            return data; // Retorna a lista de usuários
+        } catch (error) {
+            console.error('Erro ao buscar usuários:', error);
+            return []; // Retorna um array vazio em caso de erro
+        }
+    }
+
+    // Função para buscar eventos da API
+    async function fetchEvents() {
+        try {
+            const response = await fetch('http://localhost:3000/getEventos');
+            const data = await response.json();
+            return data; // Retorna a lista de eventos
+        } catch (error) {
+            console.error('Erro ao buscar eventos:', error);
+            return []; // Retorna um array vazio em caso de erro
+        }
+    }
+
+    // Atualizando a visão geral com dados
+    async function updateOverview() {
+        const { desafiosAtivos, desafiosDesativados } = await fetchChallenges();
+        document.getElementById('activeChallenges').textContent = `Desafios ativados: ${desafiosAtivos}`;
+        document.getElementById('inactiveChallenges').textContent = `Desafios inativos: ${desafiosDesativados}`;
 
         // Configuração do gráfico de desafios ativos
         const ctx = document.getElementById('challengesChart').getContext('2d');
@@ -337,7 +606,7 @@
             data: {
                 labels: ['Ativos', 'Inativos'],
                 datasets: [{
-                    data: [activeChallenges, 20 - activeChallenges], // Exemplo de dados
+                    data: [desafiosAtivos, desafiosDesativados],
                     backgroundColor: ['#36a2eb', '#ff6384'],
                     hoverBackgroundColor: ['#5dade2', '#ff7a94']
                 }]
@@ -355,126 +624,75 @@
             }
         });
 
-        function sortCards(containerId, criteria) {
-            const container = document.getElementById(containerId);
-            const cards = Array.from(container.children);
-            
-            cards.sort((a, b) => {
-                // Implementar lógica de ordenação com base no critério
-                // Exemplo: se os cards têm atributos de dados que você pode usar para ordenar
-                const aValue = a.getAttribute(`data-${criteria}`);
-                const bValue = b.getAttribute(`data-${criteria}`);
-                return aValue.localeCompare(bValue);
-            });
+        // Carregar usuários e eventos
+        const users = await fetchUsers();
+        const events = await fetchEvents();
 
-            // Limpar o container e adicionar os cards ordenados
-            container.innerHTML = '';
-            cards.forEach(card => container.appendChild(card));
+    }
+
+
+    // Chama a função para atualizar a visão geral ao carregar a página
+    document.addEventListener('DOMContentLoaded', updateOverview);
+
+    function sortCards(containerId, criteria) {
+        const container = document.getElementById(containerId);
+        const cards = Array.from(container.children);
+
+        cards.sort((a, b) => {
+            // Implementar lógica de ordenação com base no critério
+            // Exemplo: se os cards têm atributos de dados que você pode usar para ordenar
+            const aValue = a.getAttribute(`data-${criteria}`);
+            const bValue = b.getAttribute(`data-${criteria}`);
+            return aValue.localeCompare(bValue);
+        });
+
+        // Limpar o container e adicionar os cards ordenados
+        container.innerHTML = '';
+        cards.forEach(card => container.appendChild(card));
+    }
+
+    function sortUsers(containerId, criteria) {
+        const container = document.getElementById(containerId);
+        const users = Array.from(container.children);
+
+        users.sort((a, b) => {
+            const aValue = a.getAttribute(`data-${criteria}`);
+            const bValue = b.getAttribute(`data-${criteria}`);
+            return aValue.localeCompare(bValue);
+        });
+
+        container.innerHTML = '';
+        users.forEach(user => container.appendChild(user));
+    }
+
+    // Função para salvar um desafio
+    function saveChallenge() {
+
+        // Após salvar, recarregar os desafios
+        loadChallenges(); // Certifique-se de que esta função está definida
+    }
+
+    // Função para salvar um evento
+    function saveEvent() {
+
+        // Após salvar, recarregar os eventos
+        loadEvents(); // Certifique-se de que esta função está definida
+    }
+
+    // Função para salvar um usuário
+    function saveUser() {
+
+        // Após salvar, recarregar os usuários
+        loadUsers(); // Certifique-se de que esta função está definida
+    }
+
+    // Adicionando EventListeners
+    document.addEventListener('DOMContentLoaded', function () {
+        const saveEditButton = document.getElementById('saveEditButton');
+        if (saveEditButton) {
+            saveEditButton.addEventListener('click', saveChallenge); // ou saveEvent, dependendo do contexto
         }
-
-        function sortUsers(containerId, criteria) {
-            const container = document.getElementById(containerId);
-            const users = Array.from(container.children);
-            
-            users.sort((a, b) => {
-                const aValue = a.getAttribute(`data-${criteria}`);
-                const bValue = b.getAttribute(`data-${criteria}`);
-                return aValue.localeCompare(bValue);
-            });
-
-            container.innerHTML = '';
-            users.forEach(user => container.appendChild(user));
-        }
-    </script>
-
-    <!-- Modal de Edição de Desafio -->
-    <div id="editDesafioModal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <span class="close" onclick="closeEditDesafioModal()">&times;</span>
-            <h2 id="modalTitle">Editar Desafio</h2>
-            <label for="editDesafioTitle">Título:</label>
-            <input type="text" id="editDesafioTitle" required>
-            
-            <label for="editDesafioDescription">Descrição:</label>
-            <textarea id="editDesafioDescription" rows="5" required></textarea>
-            
-            <label for="editDesafioEstado">Estado:</label>
-            <select id="editDesafioEstado" required>
-                <option value="ativado">Ativo</option>
-                <option value="desativado">Inativo</option>
-            </select>
-            
-            <label for="editDesafioTipo">Tipo:</label>
-            <select id="editDesafioTipo" required>
-                <option value="diario">Diário</option>
-                <option value="semanal">Semanal</option>
-                <option value="mensal">Mensal</option>
-            </select>
-            
-            <label for="editDesafioNivel">Nível:</label>
-            <input type="number" id="editDesafioNivel" required>
-            
-            <button style="background-color: #1a2c45; color: white; border: 0px; padding: 10px; border-radius: 5px;" id="saveDesafioEditButton">Salvar</button>
-        </div>
-    </div>
-
-    <!-- Modal de Edição de Usuário -->
-    <div id="editUserModal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <span class="close" onclick="closeEditUserModal()">&times;</span>
-            <h2 id="userModalTitle" style="color: black;">Editar Usuário</h2>
-            <label for="editUserName">Nome:</label>
-            <input type="text" id="editUserName" required>
-            
-            <label for="editUserEmail">Email:</label>
-            <input type="text" id="editUserEmail" required>
-            
-            <label for="editUserPhone">Telefone:</label>
-            <input type="text" id="editUserPhone" required>
-            
-            <label for="editUserType">Tipo do Usuário:</label>
-            <select id="editUserType" required>
-                <option value="admin">Admin</option>
-                <option value="usuario">Usuário</option>
-            </select>
-            
-            <label for="editUserLevel">Nível:</label>
-            <input type="number" id="editUserLevel" required>
-            
-            <button id="saveUserEditButton" style="background-color: #1a2c45; color: white; border: 0px; padding: 10px; border-radius: 5px;">Salvar</button>
-        </div>
-    </div>
-
-    <!-- Modal para Criar Novo Card -->
-    <div id="createCardModal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <span class="close" onclick="closeCreateCardModal()">&times;</span>
-            <h2>Criar Novo Card</h2>
-            <label for="newCardTitle">Título:</label>
-            <input type="text" id="newCardTitle" required>
-            
-            <label for="newCardDescription">Descrição:</label>
-            <textarea id="newCardDescription" rows="5" required></textarea>
-            
-            <label for="newCardState">Estado:</label>
-            <select id="newCardState" required>
-                <option value="ativado">Ativo</option>
-                <option value="desativado">Inativo</option>
-            </select>
-            
-            <label for="newCardType">Tipo:</label>
-            <select id="newCardType" required>
-                <option value="diario">Diário</option>
-                <option value="semanal">Semanal</option>
-                <option value="mensal">Mensal</option>
-            </select>
-            
-            <label for="newCardLevel">Nível:</label>
-            <input type="number" id="newCardLevel" required>
-            
-            <button id="createCardButton">Criar</button>
-        </div>
-    </div>
-</body>
+    });
+</script>
 
 </html>

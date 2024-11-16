@@ -38,8 +38,8 @@ function generateToken() {
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-        user: "pejoapp@gmail.com",
-        pass: "ebwh dzei junm ypev",
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
     },
     tls: {
         rejectUnauthorized: false  // Ignorar problemas com certificados SSL (use com cuidado)
@@ -93,11 +93,27 @@ const register = async (req, res) => {
             return res.status(400).json({ erro: 'A senha deve ter no mínimo 6 caracteres, incluir pelo menos um número e uma letra maiúscula.' });
         }
 
+        // Função para gerar um token único
+        const generateUniqueToken = async () => {
+            let token;
+            let exists = true;
+
+            while (exists) {
+                token = generateToken(); // Gera um novo token
+                // Verifica se o token já existe no banco de dados
+                const tokenCheckQuery = 'SELECT * FROM usuarios WHERE token_confirmacao_email = ?';
+                const [rows] = await db.promise().query(tokenCheckQuery, [token]);
+                exists = rows.length > 0; // Se o token já existe, gera um novo
+            }
+
+            return token; // Retorna um token único
+        };
+
         // Continuação do registro
         try {
-            const salt = await bcrypt.genSalt(10); // `await` works because this function is async
+            const salt = await bcrypt.genSalt(10);
             const hashedPassword = await bcrypt.hash(senha, salt);
-            const confirmationToken = generateToken();
+            const confirmationToken = await generateUniqueToken(); // Gera um token único
             const tokenExpiration = new Date(Date.now() + 15 * 60 * 1000);
 
             const query = 'INSERT INTO usuarios (nome, email, senha, telefone, data_nascimento, token_confirmacao_email, token_expiration) VALUES (?, ?, ?, ?, ?, ?, ?)';
@@ -240,10 +256,10 @@ const getDesafioIntra = (req, res) => {
 // Rota para atualizar um desafio
 const updateDesafio = (req, res) => {
     const { id } = req.params; // Obtém o ID do desafio da URL
-    const { titulo, descricao, estado, tipo, nivel } = req.body; // Obtém os dados do desafio a serem atualizados
+    const { titulo, descricao, estado, dificuldade } = req.body; // Removido tipo
 
-    const query = 'UPDATE desafios SET titulo = ?, descricao = ?, estado = ?, tipo = ?, nivel = ? WHERE id = ?';
-    db.query(query, [titulo, descricao, estado, tipo, nivel, id], (err) => {
+    const query = 'UPDATE desafios SET titulo = ?, descricao = ?, estado = ?, dificuldade = ? WHERE id = ?'; // Removido tipo
+    db.query(query, [titulo, descricao, estado, dificuldade, id], (err) => {
         if (err) {
             console.error('Erro ao atualizar desafio:', err);
             return res.status(500).json({ error: 'Erro ao atualizar desafio' });
@@ -393,14 +409,13 @@ const getUserById = (req, res) => {
     });
 };
 
-// Configuração do multer para armazenar as imagens na pasta imgs_users
+// Configuração do multer para armazenar as imagens
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, 'imgs_users/'); // Pasta onde as imagens serão armazenadas
+        cb(null, 'imgs_eventos/'); // Pasta onde as imagens serão armazenadas
     },
     filename: (req, file, cb) => {
-        const userId = req.params.id; // Obtém o ID do usuário da URL
-        cb(null, `${userId}.jpg`); // Nomeia a imagem com o ID do usuário
+        cb(null, `${Date.now()}-${file.originalname}`); // Nomeia a imagem com um timestamp
     },
 });
 
@@ -422,12 +437,26 @@ const updateUser = (req, res) => {
     });
 };
 
+// Rota para obter mensagens
+const getMessages = (req, res) => {
+    const personId = req.params.personId;
+    db.query('SELECT * FROM chats WHERE remetente_id = ? OR destinatario_id = ?', [personId, personId], (err, results) => {
+        if (err) return res.status(500).send(err);
+        res.json(results);
+    });
+};
+
 // Rota para criar um novo desafio
 const createDesafio = (req, res) => {
-    const { titulo, descricao, estado, tipo, nivel } = req.body; // Obtém os dados do desafio a serem criados
+    const { titulo, descricao, estado, dificuldade } = req.body; // Removido tipo e data_ativacao
 
-    const query = 'INSERT INTO desafios (titulo, descricao, estado, tipo, nivel) VALUES (?, ?, ?, ?, ?)';
-    db.query(query, [titulo, descricao, estado, tipo, nivel], (err) => {
+    // Verifique se todos os campos necessários estão presentes
+    if (!titulo || !descricao || !estado || !dificuldade) {
+        return res.status(400).json({ error: 'Todos os campos são obrigatórios.' });
+    }
+
+    const query = 'INSERT INTO desafios (titulo, descricao, estado, dificuldade) VALUES (?, ?, ?, ?)'; // Removido tipo e data_ativacao
+    db.query(query, [titulo, descricao, estado, dificuldade], (err) => {
         if (err) {
             console.error('Erro ao criar desafio:', err);
             return res.status(500).json({ error: 'Erro ao criar desafio' });
@@ -435,6 +464,162 @@ const createDesafio = (req, res) => {
         res.json({ mensagem: 'Desafio criado com sucesso.' });
     });
 };
+
+// Rota para criar um novo evento
+const createEvento = (req, res) => {
+    const { nome, descricao, data_evento, local } = req.body; // Captura os dados do evento
+    const imagens = req.files; // Captura as imagens
+
+    // Verifique se todos os campos necessários estão presentes
+    if (!nome || !descricao || !data_evento || !local) {
+        return res.status(400).json({ error: 'Todos os campos são obrigatórios.' });
+    }
+
+    // Lógica para armazenar as imagens (se necessário)
+    // Aqui você pode implementar a lógica para salvar as imagens no servidor ou no banco de dados
+
+    const query = 'INSERT INTO eventos (nome, descricao, data_evento, local, imagens) VALUES (?, ?, ?, ?, ?)'; // Adicione lógica para armazenar imagens
+    db.query(query, [nome, descricao, data_evento, local, JSON.stringify(imagens)], (err) => {
+        if (err) {
+            console.error('Erro ao criar evento:', err);
+            return res.status(500).json({ error: 'Erro ao criar evento' });
+        }
+        res.json({ mensagem: 'Evento criado com sucesso.' });
+    });
+};
+
+// Rota para carregar eventos
+const loadEventosIntra = async (req, res) => {
+    const query = 'SELECT * FROM eventos'; // Consulta para pegar todos os eventos
+    db.query(query, (err, results) => {
+        if (err) {
+            console.error('Erro ao buscar eventos:', err);
+            return res.status(500).json({ error: 'Erro ao buscar eventos' });
+        }
+        res.json(results); // Retorna os eventos encontrados
+    });
+};
+
+// Rota para atualizar um evento
+const updateEvento = (req, res) => {
+    const { id } = req.params; // Obtém o ID do evento da URL
+    const { nome, descricao, data_evento, local } = req.body; // Obtém os dados do evento a serem atualizados
+
+    console.log('Atualizando evento com ID:', id);
+    console.log('Dados recebidos:', { nome, descricao, data_evento, local });
+
+    const query = 'UPDATE eventos SET nome = ?, descricao = ?, data_evento = ?, local = ? WHERE id = ?';
+    db.query(query, [nome, descricao, data_evento, local, id], (err) => {
+        if (err) {
+            console.error('Erro ao atualizar evento:', err);
+            return res.status(500).json({ error: 'Erro ao atualizar evento', details: err });
+        }
+        res.json({ mensagem: 'Evento atualizado com sucesso.' });
+    });
+};
+
+// Rota para deletar um evento
+const deleteEvento = (req, res) => {
+    const { id } = req.params; // Obtém o ID do evento da URL
+    const query = 'DELETE FROM eventos WHERE id = ?';
+
+    db.query(query, [id], (err) => {
+        if (err) {
+            console.error('Erro ao deletar evento:', err);
+            return res.status(500).json({ error: 'Erro ao deletar evento' });
+        }
+        res.json({ mensagem: 'Evento deletado com sucesso.' });
+    });
+};
+
+// Rota para obter um evento pelo ID
+const getEventoById = (req, res) => {
+    const { id } = req.params; // Obtém o ID do evento da URL
+    const query = 'SELECT * FROM eventos WHERE id = ?';
+
+    db.query(query, [id], (err, results) => {
+        if (err) {
+            console.error('Erro ao buscar evento:', err);
+            return res.status(500).json({ error: 'Erro ao buscar evento' });
+        }
+        if (results.length === 0) {
+            return res.status(404).json({ error: 'Evento não encontrado' });
+        }
+        res.json(results[0]); // Retorna o evento encontrado
+    });
+};
+
+// Função para obter desafios ativos e usuários de alto nível
+const getChallengesData = async (req, res) => {
+    try {
+        // Consulta para pegar desafios ativos e desativados
+        const desafiosQuery = `
+            SELECT 
+                SUM(CASE WHEN estado = "ativado" THEN 1 ELSE 0 END) AS desafiosAtivos,
+                SUM(CASE WHEN estado = "desativado" THEN 1 ELSE 0 END) AS desafiosDesativados
+            FROM desafios
+        `;
+        const [desafiosResults] = await db.promise().query(desafiosQuery);
+
+        // Consulta para pegar usuários com nível acima de 50
+        const usuariosQuery = 'SELECT COUNT(*) AS usuariosNivelAlto FROM usuarios WHERE nivel > 50';
+        const [usuariosResults] = await db.promise().query(usuariosQuery);
+
+        // Retorna os dados em formato JSON
+        res.json({
+            desafiosAtivos: desafiosResults[0].desafiosAtivos,
+            desafiosDesativados: desafiosResults[0].desafiosDesativados,
+            usuariosNivelAlto: usuariosResults[0].usuariosNivelAlto
+        });
+    } catch (error) {
+        console.error('Erro ao buscar dados:', error);
+        res.status(500).json({ error: 'Erro ao buscar dados' });
+    }
+};
+// Rota para obter a contagem de desafios
+const getDesafiosCount = async (req, res) => {
+    const query = 'SELECT COUNT(*) AS count FROM desafios';
+    db.query(query, (err, results) => {
+        if (err) {
+            return res.status(500).json({ error: 'Erro ao contar desafios', details: err });
+        }
+        res.json({ count: results[0].count });
+    });
+};
+
+// Rota para obter a contagem de usuários
+const getUsuariosCount = async (req, res) => {
+    const query = 'SELECT COUNT(*) AS count FROM usuarios';
+    db.query(query, (err, results) => {
+        if (err) {
+            return res.status(500).json({ error: 'Erro ao contar usuários', details: err });
+        }
+        res.json({ count: results[0].count });
+    });
+};
+
+// Rota para obter eventos recentes
+const getRecentEventos = async (req, res) => {
+    const query = 'SELECT * FROM eventos ORDER BY data_evento DESC LIMIT 5';
+    db.query(query, (err, results) => {
+        if (err) {
+            return res.status(500).json({ error: 'Erro ao buscar eventos recentes', details: err });
+        }
+        res.json(results);
+    });
+};
+
+// Rota para obter os jogadores de nível mais alto
+const getTopPlayers = async (req, res) => {
+    const query = 'SELECT * FROM usuarios ORDER BY nivel DESC LIMIT 5';
+    db.query(query, (err, results) => {
+        if (err) {
+            return res.status(500).json({ error: 'Erro ao buscar jogadores de nível mais alto', details: err });
+        }
+        res.json(results);
+    });
+};
+
 
 // Configuração do Express e rotas
 const app = express();
@@ -445,6 +630,10 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.get('/api/desafios/count', getDesafiosCount);
+app.get('/api/usuarios/count', getUsuariosCount);
+app.get('/api/eventos/recent', getRecentEventos);
+app.get('/api/top-players', getTopPlayers);
 app.post('/login', login);
 app.post('/register', register);
 app.post('/confirm-email', confirmEmail);
@@ -452,8 +641,8 @@ app.get('/desafios', getDesafiosApp);
 app.post('/forgot-password', forgot_password);
 app.post('/reset-password', resetPassword);
 app.post('/admin-login', adminLogin);
-app.get('/getDesafios', getDesafios)
-app.get('/getUsuarios', getUsuarios)
+app.get('/getDesafios', getDesafios);
+app.get('/getUsuarios', getUsuarios);
 app.get('/intra/getDesafio/:id', getDesafioIntra);
 app.put('/intra/updateDesafio/:id', updateDesafio); // Rota para atualizar um desafio
 app.delete('/intra/deleteUsuario/:id', deleteUsuario); // Rota para deletar um usuário
@@ -461,6 +650,44 @@ app.delete('/intra/deleteDesafio/:id', deleteDesafio); // Rota para deletar um d
 app.get('/user/:id', getUserById); // Adiciona a rota para obter usuário
 app.put('/userEdit/:id', upload.single('profileImage'), updateUser); // Rota para atualizar informações do usuário e imagem
 app.post('/intra/createDesafio', createDesafio); // Rota para criar um novo desafio
+app.get('/api/messages/:personId', getMessages); // Rota para obter mensagens
+app.post('/intra/createEvento', upload.array('imagens'), (req, res) => {
+    const { nome, descricao, data_evento, local } = req.body; // Captura os dados do evento
+    const imagens = req.files.map(file => file.filename); // Captura os nomes das imagens
+
+    // Verifique se todos os campos necessários estão presentes
+    if (!nome || !descricao || !data_evento || !local) {
+        return res.status(400).json({ error: 'Todos os campos são obrigatórios.' });
+    }
+
+    const query = 'INSERT INTO eventos (nome, descricao, data_evento, local, imagens) VALUES (?, ?, ?, ?, ?)'; // Adicione lógica para armazenar imagens
+    db.query(query, [nome, descricao, data_evento, local, JSON.stringify(imagens)], (err) => {
+        if (err) {
+            console.error('Erro ao criar evento:', err);
+            return res.status(500).json({ error: 'Erro ao criar evento' });
+        }
+        res.json({ mensagem: 'Evento criado com sucesso.' });
+    });
+});
+app.get('/getEventos', loadEventosIntra); // Certifique-se de que a função loadEventos está definida
+app.put('/intra/updateEvento/:id', updateEvento); // Rota para atualizar um evento
+app.delete('/intra/deleteEvento/:id', deleteEvento); // Rota para deletar um evento
+app.get('/intra/getEvento/:id', getEventoById); // Rota para obter evento pelo ID
+app.put('/intra/updateUsuario/:id', (req, res) => {
+    const { id } = req.params; // Obtém o ID do usuário da URL
+    const { nome, email, telefone, tipo_usuario, nivel } = req.body; // Obtém os dados do usuário a serem atualizados
+
+    const query = 'UPDATE usuarios SET nome = ?, email = ?, telefone = ?, tipo_usuario = ?, nivel = ? WHERE id = ?';
+    db.query(query, [nome, email, telefone, tipo_usuario, nivel, id], (err) => {
+        if (err) {
+            console.error('Erro ao atualizar usuário:', err);
+            return res.status(500).json({ error: 'Erro ao atualizar usuário' });
+        }
+        res.json({ mensagem: 'Usuário atualizado com sucesso.' });
+    });
+});
+
+app.get('/api/challenges', getChallengesData);
 
 
 io.on('connection', (socket) => {

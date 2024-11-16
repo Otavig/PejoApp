@@ -445,7 +445,7 @@ main {
 }
 
 .search-container input[type="text"], .search {
-    width: 75%;
+    width: 60%;
     padding: 10px;
     font-size: 16px;
     border: 1px solid #ccc;
@@ -515,4 +515,23 @@ td {
 
 .action-icons .delete-icon:hover {
     fill: #f44336;
+}
+
+/* Estilo do scrollbar */
+::-webkit-scrollbar {
+    width: 12px; /* Largura do scrollbar */
+}
+
+::-webkit-scrollbar-track {
+    background: #2c2c2c; /* Cor do fundo do scrollbar */
+    border-radius: 10px; /* Bordas arredondadas do track */
+}
+
+::-webkit-scrollbar-thumb {
+    background: #0ef; /* Cor do thumb do scrollbar */
+    border-radius: 10px; /* Bordas arredondadas do thumb */
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #0a8; /* Cor do thumb ao passar o mouse */
 }

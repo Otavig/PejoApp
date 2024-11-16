@@ -51,6 +51,252 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Carregar os usuários
     loadUsers();
+
+    // Função para criar um novo desafio
+    document.getElementById('createCardButton').addEventListener('click', () => {
+        const newCard = {
+            titulo: document.getElementById('newCardTitle')?.value,
+            descricao: document.getElementById('newCardDescription')?.value,
+            estado: document.getElementById('newCardState')?.value,
+            dificuldade: document.getElementById('newCardDificuldade')?.value
+        };
+
+        // Verifique se todos os campos estão preenchidos
+        if (!newCard.titulo || !newCard.descricao || !newCard.estado || !newCard.dificuldade) {
+            alert('Todos os campos são obrigatórios.');
+            return;
+        }
+
+        fetch('http://localhost:3000/intra/createDesafio', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(newCard),
+        })
+        .then(response => {
+            if (response.ok) {
+                closeCreateCardModal();
+                loadChallenges(); // Certifique-se de que esta função está definida
+            } else {
+                console.error('Erro ao criar desafio');
+            }
+        })
+        .catch(error => console.error('Erro ao criar desafio:', error));
+    });
+
+    // Variável para controlar a ordem de classificação
+    let sortOrder = 'asc'; // 'asc' para crescente, 'desc' para decrescente
+
+    // Função para ordenar cards
+    function sortCards(containerId, criteria) {
+        const container = document.getElementById(containerId);
+        const cards = Array.from(container.children);
+        
+        cards.sort((a, b) => {
+            const aValue = a.getAttribute(`data-${criteria}`);
+            const bValue = b.getAttribute(`data-${criteria}`);
+            
+            // Lógica para comparar valores
+            if (criteria === 'id') {
+                return sortOrder === 'asc' ? aValue - bValue : bValue - aValue; // Ordenação numérica
+            } else {
+                return sortOrder === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue); // Ordenação alfabética
+            }
+        });
+
+        // Limpar o container e adicionar os cards ordenados
+        container.innerHTML = '';
+        cards.forEach(card => container.appendChild(card));
+    }
+
+    // Função para inverter a ordem de classificação
+    function toggleSortOrder() {
+        sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'; // Alterna entre 'asc' e 'desc'
+        const sortOptions = document.getElementById('sortOptions');
+        sortCards('desafiosContainer', sortOptions.value); // Reordena os cards com a nova ordem
+    }
+
+    // Adiciona evento para o botão de inverter a ordem
+    document.getElementById('toggleSortOrderButton').addEventListener('click', toggleSortOrder);
+
+    let currentPage = 1; // Página atual
+    const itemsPerPage = 10; // Número de cards por página
+
+    // Função para carregar os desafios
+    function loadChallenges() {
+        fetch('http://localhost:3000/getDesafios')  // URL do servidor Node.js
+            .then(response => response.json())
+            .then(data => {
+                const desafiosContainer = document.getElementById('desafiosContainer');
+                desafiosContainer.innerHTML = ''; // Limpa os desafios anteriores
+
+                // Paginação
+                const totalPages = Math.ceil(data.length / itemsPerPage);
+                const startIndex = (currentPage - 1) * itemsPerPage;
+                const endIndex = startIndex + itemsPerPage;
+                const paginatedData = data.slice(startIndex, endIndex);
+
+                paginatedData.forEach(desafio => {
+                    const card = document.createElement('div');
+                    card.classList.add('card');
+                    // Adicionando atributos de dados para ordenação
+                    card.setAttribute('data-estado', desafio.estado);
+                    card.setAttribute('data-id', desafio.id);
+                    card.innerHTML += `
+                        <div class="card-header">${desafio.titulo}</div>
+                        <div class="card-body">
+                            <p><strong>ID:</strong> ${desafio.id}</p>
+                            <p><strong>Descrição:</strong> ${desafio.descricao}</p>
+                            <p><strong>Estado:</strong> ${desafio.estado}</p>
+                            <p><strong>Dificuldade:</strong> ${desafio.dificuldade}</p>
+                        </div>
+                        <div class="card-footer">
+                            <button style="width: 40%;" onclick="editItemDesafio(${desafio.id})">✏️</button>
+                            <button style="width: 40%;" onclick="deleteDesafio(${desafio.id})">🗑️</button>
+                        </div>
+                    `;
+                    desafiosContainer.appendChild(card);
+                });
+
+                // Atualiza a informação da página
+                document.getElementById('pageInfo').textContent = `Página ${currentPage} de ${totalPages}`;
+                document.getElementById('prevPage').disabled = currentPage === 1; // Desabilita botão se na primeira página
+                document.getElementById('nextPage').disabled = currentPage === totalPages; // Desabilita botão se na última página
+            })
+            .catch(error => {
+                console.error('Erro ao carregar desafios:', error);
+            });
+    }
+
+    // Função para mudar de página
+    function changePage(direction) {
+        currentPage += direction;
+        loadChallenges(); // Recarrega os desafios com a nova página
+    }
+
+    // Variável para controlar a ordem de classificação dos usuários
+    let userSortOrder = 'asc'; // 'asc' para crescente, 'desc' para decrescente
+
+    // Função para ordenar usuários
+    function sortUsers(containerId, criteria) {
+        const container = document.getElementById(containerId);
+        const users = Array.from(container.children);
+        
+        users.sort((a, b) => {
+            const aValue = a.getAttribute(`data-${criteria}`);
+            const bValue = b.getAttribute(`data-${criteria}`);
+            
+            // Lógica para comparar valores
+            return userSortOrder === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue); // Ordenação alfabética
+        });
+
+        container.innerHTML = '';
+        users.forEach(user => container.appendChild(user));
+    }
+
+    // Função para inverter a ordem de classificação dos usuários
+    function toggleUserSortOrder() {
+        userSortOrder = userSortOrder === 'asc' ? 'desc' : 'asc'; // Alterna entre 'asc' e 'desc'
+        const userSortOptions = document.getElementById('userSortOptions');
+        sortUsers('usuariosContainer', userSortOptions.value); // Reordena os usuários com a nova ordem
+    }
+
+    // Adiciona evento para o botão de inverter a ordem dos usuários
+    document.getElementById('userSortOptions').addEventListener('change', toggleUserSortOrder);
+
+    // Função para alternar a exibição do campo de data e hora
+    window.toggleDateInput = function() {
+        const activationType = document.getElementById('activationType').value;
+        const dateInputContainer = document.getElementById('dateInputContainer');
+        dateInputContainer.style.display = activationType === 'pre-definido' ? 'block' : 'none';
+    };
+
+    // Função para abrir o modal de criação de evento
+    window.openCreateEventModal = function() {
+        // Limpa os campos do modal antes de abrir
+        document.getElementById('eventName').value = '';
+        document.getElementById('eventDescription').value = '';
+        document.getElementById('eventDate').value = '';    
+        document.getElementById('eventLocation').value = '';
+        document.getElementById('eventImages').value = ''; // Limpa o campo de imagens
+
+        document.getElementById('createEventModal').style.display = 'block'; // Abre o modal
+    };
+
+    // Função para fechar o modal de criação de evento
+    window.closeCreateEventModal = function() {
+        document.getElementById('createEventModal').style.display = 'none';
+    };
+
+    // Função para criar um novo evento
+    document.getElementById('createEventButton').addEventListener('click', () => {
+        // Limpa os campos do modal antes de abrir
+        document.getElementById('eventName').value = '';
+        document.getElementById('eventDescription').value = '';
+        document.getElementById('eventDate').value = '';    
+        document.getElementById('eventLocation').value = '';
+        document.getElementById('eventImages').value = ''; // Limpa o campo de imagens
+
+        // Abre o modal
+        window.openCreateEventModal();
+    });
+
+    // Carregar os eventos
+    loadEventos(); // Chama a função para carregar eventos
+
+    // Função para salvar um desafio
+    function saveChallenge() {
+        // Lógica para salvar o desafio
+        // ...
+
+        // Após salvar, recarregar os desafios
+        loadChallenges(); // Certifique-se de que esta função está definida
+    }
+
+    // Função para salvar um evento
+    function saveEvent() {
+        // Lógica para salvar o evento
+        // ...
+
+        // Após salvar, recarregar os eventos
+        loadEvents(); // Certifique-se de que esta função está definida
+    }
+
+    // Adicionando EventListeners
+    document.addEventListener('DOMContentLoaded', function() {
+        const saveEditButton = document.getElementById('saveEditButton');
+        if (saveEditButton) {
+            saveEditButton.addEventListener('click', saveChallenge); // ou saveEvent, dependendo do contexto
+        }
+    });
+
+    // Função para carregar dados do dashboard
+    function loadDashboardData() {
+        Promise.all([
+            fetch('http://localhost:3000/api/desafios/count'), // Endpoint para contar desafios
+            fetch('http://localhost:3000/api/usuarios/count'), // Endpoint para contar usuários
+            fetch('http://localhost:3000/api/eventos/recent'), // Endpoint para eventos recentes
+            fetch('http://localhost:3000/api/top-players') // Endpoint para jogadores com maiores níveis
+        ])
+        .then(responses => Promise.all(responses.map(res => res.json())))
+        .then(data => {
+            const [activeChallengesCount, usersCount, recentEvents, topPlayers] = data;
+
+            // Atualiza o DOM com os dados
+            document.getElementById('activeChallenges').textContent = activeChallengesCount;
+            document.getElementById('usersCount').textContent = usersCount.count;
+            document.getElementById('recentEvents').textContent = recentEvents.map(event => event.nome).join(', ');
+            document.getElementById('topPlayers').textContent = topPlayers
+            .slice(0, 3)
+            .map((player, index) => `${index + 1}: ${player.nome}`) // Adiciona o índice + 1
+            .join(', ');        
+        })
+        .catch(error => console.error('Erro ao carregar dados do dashboard:', error));
+    }
+
+    // Chama a função para carregar os dados ao iniciar
+    loadDashboardData();
 });
 
 // Função para filtrar cards (desafios ou usuários) com base no texto digitado
@@ -68,44 +314,6 @@ function searchCard(containerId, searchTerm) {
             card.style.display = 'none'; // Oculta o card caso contrário
         }
     });
-}
-
-
-// Função para carregar os desafios
-function loadChallenges() {
-    fetch('http://localhost:3000/getDesafios')  // URL do servidor Node.js
-        .then(response => response.json())
-        .then(data => {
-            const desafiosContainer = document.getElementById('desafiosContainer');
-            desafiosContainer.innerHTML = ''; // Limpa os desafios anteriores
-
-            data.forEach(desafio => {
-                const card = document.createElement('div');
-                card.classList.add('card');
-                // Adicionando atributos de dados para ordenação
-                card.setAttribute('data-estado', desafio.estado);
-                card.setAttribute('data-id', desafio.id);
-                card.setAttribute('data-tipo', desafio.tipo);
-                card.innerHTML += `
-                    <div class="card-header">${desafio.titulo}</div>
-                    <div class="card-body">
-                        <p><strong>ID:</strong> ${desafio.id}</p>
-                        <p><strong>Descrição:</strong> ${desafio.descricao}</p>
-                        <p><strong>Estado:</strong> ${desafio.estado}</p>
-                        <p><strong>Tipo:</strong> ${desafio.tipo}</p>
-                        <p><strong>Data de ativação:</strong> ${desafio.data_ativacao || "Sem data definida"}</p>
-                    </div>
-                    <div class="card-footer">
-                        <button style="width: 40%;" onclick="editItemDesafio(${desafio.id})">✏️</button>
-                        <button style="width: 40%;" onclick="deleteDesafio(${desafio.id})">🗑️</button>
-                    </div>
-                `;
-                desafiosContainer.appendChild(card);
-            });
-        })
-        .catch(error => {
-            console.error('Erro ao carregar desafios:', error);
-        });
 }
 
 // Função para carregar os usuários
@@ -144,7 +352,7 @@ function loadUsers() {
         });
 }
 
-// Função de Logout (não alterada)
+// Funão de Logout (não alterada)
 function logout() {
     localStorage.removeItem('loggedIn');
     localStorage.removeItem('userEmail');
@@ -162,11 +370,27 @@ function editItemDesafio(id) {
         })
         .then(data => {
             document.getElementById('modalTitle').textContent = 'Editar Desafio';
-            document.getElementById('editDesafioTitle').value = data.titulo;
-            document.getElementById('editDesafioDescription').value = data.descricao;
-            document.getElementById('editDesafioEstado').value = data.estado;
-            document.getElementById('editDesafioTipo').value = data.tipo;
-            document.getElementById('editDesafioNivel').value = data.nivel;
+            
+            // Verifique se o elemento existe antes de definir o valor
+            const titleInput = document.getElementById('editDesafioTitle');
+            if (titleInput) {
+                titleInput.value = data.titulo; // Preenche o título
+            }
+
+            const descriptionInput = document.getElementById('editDesafioDescription');
+            if (descriptionInput) {
+                descriptionInput.value = data.descricao; // Preenche a descrição
+            }
+
+            const estadoInput = document.getElementById('editDesafioEstado');
+            if (estadoInput) {
+                estadoInput.value = data.estado; // Preenche o estado
+            }
+
+            const dificuldadeInput = document.getElementById('editDesafioDificuldade');
+            if (dificuldadeInput) {
+                dificuldadeInput.value = data.dificuldade; // Preenche a dificuldade
+            }
 
             document.getElementById('editDesafioModal').style.display = 'block';
             document.getElementById('saveDesafioEditButton').onclick = () => saveDesafioEdit(id);
@@ -183,8 +407,7 @@ function saveDesafioEdit(id) {
         titulo: document.getElementById('editDesafioTitle').value,
         descricao: document.getElementById('editDesafioDescription').value,
         estado: document.getElementById('editDesafioEstado').value,
-        tipo: document.getElementById('editDesafioTipo').value,
-        nivel: document.getElementById('editDesafioNivel').value,
+        dificuldade: document.getElementById('editDesafioDificuldade').value
     };
 
     fetch(`http://localhost:3000/intra/updateDesafio/${id}`, {
@@ -268,43 +491,15 @@ function saveUserEdit(id) {
     .catch(error => console.error('Erro ao salvar usuário:', error));
 }
 
-// Função para abrir o modal de criação de card
+// Funço para abrir o modal de criação de desafio
 function openCreateCardModal() {
     document.getElementById('createCardModal').style.display = 'block';
 }
 
-// Função para fechar o modal de criação de card
+// Função para fechar o modal de criação de desafio
 function closeCreateCardModal() {
     document.getElementById('createCardModal').style.display = 'none';
 }
-
-// Função para criar um novo card
-document.getElementById('createCardButton').onclick = () => {
-    const newCard = {
-        titulo: document.getElementById('newCardTitle').value,
-        descricao: document.getElementById('newCardDescription').value,
-        estado: document.getElementById('newCardState').value,
-        tipo: document.getElementById('newCardType').value,
-        nivel: document.getElementById('newCardLevel').value,
-    };
-
-    fetch('http://localhost:3000/intra/createDesafio', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newCard),
-    })
-    .then(response => {
-        if (response.ok) {
-            closeCreateCardModal();
-            loadChallenges(); // Recarregar os desafios para mostrar o novo card
-        } else {
-            console.error('Erro ao criar desafio');
-        }
-    })
-    .catch(error => console.error('Erro ao criar desafio:', error));
-};
 
 function deleteUser(id) {
     fetch(`http://localhost:3000/intra/deleteUsuario/${id}`, { // Supondo que você tenha uma rota para deletar
@@ -322,4 +517,153 @@ function deleteUser(id) {
         }
     })
     .catch(error => console.error('Erro ao deletar item:', error));
+}
+
+// Função para deletar um desafio
+function deleteDesafio(id) {
+    fetch(`http://localhost:3000/intra/deleteDesafio/${id}`, {
+        method: 'DELETE',
+    })
+    .then(response => {
+        if (response.ok) {
+            // Remove o card correspondente da interface
+            const card = document.querySelector(`.card[data-id="${id}"]`);
+            if (card) {
+                card.remove(); // Remove o card do DOM
+            }
+        } else {
+            console.error('Erro ao deletar desafio');
+        }
+    })
+    .catch(error => console.error('Erro ao deletar desafio:', error));
+}
+
+// Função para carregar os eventos
+function loadEventos() {
+    fetch('http://localhost:3000/getEventos')  // URL do servidor Node.js
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Erro ao carregar eventos: ' + response.statusText);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Eventos carregados:', data); // Verifique se os dados estão corretos
+            const eventosContainer = document.getElementById('eventosContainer');
+            eventosContainer.innerHTML = ''; // Limpa os eventos anteriores
+
+            data.forEach(evento => {
+                const cardEvento = document.createElement('div');
+                cardEvento.classList.add('card');
+                // Adicionando atributos de dados para ordenação
+                cardEvento.setAttribute('data-id', evento.id);
+                cardEvento.innerHTML += `
+                    <div class="card-header">${evento.nome}</div>
+                    <div class="card-body">
+                        <p><strong>ID:</strong> ${evento.id}</p>
+                        <p><strong>Descrição:</strong> ${evento.descricao}</p>
+                        <p><strong>Data:</strong> ${new Date(evento.data_evento).toLocaleString('pt-BR')}</p>
+                        <p><strong>Local:</strong> ${evento.local}</p>
+                    </div>
+                    <div class="card-footer">
+                        <button style="width: 40%;" onclick="editItemEvento(${evento.id})">✏️</button>
+                        <button style="width: 40%;" onclick="deleteEvento(${evento.id})">🗑️</button>
+                    </div>
+                `;
+                eventosContainer.appendChild(cardEvento);
+            });
+        })
+        .catch(error => {
+            console.error('Erro ao carregar eventos:', error);
+        });
+}
+
+// Função para editar um evento
+function editItemEvento(id) {
+    fetch(`http://localhost:3000/intra/getEvento/${id}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Erro ao buscar evento: ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Evento para editar:', data); // Verifique se os dados estão corretos
+            document.getElementById('modalTitle').textContent = 'Editar Evento';
+            document.getElementById('updateEventName').value = data.nome; // Preenche o nome
+            document.getElementById('updateEventDescription').value = data.descricao; // Preenche a descrição
+            document.getElementById('updateEventDate').value = data.data_evento; // Preenche a data do evento
+            document.getElementById('updateEventLocation').value = data.local; // Preenche o local
+
+            document.getElementById('editEventModal').style.display = 'block';
+            document.getElementById('saveEventEditButton').onclick = () => saveEventEdit(id);
+        })
+        .catch(error => {
+            console.error('Erro ao carregar evento:', error);
+            alert('Erro ao carregar evento. Verifique o console para mais detalhes.');
+        });
+}
+
+// Função para salvar as edições do evento
+function saveEventEdit(id) {
+    const updatedEvent = {
+        nome: document.getElementById('updateEventName').value.trim(),
+        descricao: document.getElementById('updateEventDescription').value.trim(),
+        data_evento: document.getElementById('updateEventDate').value.trim(),
+        local: document.getElementById('updateEventLocation').value.trim(),
+    };
+
+    // Verifique se todos os campos estão preenchidos
+    if (!updatedEvent.nome || !updatedEvent.descricao || !updatedEvent.data_evento || !updatedEvent.local) {
+        alert('Todos os campos são obrigatórios.');
+        return;
+    }
+
+    // Adicione um console.log para verificar os valores
+    console.log('Dados do evento:', updatedEvent);
+
+    // Envia a requisição PUT para atualizar o evento
+    fetch(`http://localhost:3000/intra/updateEvento/${id}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json', // Definindo o tipo de conteúdo como JSON
+        },
+        body: JSON.stringify(updatedEvent), // Envia o objeto atualizado como JSON
+    })
+    .then(response => {
+        if (response.ok) {
+            closeEditEventModal();
+            loadEventos(); // Recarregar os eventos para mostrar as alterações
+        } else {
+            console.error('Erro ao atualizar evento');
+            return response.json().then(err => {
+                console.error('Detalhes do erro:', err); // Loga detalhes do erro
+            });
+        }
+    })
+    .catch(error => console.error('Erro ao salvar evento:', error));
+}
+
+// Função para fechar o modal de edição de evento
+function closeEditEventModal() {
+    document.getElementById('editEventModal').style.display = 'none';
+}
+
+// Função para deletar um evento
+function deleteEvento(id) {
+    fetch(`http://localhost:3000/intra/deleteEvento/${id}`, {
+        method: 'DELETE',
+    })
+    .then(response => {
+        if (response.ok) {
+            // Remove o card correspondente da interface
+            const card = document.querySelector(`.card[data-id="${id}"]`);
+            if (card) {
+                card.remove(); // Remove o card do DOM
+            }
+        } else {
+            console.error('Erro ao deletar evento');
+        }
+    })
+    .catch(error => console.error('Erro ao deletar evento:', error));
 }
