@@ -33,10 +33,6 @@ const ChatScreen = ({ navigation }) => {
         navigation.navigate('ConversationScreen', { person });
     };
 
-    const handleAddFriend = (person) => {
-        console.log('Adding friend:', person); // Adicionado para depuração
-        // Aqui você pode implementar a lógica para adicionar amigos
-    };
 
     return (
         <View style={styles.container}>
@@ -59,10 +55,6 @@ const ChatScreen = ({ navigation }) => {
                             <View style={styles.textContainer}>
                                 <Text style={styles.cardName}>{item.name}</Text>
                                 <Text style={styles.cardMessage}>{item.details}</Text>
-                                <Button 
-                                    title="Add Friend" 
-                                    onPress={() => handleAddFriend(item)} // Adicionando a funcionalidade de adicionar amigo
-                                />
                             </View>
                         </View>
                     </TouchableOpacity>

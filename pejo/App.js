@@ -12,10 +12,8 @@ import EventsScreen from './src/screens/EventsScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import ChatScreen from './src/screens/subScreen/ChatScreen'; 
 import ConversationScreen from './src/screens/subScreen/ConversationScreen'; 
-import ListChallenge from './src/screens/subScreen/ListChallenges';
 import EventDetailsScreen from './src/screens/subScreen/EventDetailsScreen';
 import EditProfile from './src/screens/subScreen/EditProfile'
-import EventList from './src/screens/subScreen/EventList'
 import ContractScreen from './src/screens/subScreen/ContractScreen'
 import LoginScreen from './src/screens/LoginScreen'; // Importando a tela de login
 // import RegisterScreen from './src/screens/RegisterScreen'; // Importando a tela de registro
@@ -29,7 +27,7 @@ function TabNavigator() {
     <Tab.Navigator
       screenOptions={{
         tabBarStyle: { 
-          height: 60,
+          height: 70,
         },
         tabBarActiveTintColor: '#3641bf', // Cor para o ícone ativo
         tabBarInactiveTintColor: '#8E8E93', // Cor para o ícone inativo
@@ -52,7 +50,7 @@ function TabNavigator() {
         options={{ 
           headerShown: false,
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person-circle-outline" size={size * 1.1} color={color} />
+            <Ionicons name="person-circle-outline" size={size * 1.3} color={color} />
           )
         }} 
       />
@@ -105,19 +103,9 @@ export default function App() {
           options={{ title: 'Editando perfil' }} 
         />
         <Stack.Screen 
-          name="ListChallenges" // Adicionando a tela de listagem de desafios
-          component={ListChallenge} 
-          options={{ title: 'Listagem Desafios' }} 
-        />
-        <Stack.Screen 
           name="EventDetailsScreen" // Adicionando a tela de detalhes do evento
           component={EventDetailsScreen} 
           options={{ title: 'Detalhes do Evento' }} 
-        />
-        <Stack.Screen 
-          name="EventList" // Adicionando a tela de conversa
-          component={EventList} 
-          options={{ title: 'Eventos anteriores' }} 
         />
         <Stack.Screen 
           name="ContractScreen" // Adicionando a tela de conversa

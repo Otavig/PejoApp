@@ -11,6 +11,12 @@ const bodyParser = require('body-parser');
 const path = require('path');
 require('dotenv').config();
 const multer = require('multer');
+const fs = require('fs');
+
+const directoryPath = path.join(__dirname, 'imgs_users');
+if (!fs.existsSync(directoryPath)) {
+    fs.mkdirSync(directoryPath);
+}
 
 // Criação da conexão com o banco de dados
 const db = mysql.createConnection({
@@ -124,7 +130,7 @@ const register = async (req, res) => {
                     return res.status(500).json({ erro: 'Erro ao registrar usuário' });
                 }
 
-                const confirmationLink = `http://192.168.0.100:3000/reset-password?token=${confirmationToken}`;
+                const confirmationLink = `http://192.168.0.102:3000/reset-password?token=${confirmationToken}`;
                 await sendConfirmationEmail(email, nome, confirmationLink);
 
                 res.json({ mensagem: 'Usuário registrado com sucesso. Verifique seu e-mail para confirmar.' });
@@ -306,7 +312,7 @@ const sendPasswordResetEmail = async (email, token) => {
             <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ccc; border-radius: 5px;">
                 <h2 style="color: #2196F3;">Redefinição de Senha</h2>
                 <p>Você solicitou a redefinição de sua senha. Clique no link abaixo para redefinir sua senha:</p>
-                <a href="http://192.168.0.100:3000/reset-password?token=${token}" style="background-color: #2196F3; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px;">Redefinir Senha</a>
+                <a href="http://192.168.0.102:3000/reset-password?token=${token}" style="background-color: #2196F3; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px;">Redefinir Senha</a>
                 <p>Se você não solicitou essa mudança, ignore este e-mail.</p>
             </div>
         `,
@@ -421,11 +427,24 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// Rota para atualizar informações do usuário e imagem
+// Definição do armazenamento para imagens de perfil
+const storagePerfil = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'imgs_users/'); // Diretório onde as imagens serão armazenadas
+    },
+    filename: (req, file, cb) => {
+        cb(null, `${Date.now()}-${file.originalname}`); // Nome único com timestamp
+    },
+});
+
+const uploadPerfil = multer({ storage: storagePerfil });
+
+// Função para atualizar o usuário
 const updateUser = (req, res) => {
-    const { id } = req.params; // Obtém o ID do usuário da URL
-    const { name, email, phone, bio } = req.body; // Obtém os dados do usuário a serem atualizados
-    const profileImage = req.file ? req.file.filename : null; // Obtém o nome da imagem se existir
+    const { id } = req.params;
+    const { name, email, phone, bio } = req.body;
+    // Se uma imagem foi enviada, usa ela. Caso contrário, mantém a imagem anterior.
+    const profileImage = req.file ? req.file.filename : req.body.profileImage;
 
     const query = 'UPDATE usuarios SET nome = ?, email = ?, telefone = ?, bio = ?, profileImage = ? WHERE id = ?';
     db.query(query, [name, email, phone, bio, profileImage, id], (err) => {
@@ -436,6 +455,7 @@ const updateUser = (req, res) => {
         res.json({ mensagem: 'Usuário atualizado com sucesso.' });
     });
 };
+
 
 // Rota para obter mensagens
 const getMessages = (req, res) => {
@@ -467,19 +487,19 @@ const createDesafio = (req, res) => {
 
 // Rota para criar um novo evento
 const createEvento = (req, res) => {
-    const { nome, descricao, data_evento, local } = req.body; // Captura os dados do evento
+    const { nome, descricao, data_evento, local, coordenadas } = req.body; // Captura os dados do evento
     const imagens = req.files; // Captura as imagens
 
     // Verifique se todos os campos necessários estão presentes
-    if (!nome || !descricao || !data_evento || !local) {
+    if (!nome || !descricao || !data_evento || !local || !coordenadas) {
         return res.status(400).json({ error: 'Todos os campos são obrigatórios.' });
     }
 
     // Lógica para armazenar as imagens (se necessário)
     // Aqui você pode implementar a lógica para salvar as imagens no servidor ou no banco de dados
 
-    const query = 'INSERT INTO eventos (nome, descricao, data_evento, local, imagens) VALUES (?, ?, ?, ?, ?)'; // Adicione lógica para armazenar imagens
-    db.query(query, [nome, descricao, data_evento, local, JSON.stringify(imagens)], (err) => {
+    const query = 'INSERT INTO eventos (nome, descricao, data_evento, local, imagens, coordenadas) VALUES (?, ?, ?, ?, ?, ?)'; // Adicione lógica para armazenar imagens
+    db.query(query, [nome, descricao, data_evento, local, JSON.stringify(imagens), coordenadas], (err) => {
         if (err) {
             console.error('Erro ao criar evento:', err);
             return res.status(500).json({ error: 'Erro ao criar evento' });
@@ -503,13 +523,13 @@ const loadEventosIntra = async (req, res) => {
 // Rota para atualizar um evento
 const updateEvento = (req, res) => {
     const { id } = req.params; // Obtém o ID do evento da URL
-    const { nome, descricao, data_evento, local } = req.body; // Obtém os dados do evento a serem atualizados
+    const { nome, descricao, data_evento, local, coordenadas } = req.body; // Obtém os dados do evento a serem atualizados
 
     console.log('Atualizando evento com ID:', id);
-    console.log('Dados recebidos:', { nome, descricao, data_evento, local });
+    console.log('Dados recebidos:', { nome, descricao, data_evento, local, coordenadas });
 
-    const query = 'UPDATE eventos SET nome = ?, descricao = ?, data_evento = ?, local = ? WHERE id = ?';
-    db.query(query, [nome, descricao, data_evento, local, id], (err) => {
+    const query = 'UPDATE eventos SET nome = ?, descricao = ?, data_evento = ?, local = ?, coordenadas = ? WHERE id = ?';
+    db.query(query, [nome, descricao, data_evento, local, coordenadas, id], (err) => {
         if (err) {
             console.error('Erro ao atualizar evento:', err);
             return res.status(500).json({ error: 'Erro ao atualizar evento', details: err });
@@ -648,20 +668,20 @@ app.put('/intra/updateDesafio/:id', updateDesafio); // Rota para atualizar um de
 app.delete('/intra/deleteUsuario/:id', deleteUsuario); // Rota para deletar um usuário
 app.delete('/intra/deleteDesafio/:id', deleteDesafio); // Rota para deletar um desafio
 app.get('/user/:id', getUserById); // Adiciona a rota para obter usuário
-app.put('/userEdit/:id', upload.single('profileImage'), updateUser); // Rota para atualizar informações do usuário e imagem
+app.put('/userEdit/:id', uploadPerfil.single('profileImage'), updateUser);
 app.post('/intra/createDesafio', createDesafio); // Rota para criar um novo desafio
 app.get('/api/messages/:personId', getMessages); // Rota para obter mensagens
 app.post('/intra/createEvento', upload.array('imagens'), (req, res) => {
-    const { nome, descricao, data_evento, local } = req.body; // Captura os dados do evento
+    const { nome, descricao, data_evento, local, coordenadas} = req.body; // Captura os dados do evento
     const imagens = req.files.map(file => file.filename); // Captura os nomes das imagens
 
     // Verifique se todos os campos necessários estão presentes
-    if (!nome || !descricao || !data_evento || !local) {
+    if (!nome || !descricao || !data_evento || !local || !coordenadas) {
         return res.status(400).json({ error: 'Todos os campos são obrigatórios.' });
     }
 
-    const query = 'INSERT INTO eventos (nome, descricao, data_evento, local, imagens) VALUES (?, ?, ?, ?, ?)'; // Adicione lógica para armazenar imagens
-    db.query(query, [nome, descricao, data_evento, local, JSON.stringify(imagens)], (err) => {
+    const query = 'INSERT INTO eventos (nome, descricao, data_evento, local, imagens, coordenadas) VALUES (?, ?, ?, ?, ?, ?)'; // Adicione lógica para armazenar imagens
+    db.query(query, [nome, descricao, data_evento, local, JSON.stringify(imagens), coordenadas], (err) => {
         if (err) {
             console.error('Erro ao criar evento:', err);
             return res.status(500).json({ error: 'Erro ao criar evento' });
@@ -688,6 +708,10 @@ app.put('/intra/updateUsuario/:id', (req, res) => {
 });
 
 app.get('/api/challenges', getChallengesData);
+
+// Serve imagens da pasta 'imgs_eventos'
+app.use('/imagesEventos', express.static(path.join(__dirname, 'imgs_eventos')));
+app.use('/imagesUsers', express.static(path.join(__dirname, 'imgs_users')));
 
 
 io.on('connection', (socket) => {

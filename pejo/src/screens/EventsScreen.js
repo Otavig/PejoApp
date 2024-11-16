@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     View,
     Text,
@@ -6,116 +6,151 @@ import {
     ScrollView,
     TouchableOpacity,
     Dimensions,
-    PanResponder,
     FlatList,
+    TextInput,
     ImageBackground,
+    Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 
 const { width, height } = Dimensions.get('window');
 
-const mockEvents = [
-    {
-        id: '1',
-        title: 'Summer Festival 2024',
-        date: '24th October 2024',
-        location: 'Beachside Park',
-        image: 'https://via.placeholder.com/350',
-    },
-    {
-        id: '2',
-        title: 'Tech Expo 2024',
-        date: '15th November 2024',
-        location: 'Downtown Convention Center',
-        image: 'https://via.placeholder.com/350',
-    },
-    {
-        id: '3',
-        title: 'Music Concert',
-        date: '1st December 2024',
-        location: 'Stadium Arena',
-        image: 'https://via.placeholder.com/350',
-    },
-    // Add more mock events as needed
-];
-
 const EventsScreen = () => {
     const navigation = useNavigation();
+    const [searchTerm, setSearchTerm] = useState('');
+    const [futureEvents, setFutureEvents] = useState([]);
+    const [pastEvents, setPastEvents] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    // Function to open the chat
-    const openChat = () => {
-        navigation.navigate('ChatScreen');
+    // Função para buscar os eventos da API
+    const fetchEvents = async () => {
+        try {
+            const response = await fetch('http://192.168.0.102:3000/getEventos');
+            const data = await response.json();
+            const today = new Date();
+    
+            // Separar eventos futuros e passados
+            const future = data
+                .filter(event => new Date(event.data_evento) >= today)
+                .sort((a, b) => new Date(a.data_evento) - new Date(b.data_evento)); // Ordena eventos futuros
+    
+            const past = data
+                .filter(event => new Date(event.data_evento) < today)
+                .sort((a, b) => new Date(b.data_evento) - new Date(a.data_evento)); // Ordena eventos passados do mais recente para o mais antigo
+    
+            setFutureEvents(future);
+            setPastEvents(past);
+            setLoading(false);
+        } catch (error) {
+            console.error("Erro ao buscar eventos: ", error);
+            setLoading(false);
+        }
     };
-
-    // Adding PanResponder to detect swipe gesture
-    const panResponder = useRef(
-        PanResponder.create({
-            onMoveShouldSetPanResponder: (evt, gestureState) => {
-                return gestureState.dx < -30;
-            },
-            onPanResponderRelease: () => {
-                navigation.navigate('ChatScreen');
-            },
-        })
-    ).current;
-
-    // Function to render each event card
-    const renderEventItem = ({ item }) => (
-        <TouchableOpacity 
-            style={styles.eventCard} 
-            onPress={() => navigation.navigate('EventDetailsScreen', { event: item })} // Navegando para a tela de detalhes
-        >
-            <ImageBackground source={{ uri: item.image }} style={styles.eventImage} imageStyle={{ borderRadius: 10 }}>
-                <View style={styles.eventDetails}>
-                    <Text style={styles.eventTitle}>{item.title}</Text>
-                    <Text style={styles.eventDate}>{item.date}</Text>
-                    <Text style={styles.eventLocation}>{item.location}</Text>
-                </View>
-            </ImageBackground>
-        </TouchableOpacity>
+    
+    // UseFocusEffect para recarregar eventos toda vez que a tela for reaberta
+    useFocusEffect(
+        React.useCallback(() => {
+            fetchEvents();
+        }, [])
     );
+
+    const formatDate = (dateString) => {
+        const date = new Date(dateString);
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0'); // O mês começa do zero, então adicionamos 1
+        const year = date.getFullYear();
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+    
+        return `${day}/${month}/${year} às ${hours}:${minutes}`;
+    };
+    
+    const renderEventItem = ({ item }) => {
+        let imagensArray = [];
+        try {
+            imagensArray = JSON.parse(item.imagens);
+        } catch (error) {
+            console.error("Erro ao processar imagens: ", error);
+        }
+
+        return (
+            <TouchableOpacity
+                style={styles.eventCard}
+                onPress={() => navigation.navigate('EventDetailsScreen', { event: item })}
+            >
+                <ImageBackground
+                    source={{
+                        uri: `http://192.168.0.102:3000/imagesEventos/${imagensArray.length > 0 ? imagensArray[0] : 'default.png'}`,
+                    }}
+                    style={styles.eventImage}
+                    imageStyle={{ borderRadius: 10 }}
+                >
+                    <View style={styles.eventDetails}>
+                        <Text style={styles.eventTitle}>{item.nome}</Text>
+                        <Text style={styles.eventDate}>{formatDate(item.data_evento)}</Text>
+                        <Text style={styles.eventLocation}>{item.local}</Text>
+                    </View>
+                </ImageBackground>
+            </TouchableOpacity>
+        );
+    };
 
     return (
         <View style={styles.container}>
             {/* Header */}
-            <View style={[styles.header, { marginTop: height * 0.05 }]}>
-                <Text style={styles.appName}>Pejo</Text>
-                <TouchableOpacity onPress={openChat} onLongPress={openChat}>
-                    <Ionicons name="chatbubble-outline" size={24} color="black" style={styles.icon} />
+            <View style={styles.header}>
+                <Text style={styles.greeting}>Pejo</Text>
+                <TouchableOpacity style={styles.icon} onPress={() => navigation.navigate('ChatScreen')}>
+                    <Ionicons name="chatbubble-outline" size={30} color="white" />
                 </TouchableOpacity>
             </View>
 
-            {/* Screen content */}
-            <ScrollView 
-                contentContainerStyle={{ flexGrow: 1 }} 
-                {...panResponder.panHandlers}
-            >
-                
-                {/* Events list */}
+            <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+                {/* Eventos Futuros */}
                 <View style={styles.eventsSection}>
-                    <Text style={styles.sectionTitle}>Eventos Futuros</Text>
+                    <Text style={[styles.sectionTitle, { marginTop: 20 }]}>Próximos Eventos</Text>
                     <FlatList
-                        data={mockEvents}
+                        data={futureEvents}
                         renderItem={renderEventItem}
-                        keyExtractor={(item) => item.id}
+                        keyExtractor={(item) => item.id.toString()}
                         horizontal
                         showsHorizontalScrollIndicator={false}
                         style={styles.eventsList}
+                        ListEmptyComponent={
+                            loading ? <Text>Carregando eventos...</Text> : <Text>Nenhum evento futuro encontrado</Text>
+                        }
                     />
                 </View>
 
-                {/* Past Events Section */}
+                {/* Eventos Passados */}
                 <View style={styles.pastEventsSection}>
-                    <TouchableOpacity 
-                        style={styles.pastEventsButton} 
-                        onPress={() => { 
-                            navigation.navigate('EventList'); 
-                        }}
-                    >
-                        <Text style={styles.pastEventsButtonText}>Ver Todos os Eventos Passados</Text>
-                    </TouchableOpacity>
+                    <Text style={styles.sectionTitle}>Eventos Passados</Text>
+                    <FlatList
+                        data={pastEvents}
+                        renderItem={({ item }) => (
+                            <TouchableOpacity
+                                style={styles.eventCardOld}
+                                onPress={() => navigation.navigate('EventDetailsScreen', { event: item })}
+                            >
+                                <Image
+                                    source={{
+                                        uri: `http://192.168.0.102:3000/imagesEventos/${JSON.parse(item.imagens)[0] || 'default.png'}`,
+                                    }}
+                                    style={styles.eventImageOld}
+                                />
+                                <View style={styles.eventDetailsOld}>
+                                    <Text style={styles.eventTitleOld}>{item.nome}</Text>
+                                    <Text style={styles.eventDateOld}>{formatDate(item.data_evento)}</Text>
+                                </View>
+                            </TouchableOpacity>
+                        )}
+                        keyExtractor={(item) => item.id.toString()}
+                        style={styles.pastEventsList}
+                        ListEmptyComponent={<Text>Nenhum evento passado encontrado</Text>}
+                    />
                 </View>
+
             </ScrollView>
         </View>
     );
@@ -124,44 +159,42 @@ const EventsScreen = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#abd4ff',
+        backgroundColor: '#FFFDFF',
     },
     header: {
-        width: '100%',
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: width * 0.04,
+        backgroundColor: '#3681d1',
+        padding: 40,
+        borderBottomLeftRadius: 50,
+        borderBottomRightRadius: 50,
     },
-    appName: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: '#333',
+    greeting: {
+        color: "#fff",
+        fontSize: 22,
+        fontWeight: "bold",
+    },
+    subtitle: {
+        color: "#b0b0b0",
+        marginTop: 5,
+        fontSize: 16,
     },
     icon: {
-        marginLeft: width * 0, // Verifique se isso é intencional
+        position: "absolute",
+        top:41.2,
+        right: 30,
     },
-    advertisementContainer: {
-        backgroundColor: '#FFF8E1',
-        padding: 16,
-        borderRadius: 8,
-        margin: 16,
-        alignItems: 'center',
+    searchContainer: {
+        padding: 20,
     },
-    advertisementText: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: '#FF9800',
+    searchInput: {
+        padding: 10,
+        width: "100%",
+        borderWidth: 1,
+        borderColor: '#ccc',
+        borderRadius: 0,
     },
     eventsSection: {
         marginTop: 10,
         marginLeft: 16,
-    },
-    sectionTitle: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        marginBottom: 8,
-        color: '#333',
     },
     eventsList: {
         paddingBottom: 20,
@@ -195,19 +228,43 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: '#ddd',
     },
-    pastEventsSection: {
-        margin: 16,
+    eventCardOld: {
+        flexDirection: 'row',
         alignItems: 'center',
+        padding: 15,
+        marginBottom: 10,
+        backgroundColor: '#fff',
     },
-    pastEventsButton: {
-        padding: 12,
-        width: '100%',
-        borderRadius: 2,
+    eventImageOld: {
+        width: 50,
+        height: 50,
+        borderRadius: 5,
+        marginRight: 10,
     },
-    pastEventsButtonText: {
-        color: 'black',
+    eventDetailsOld: {
+        flex: 1,
+    },
+    eventTitleOld: {
         fontSize: 16,
-        textAlign: 'center',
+        fontWeight: 'bold',
+        color: '#333',
+    },
+    eventDateOld: {
+        fontSize: 14,
+        color: '#666',
+        marginTop: 4,
+    },
+    sectionTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 10,
+    },
+    pastEventsSection: {
+        marginTop: 20,
+        paddingHorizontal: 16,
+    },
+    pastEventsList: {
+        marginTop: 10,
     },
 });
 

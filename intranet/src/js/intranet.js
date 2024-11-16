@@ -74,15 +74,15 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             body: JSON.stringify(newCard),
         })
-        .then(response => {
-            if (response.ok) {
-                closeCreateCardModal();
-                loadChallenges(); // Certifique-se de que esta função está definida
-            } else {
-                console.error('Erro ao criar desafio');
-            }
-        })
-        .catch(error => console.error('Erro ao criar desafio:', error));
+            .then(response => {
+                if (response.ok) {
+                    closeCreateCardModal();
+                    loadChallenges(); // Certifique-se de que esta função está definida
+                } else {
+                    console.error('Erro ao criar desafio');
+                }
+            })
+            .catch(error => console.error('Erro ao criar desafio:', error));
     });
 
     // Variável para controlar a ordem de classificação
@@ -92,11 +92,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function sortCards(containerId, criteria) {
         const container = document.getElementById(containerId);
         const cards = Array.from(container.children);
-        
+
         cards.sort((a, b) => {
             const aValue = a.getAttribute(`data-${criteria}`);
             const bValue = b.getAttribute(`data-${criteria}`);
-            
+
             // Lógica para comparar valores
             if (criteria === 'id') {
                 return sortOrder === 'asc' ? aValue - bValue : bValue - aValue; // Ordenação numérica
@@ -182,11 +182,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function sortUsers(containerId, criteria) {
         const container = document.getElementById(containerId);
         const users = Array.from(container.children);
-        
+
         users.sort((a, b) => {
             const aValue = a.getAttribute(`data-${criteria}`);
             const bValue = b.getAttribute(`data-${criteria}`);
-            
+
             // Lógica para comparar valores
             return userSortOrder === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue); // Ordenação alfabética
         });
@@ -206,18 +206,18 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('userSortOptions').addEventListener('change', toggleUserSortOrder);
 
     // Função para alternar a exibição do campo de data e hora
-    window.toggleDateInput = function() {
+    window.toggleDateInput = function () {
         const activationType = document.getElementById('activationType').value;
         const dateInputContainer = document.getElementById('dateInputContainer');
         dateInputContainer.style.display = activationType === 'pre-definido' ? 'block' : 'none';
     };
 
     // Função para abrir o modal de criação de evento
-    window.openCreateEventModal = function() {
+    window.openCreateEventModal = function () {
         // Limpa os campos do modal antes de abrir
         document.getElementById('eventName').value = '';
         document.getElementById('eventDescription').value = '';
-        document.getElementById('eventDate').value = '';    
+        document.getElementById('eventDate').value = '';
         document.getElementById('eventLocation').value = '';
         document.getElementById('eventImages').value = ''; // Limpa o campo de imagens
 
@@ -225,22 +225,87 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Função para fechar o modal de criação de evento
-    window.closeCreateEventModal = function() {
+    window.closeCreateEventModal = function () {
         document.getElementById('createEventModal').style.display = 'none';
     };
 
     // Função para criar um novo evento
     document.getElementById('createEventButton').addEventListener('click', () => {
+        saveNewEvent();
         // Limpa os campos do modal antes de abrir
         document.getElementById('eventName').value = '';
         document.getElementById('eventDescription').value = '';
-        document.getElementById('eventDate').value = '';    
+        document.getElementById('eventDate').value = '';
         document.getElementById('eventLocation').value = '';
+        document.getElementById('eventCoordenadas').value = '';
         document.getElementById('eventImages').value = ''; // Limpa o campo de imagens
-
-        // Abre o modal
-        window.openCreateEventModal();
+        closeCreateEventModal();
     });
+
+    // Função para abrir o modal de criação de evento
+    function openCreateEventModal() {
+        document.getElementById('createEventModal').style.display = 'block';
+    }
+
+    // Função para salvar o novo evento
+    function saveNewEvent() {
+        const eventName = document.getElementById('eventName').value.trim();
+        const eventDescription = document.getElementById('eventDescription').value.trim();
+        const eventDate = document.getElementById('eventDate').value.trim();
+        const eventLocation = document.getElementById('eventLocation').value.trim();
+        const eventCoordenadas = document.getElementById('eventCoordenadas').value;
+        const eventImages = document.getElementById('eventImages').files; // Pegando os arquivos de imagem
+
+        // Verifique se todos os campos estão preenchidos
+        if (!eventName || !eventDescription || !eventDate || !eventLocation || !eventCoordenadas) {
+            alert('Todos os campos são obrigatórios.');
+            return;
+        }
+
+        // Verifique se pelo menos uma imagem foi selecionada
+        if (eventImages.length === 0) {
+            alert('Você precisa adicionar pelo menos uma imagem para o evento.');
+            return;
+        }
+
+        // Criação de um FormData para enviar os dados com as imagens
+        const formData = new FormData();
+        formData.append('nome', eventName);
+        formData.append('descricao', eventDescription);
+        formData.append('data_evento', eventDate);
+        formData.append('local', eventLocation);
+        formData.append('coordenadas', eventCoordenadas)
+
+        // Adiciona todas as imagens ao FormData
+        for (let i = 0; i < eventImages.length; i++) {
+            formData.append('imagens', eventImages[i]);
+        }
+
+        // Envia a requisição POST para criar o evento
+        fetch('http://localhost:3000/intra/createEvento', {
+            method: 'POST',
+            body: formData, // Envia os dados com as imagens
+        })
+        .then(response => {
+            if (response.ok) {
+                closeCreateEventModal();
+                loadEventos(); // Recarregar os eventos para mostrar o novo evento
+            } else {
+                console.error('Erro ao criar evento');
+                return response.json().then(err => {
+                    console.error('Detalhes do erro:', err); // Loga detalhes do erro
+                });
+            }
+        })
+        .catch(error => console.error('Erro ao salvar evento:', error));
+    }
+
+
+    // Função para fechar o modal de criação de evento
+    function closeCreateEventModal() {
+        document.getElementById('createEventModal').style.display = 'none';
+    }
+
 
     // Carregar os eventos
     loadEventos(); // Chama a função para carregar eventos
@@ -264,7 +329,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Adicionando EventListeners
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         const saveEditButton = document.getElementById('saveEditButton');
         if (saveEditButton) {
             saveEditButton.addEventListener('click', saveChallenge); // ou saveEvent, dependendo do contexto
@@ -279,20 +344,20 @@ document.addEventListener('DOMContentLoaded', () => {
             fetch('http://localhost:3000/api/eventos/recent'), // Endpoint para eventos recentes
             fetch('http://localhost:3000/api/top-players') // Endpoint para jogadores com maiores níveis
         ])
-        .then(responses => Promise.all(responses.map(res => res.json())))
-        .then(data => {
-            const [activeChallengesCount, usersCount, recentEvents, topPlayers] = data;
+            .then(responses => Promise.all(responses.map(res => res.json())))
+            .then(data => {
+                const [activeChallengesCount, usersCount, recentEvents, topPlayers] = data;
 
-            // Atualiza o DOM com os dados
-            document.getElementById('activeChallenges').textContent = activeChallengesCount;
-            document.getElementById('usersCount').textContent = usersCount.count;
-            document.getElementById('recentEvents').textContent = recentEvents.map(event => event.nome).join(', ');
-            document.getElementById('topPlayers').textContent = topPlayers
-            .slice(0, 3)
-            .map((player, index) => `${index + 1}: ${player.nome}`) // Adiciona o índice + 1
-            .join(', ');        
-        })
-        .catch(error => console.error('Erro ao carregar dados do dashboard:', error));
+                // Atualiza o DOM com os dados
+                document.getElementById('activeChallenges').textContent = activeChallengesCount;
+                document.getElementById('usersCount').textContent = usersCount.count;
+                document.getElementById('recentEvents').textContent = recentEvents.map(event => event.nome).join(', ');
+                document.getElementById('topPlayers').textContent = topPlayers
+                    .slice(0, 3)
+                    .map((player, index) => `${index + 1}: ${player.nome}`) // Adiciona o índice + 1
+                    .join(', ');
+            })
+            .catch(error => console.error('Erro ao carregar dados do dashboard:', error));
     }
 
     // Chama a função para carregar os dados ao iniciar
@@ -370,7 +435,7 @@ function editItemDesafio(id) {
         })
         .then(data => {
             document.getElementById('modalTitle').textContent = 'Editar Desafio';
-            
+
             // Verifique se o elemento existe antes de definir o valor
             const titleInput = document.getElementById('editDesafioTitle');
             if (titleInput) {
@@ -417,15 +482,15 @@ function saveDesafioEdit(id) {
         },
         body: JSON.stringify(updatedDesafio),
     })
-    .then(response => {
-        if (response.ok) {
-            closeEditDesafioModal();
-            loadChallenges(); // Recarregar os desafios para mostrar as alterações
-        } else {
-            console.error('Erro ao atualizar desafio');
-        }
-    })
-    .catch(error => console.error('Erro ao salvar desafio:', error));
+        .then(response => {
+            if (response.ok) {
+                closeEditDesafioModal();
+                loadChallenges(); // Recarregar os desafios para mostrar as alterações
+            } else {
+                console.error('Erro ao atualizar desafio');
+            }
+        })
+        .catch(error => console.error('Erro ao salvar desafio:', error));
 }
 
 // Função para fechar o modal de edição de desafio
@@ -480,15 +545,15 @@ function saveUserEdit(id) {
         },
         body: JSON.stringify(updatedUser),
     })
-    .then(response => {
-        if (response.ok) {
-            closeEditUserModal();
-            loadUsers(); // Recarregar os usuários para mostrar as alterações
-        } else {
-            console.error('Erro ao atualizar usuário');
-        }
-    })
-    .catch(error => console.error('Erro ao salvar usuário:', error));
+        .then(response => {
+            if (response.ok) {
+                closeEditUserModal();
+                loadUsers(); // Recarregar os usuários para mostrar as alterações
+            } else {
+                console.error('Erro ao atualizar usuário');
+            }
+        })
+        .catch(error => console.error('Erro ao salvar usuário:', error));
 }
 
 // Funço para abrir o modal de criação de desafio
@@ -505,18 +570,18 @@ function deleteUser(id) {
     fetch(`http://localhost:3000/intra/deleteUsuario/${id}`, { // Supondo que você tenha uma rota para deletar
         method: 'DELETE',
     })
-    .then(response => {
-        if (response.ok) {
-            // Remove o card correspondente da interface
-            const card = document.querySelector(`.card[data-id="${id}"]`);
-            if (card) {
-                card.remove(); // Remove o card do DOM
+        .then(response => {
+            if (response.ok) {
+                // Remove o card correspondente da interface
+                const card = document.querySelector(`.card[data-id="${id}"]`);
+                if (card) {
+                    card.remove(); // Remove o card do DOM
+                }
+            } else {
+                console.error('Erro ao deletar item');
             }
-        } else {
-            console.error('Erro ao deletar item');
-        }
-    })
-    .catch(error => console.error('Erro ao deletar item:', error));
+        })
+        .catch(error => console.error('Erro ao deletar item:', error));
 }
 
 // Função para deletar um desafio
@@ -524,18 +589,18 @@ function deleteDesafio(id) {
     fetch(`http://localhost:3000/intra/deleteDesafio/${id}`, {
         method: 'DELETE',
     })
-    .then(response => {
-        if (response.ok) {
-            // Remove o card correspondente da interface
-            const card = document.querySelector(`.card[data-id="${id}"]`);
-            if (card) {
-                card.remove(); // Remove o card do DOM
+        .then(response => {
+            if (response.ok) {
+                // Remove o card correspondente da interface
+                const card = document.querySelector(`.card[data-id="${id}"]`);
+                if (card) {
+                    card.remove(); // Remove o card do DOM
+                }
+            } else {
+                console.error('Erro ao deletar desafio');
             }
-        } else {
-            console.error('Erro ao deletar desafio');
-        }
-    })
-    .catch(error => console.error('Erro ao deletar desafio:', error));
+        })
+        .catch(error => console.error('Erro ao deletar desafio:', error));
 }
 
 // Função para carregar os eventos
@@ -564,6 +629,7 @@ function loadEventos() {
                         <p><strong>Descrição:</strong> ${evento.descricao}</p>
                         <p><strong>Data:</strong> ${new Date(evento.data_evento).toLocaleString('pt-BR')}</p>
                         <p><strong>Local:</strong> ${evento.local}</p>
+                        <p><strong>Coordenadas:</strong> ${evento.coordenadas || "Vazio"}</p>
                     </div>
                     <div class="card-footer">
                         <button style="width: 40%;" onclick="editItemEvento(${evento.id})">✏️</button>
@@ -593,6 +659,7 @@ function editItemEvento(id) {
             document.getElementById('updateEventName').value = data.nome; // Preenche o nome
             document.getElementById('updateEventDescription').value = data.descricao; // Preenche a descrição
             document.getElementById('updateEventDate').value = data.data_evento; // Preenche a data do evento
+            document.getElementById('updateEventCoordenadas').value = data.coordenadas; 
             document.getElementById('updateEventLocation').value = data.local; // Preenche o local
 
             document.getElementById('editEventModal').style.display = 'block';
@@ -611,10 +678,11 @@ function saveEventEdit(id) {
         descricao: document.getElementById('updateEventDescription').value.trim(),
         data_evento: document.getElementById('updateEventDate').value.trim(),
         local: document.getElementById('updateEventLocation').value.trim(),
+        coordenadas: document.getElementById('updateEventCoordenadas').value
     };
 
     // Verifique se todos os campos estão preenchidos
-    if (!updatedEvent.nome || !updatedEvent.descricao || !updatedEvent.data_evento || !updatedEvent.local) {
+    if (!updatedEvent.nome || !updatedEvent.descricao || !updatedEvent.data_evento || !updatedEvent.local || !updatedEvent.coordenadas) {
         alert('Todos os campos são obrigatórios.');
         return;
     }
@@ -630,18 +698,18 @@ function saveEventEdit(id) {
         },
         body: JSON.stringify(updatedEvent), // Envia o objeto atualizado como JSON
     })
-    .then(response => {
-        if (response.ok) {
-            closeEditEventModal();
-            loadEventos(); // Recarregar os eventos para mostrar as alterações
-        } else {
-            console.error('Erro ao atualizar evento');
-            return response.json().then(err => {
-                console.error('Detalhes do erro:', err); // Loga detalhes do erro
-            });
-        }
-    })
-    .catch(error => console.error('Erro ao salvar evento:', error));
+        .then(response => {
+            if (response.ok) {
+                closeEditEventModal();
+                loadEventos(); // Recarregar os eventos para mostrar as alterações
+            } else {
+                console.error('Erro ao atualizar evento');
+                return response.json().then(err => {
+                    console.error('Detalhes do erro:', err); // Loga detalhes do erro
+                });
+            }
+        })
+        .catch(error => console.error('Erro ao salvar evento:', error));
 }
 
 // Função para fechar o modal de edição de evento
@@ -654,16 +722,16 @@ function deleteEvento(id) {
     fetch(`http://localhost:3000/intra/deleteEvento/${id}`, {
         method: 'DELETE',
     })
-    .then(response => {
-        if (response.ok) {
-            // Remove o card correspondente da interface
-            const card = document.querySelector(`.card[data-id="${id}"]`);
-            if (card) {
-                card.remove(); // Remove o card do DOM
+        .then(response => {
+            if (response.ok) {
+                // Remove o card correspondente da interface
+                const card = document.querySelector(`.card[data-id="${id}"]`);
+                if (card) {
+                    card.remove(); // Remove o card do DOM
+                }
+            } else {
+                console.error('Erro ao deletar evento');
             }
-        } else {
-            console.error('Erro ao deletar evento');
-        }
-    })
-    .catch(error => console.error('Erro ao deletar evento:', error));
+        })
+        .catch(error => console.error('Erro ao deletar evento:', error));
 }

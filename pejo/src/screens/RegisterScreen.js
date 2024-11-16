@@ -135,7 +135,7 @@ export default function RegisterScreen() {
         };
 
         try {
-            const response = await axios.post('http://192.168.0.100:3000/register', data);
+            const response = await axios.post('http://192.168.0.102:3000/register', data);
             Alert.alert('Sucesso', response.data.mensagem);
             navigation.navigate('Login');
         } catch (error) {

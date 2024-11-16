@@ -19,10 +19,16 @@ export default function ProfileScreen() {
             return; // Sai da função se o ID for nulo
         }
         try {
-            const response = await axios.get(`http://192.168.0.100:3000/user/${userId}`);
+            const response = await axios.get(`http://192.168.0.102:3000/user/${userId}`);
+            const level = response.data.nivel;
+            // Calcula o nível real e o progresso
+            const calculatedLevel = Math.floor(level / 100);  // Divide o nível por 100 para determinar o nível
+            const progress = level % 100;  // O progresso será o resto da divisão por 100
+
             setUserData({
                 id: response.data.id,
-                level: response.data.nivel,
+                level: calculatedLevel,  // Nível real
+                progress: progress,  // Progresso
                 name: response.data.nome,
                 email: response.data.email,
                 phone: response.data.telefone,
@@ -66,10 +72,10 @@ export default function ProfileScreen() {
 
     return (
         <ScrollView style={styles.container}>
-            <View style={[styles.profileContainer, {marginTop: 100}]}>
+            <View style={[styles.profileContainer, {marginTop: 100}]} >
                 <Image
                     style={styles.profileImage}
-                    source={{ uri: userData.profileImage || 'https://example.com/default-profile-picture.jpg' }}
+                    source={{ uri: `http://192.168.0.102:3000/imagesUsers/${userData.profileImage}`  || 'https://example.com/default-profile-picture.jpg' }}
                 />
             </View>
 
@@ -80,10 +86,10 @@ export default function ProfileScreen() {
 
             <View style={styles.section}>
                 <Text style={styles.label}>Level {userData.level}</Text>
-                <ProgressBar progress={userData.level / 100} color="#0088CC" style={styles.progressBar} />
-                <Text style={styles.info}>{userData.level}%</Text>
+                <ProgressBar progress={userData.progress / 100} color="#0088CC" style={styles.progressBar} />
+                <Text style={styles.info}>{userData.progress}%</Text>
             </View>
-            
+
             <View style={styles.section}>
                 <Text style={styles.label}>Nome</Text>
                 <Text style={styles.info}>{userData.name}</Text>
@@ -108,7 +114,6 @@ export default function ProfileScreen() {
                 <Text style={styles.label}>Telefone</Text> 
                 <Text style={styles.info}>{userData.phone}</Text>
             </View>
-
         </ScrollView>
     );
 }

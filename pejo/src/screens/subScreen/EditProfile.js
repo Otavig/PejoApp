@@ -1,100 +1,90 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Image, Switch, ScrollView, TouchableOpacity } from 'react-native';
-import { launchImageLibrary } from 'react-native-image-picker'; // Adicionando importação
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, Button, StyleSheet, Image, ScrollView, TouchableOpacity } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
-import { PermissionsAndroid } from 'react-native';
 
 export default function EditProfile({ route, navigation }) {
-    const { userData } = route.params; // Recebendo os dados do usuário
+    const { userData } = route.params;
 
     const [name, setName] = useState(userData.name);
     const [email, setEmail] = useState(userData.email);
     const [phone, setPhone] = useState(userData.phone);
-    const [bio, setBio] = useState(userData.bio); // Adicionando estado para a bio
-    const [profileImage, setProfileImage] = useState(userData.profileImage); // Adicionando estado para a imagem do perfil
+    const [bio, setBio] = useState(userData.bio);
+    const [profileImage, setProfileImage] = useState(userData.profileImage || '');
+
+    // UseEffect to ensure profileImage is correctly initialized
+    useEffect(() => {
+        if (!profileImage && userData.profileImage) {
+            setProfileImage(`http://192.168.0.102:3000/imagesUsers/${userData.profileImage}`);
+        }
+    }, [userData.profileImage]);
 
     const handleSave = async () => {
-        const formData = new FormData(); // Cria um novo FormData para enviar a imagem
+        const formData = new FormData();
         formData.append('name', name);
         formData.append('email', email);
         formData.append('phone', phone);
         formData.append('bio', bio);
-        
-        // Adiciona a imagem apenas se existir
-        if (profileImage) {
+    
+        // Verifica se uma nova imagem foi selecionada
+        if (profileImage !== userData.profileImage) {
+            // Se o caminho da imagem foi alterado, anexa a nova imagem
             formData.append('profileImage', {
                 uri: profileImage,
-                type: 'image/jpeg', // ou o tipo correto da imagem
-                name: `${userData.id}.jpg`, // Nome aleatório baseado no ID do usuário
+                type: 'image/jpeg',
+                name: `profile_${userData.id}.jpg`,
             });
+        } else {
+            // Se a imagem não foi alterada, anexa o caminho atual
+            formData.append('profileImage', userData.profileImage);
         }
-
-        console.log('Enviando imagem:', profileImage); // Adicionando log para depuração
-
+    
         try {
-            const response = await axios.put(`http://192.168.0.100:3000/userEdit/${userData.id}`, formData, {
+            const response = await axios.put(`http://192.168.0.102:3000/userEdit/${userData.id}`, formData, {
                 headers: {
-                    'Content-Type': 'multipart/form-data', // Define o tipo de conteúdo
+                    'Content-Type': 'multipart/form-data',
                 },
             });
             console.log(response.data);
-            navigation.goBack(); // Volta para a tela anterior
+            navigation.goBack();
         } catch (error) {
             console.error('Erro ao atualizar perfil:', error);
         }
-    };
-
-    const requestStoragePermission = async () => {
-        try {
-            const granted = await PermissionsAndroid.request(
-                PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
-                {
-                    title: "Permissão de Acesso à Biblioteca de Imagens",
-                    message: "Este aplicativo precisa acessar sua biblioteca de imagens.",
-                    buttonNeutral: "Pergunte-me depois",
-                    buttonNegative: "Cancelar",
-                    buttonPositive: "OK"
-                }
-            );
-            return granted === PermissionsAndroid.RESULTS.GRANTED;
-        } catch (err) {
-            console.warn(err);
-            return false;
-        }
-    };
-
+    };    
+    
     const handleImagePick = async () => {
-        const hasPermission = await requestStoragePermission();
-        if (!hasPermission) {
-            console.log('Permissão negada');
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== 'granted') {
+            alert('Desculpe, precisamos de permissão para acessar suas imagens!');
             return;
         }
 
-        const options = {
-            mediaType: 'photo',
-            includeBase64: false,
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaType: ImagePicker.MediaTypeOptions.Images,
             quality: 1,
-        };
-
-        launchImageLibrary(options, (response) => {
-            if (response.didCancel) {
-                console.log('User cancelled image picker');
-            } else if (response.error) {
-                console.log('ImagePicker Error: ', response.error);
-            } else if (response.assets) {
-                console.log('Imagem selecionada:', response.assets[0].uri);
-                setProfileImage(response.assets[0].uri);
-            }
         });
+        
+        console.log('Resultado do ImagePicker:', result);
+        
+        if (!result.canceled) {
+            console.log('Imagem selecionada:', result.assets[0].uri); // Alterado para acessar o uri correto
+            setProfileImage(result.assets[0].uri); // Atualize a imagem com o uri correto
+        } else {
+            console.log('Usuário cancelou a seleção de imagem');
+        }
     };
 
     return (
         <ScrollView style={styles.container}>
-            <View style={styles.profileContainer}> 
+            <View style={styles.profileContainer}>
                 <TouchableOpacity onPress={handleImagePick} style={styles.cameraIconContainer}>
                     <Image
                         style={styles.profileImage}
-                        source={{ uri: profileImage }} // Substitua pela URL da sua imagem
+                        source={{
+                            uri: profileImage 
+                                ? profileImage 
+                                : 'https://example.com/default-profile-picture.jpg'
+                        }}
                     />
                     <Text>📷</Text>
                 </TouchableOpacity>
@@ -106,16 +96,15 @@ export default function EditProfile({ route, navigation }) {
             <Text style={styles.label}>Phone</Text>
             <TextInput value={phone} onChangeText={setPhone} style={styles.input} />
             <Text style={styles.label}>Bio</Text>
-            <TextInput value={bio} onChangeText={setBio} style={styles.input} /> 
+            <TextInput value={bio} onChangeText={setBio} style={styles.input} />
             <Button title="Alterar" onPress={handleSave} />
-        
         </ScrollView>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1, // Mantém o contêiner ocupando toda a tela
+        flex: 1,
         padding: 20,
         backgroundColor: '#fff',
     },
@@ -129,20 +118,10 @@ const styles = StyleSheet.create({
         padding: 10,
         marginBottom: 20,
     },
-    header: {
-        backgroundColor: '#666',
-        padding: 16,
-        alignItems: 'center',
-    },
-    headerText: {
-        color: '#fff',
-        fontSize: 18,
-    },
     profileContainer: {
         alignItems: 'center',
         marginTop: 16,
         marginBottom: 16,
-        paddingBottom: 20,
     },
     profileImage: {
         width: 100,
@@ -155,16 +134,5 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         borderRadius: 15,
         padding: 5,
-    },
-    section: {
-        backgroundColor: '#fff',
-        padding: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: '#ddd',
-    },
-    row: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
     },
 });

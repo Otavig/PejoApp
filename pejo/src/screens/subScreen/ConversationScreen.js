@@ -8,7 +8,7 @@ import axios from 'axios'; // Import axios para requisições HTTP
 
 import prohibitedWords from './../../assets/json/prohibitedWords.json';
 
-const socket = io('http://192.168.0.100:3000'); // Altere o endereço conforme necessário
+const socket = io('http://192.168.0.102:3000'); // Altere o endereço conforme necessário
 const SECRET_KEY = 'pejoapp_22_10_20024'; // A mesma chave usada no servidor
 
 const PROHIBITED_WORDS = prohibitedWords.words;

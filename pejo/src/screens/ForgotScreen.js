@@ -13,7 +13,7 @@ export default function ForgotPasswordScreen() {
     const handleSendEmail = async () => {
         setLoading(true);
         try {
-            const response = await axios.post('http://192.168.0.100:3000/forgot-password', { email });
+            const response = await axios.post('http://192.168.0.102:3000/forgot-password', { email });
             setMessage(response.data.mensagem);
         } catch (error) {
             setMessage('Erro ao enviar e-mail. Tente novamente.');
