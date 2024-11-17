@@ -3,12 +3,15 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, KeyboardAvo
 import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 
+const { width, height } = Dimensions.get('window');
+
 export default function ForgotPasswordScreen() {
     const navigation = useNavigation();
     const [email, setEmail] = useState('');
     const [message, setMessage] = useState('');
     const [loading, setLoading] = useState(false);
-    const { width, height } = Dimensions.get('window');
+    
+
 
     const handleSendEmail = async () => {
         setLoading(true);

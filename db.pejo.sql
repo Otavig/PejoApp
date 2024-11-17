@@ -121,7 +121,7 @@ CREATE TABLE IF NOT EXISTS `desafios` (
   `data_criacao` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `estado` enum('ativado','desativado') NOT NULL DEFAULT 'desativado',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4;
 
 -- Exportação de dados foi desmarcado.
 
@@ -134,8 +134,9 @@ CREATE TABLE IF NOT EXISTS `eventos` (
   `local` varchar(255) NOT NULL,
   `imagens` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin,
   `data_criacao` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `coordenadas` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4;
 
 -- Exportação de dados foi desmarcado.
 
@@ -157,6 +158,8 @@ CREATE TABLE IF NOT EXISTS `usuarios` (
   `bio` varchar(255) DEFAULT NULL,
   `profileImage` varchar(255) DEFAULT NULL,
   `token` varchar(255) DEFAULT NULL,
+  `dailyChallenge` int(11) DEFAULT NULL,
+  `dailyChallengeDate` date DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`)
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4;

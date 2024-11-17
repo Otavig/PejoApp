@@ -16,8 +16,8 @@ import EventDetailsScreen from './src/screens/subScreen/EventDetailsScreen';
 import EditProfile from './src/screens/subScreen/EditProfile'
 import ContractScreen from './src/screens/subScreen/ContractScreen'
 import LoginScreen from './src/screens/LoginScreen'; // Importando a tela de login
-// import RegisterScreen from './src/screens/RegisterScreen'; // Importando a tela de registro
-// import ForgotScreen from './src/screens/ForgotScreen'; // Adicionando a tela de esqueci a senha
+import RegisterScreen from './src/screens/RegisterScreen'; // Importando a tela de registro
+import ForgotScreen from './src/screens/ForgotScreen'; // Adicionando a tela de esqueci a senha
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -77,11 +77,11 @@ export default function App() {
           component={LoginScreen} 
           options={{ headerShown: false }} 
         />
-        {/* <Stack.Screen 
+        <Stack.Screen 
           name="Register" 
           component={RegisterScreen} 
           options={{ title: 'Registrar', headerShown: false }} // Removendo o cabeçalho
-        /> */}
+        />
         <Stack.Screen 
           name="HomeScreen" 
           component={TabNavigator} 
@@ -112,11 +112,11 @@ export default function App() {
           component={ContractScreen} 
           options={{ title: 'Contrate um serviço' }} 
         />
-        {/* <Stack.Screen 
+        <Stack.Screen 
           name="ForgotPassword" // Adicionando a tela de esqueci a senha
           component={ForgotScreen} 
           options={{ title: 'Esqueci a Senha', headerShown: false }} 
-        /> */}
+        />
         <Stack.Screen 
           name="ProfileScreen" 
           component={ProfileScreen} 

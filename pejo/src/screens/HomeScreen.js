@@ -1,22 +1,23 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Modal, Animated, Image, TextInput } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Modal, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Icon } from 'react-native-elements';
-import axios from 'axios';  // Usando o axios para requisições HTTP
+import axios from 'axios'; 
 import { LinearGradient } from "expo-linear-gradient";
-import ChallengeSlider from '../components/DesafioSlider';
 
 const { width, height } = Dimensions.get('window');
 
 const HomeScreen = ({ route }) => {
     const navigation = useNavigation();
     const [challenges, setChallenges] = useState([]);
-    const [currentChallengeIndex, setCurrentChallengeIndex] = useState(0);
-    const [isChallengeCompleted, setIsChallengeCompleted] = useState(false);
+    const [currentChallenge, setCurrentChallenge] = useState(null);
+    const [completedChallenges, setCompletedChallenges] = useState([]); // IDs dos desafios completados
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [userName, setUserName] = useState('');
+    const [userLevel, setUserLevel] = useState(0); // Novo estado para o nível do usuário
+    const [isCompleteButtonVisible, setIsCompleteButtonVisible] = useState(true);  // Novo estado
     const scrollViewRef = useRef(null);
     const animatedValue = useRef(new Animated.Value(0)).current;
     const [welcomeVisible, setWelcomeVisible] = useState(true);
@@ -38,113 +39,177 @@ const HomeScreen = ({ route }) => {
 
         // Buscar os desafios do servidor
         fetchChallenges();
+
+        // Carregar o nível do usuário do AsyncStorage
+        loadUserLevel();
     }, []);
 
-    
+    const loadUserLevel = async () => {
+        const storedLevel = await AsyncStorage.getItem('userLevel');
+        if (storedLevel) {
+            setUserLevel(parseInt(storedLevel));
+        } else {
+            // Se não existir nível armazenado, define como 0
+            setUserLevel(0);
+        }
+    };
+
     const fetchChallenges = async () => {
-        const userId = await AsyncStorage.getItem('userId'); // Supondo que você armazene o userId no AsyncStorage
+        const userId = await AsyncStorage.getItem('userId'); 
         try {
             const response = await axios.get(`http://192.168.0.102:3000/desafios?userId=${userId}`);
-            setChallenges(response.data);  // Armazena os desafios no estado
+            setChallenges(response.data); 
+            await AsyncStorage.setItem('userId', userId);
+            assignDailyChallenge(response.data);
         } catch (error) {
             console.error('Erro ao buscar desafios', error);
         }
-        await AsyncStorage.setItem('userId', userId); // Salva o userId no AsyncStorage
     };
 
+    const assignDailyChallenge = async (allChallenges) => {
+        const today = new Date().toDateString();
+        const storedDate = await AsyncStorage.getItem('dailyChallengeDate');
 
-    const handleNextChallenge = () => {
-        setCurrentChallengeIndex((prevIndex) => (prevIndex + 1) % challenges.length);
+        if (storedDate === today) {
+            // Se já tiver um desafio atribuído para hoje, apenas carrega ele
+            const savedChallenge = await AsyncStorage.getItem('dailyChallenge');
+            if (savedChallenge) {
+                setCurrentChallenge(JSON.parse(savedChallenge));
+            }
+        } else {
+            // Atribui um novo desafio para o dia
+            const randomChallenge = getRandomChallenge(allChallenges);
+            setCurrentChallenge(randomChallenge);
+            await AsyncStorage.setItem('dailyChallenge', JSON.stringify(randomChallenge));
+            await AsyncStorage.setItem('dailyChallengeDate', today);
+        }
+
+        // Verificar se o desafio já foi concluído
+        const completed = await AsyncStorage.getItem('completedChallenges');
+        if (completed) {
+            setCompletedChallenges(JSON.parse(completed));
+        }
     };
 
-    const handleCompleteChallenge = () => {
-        setIsChallengeCompleted(true);
+    const getRandomChallenge = (allChallenges) => {
+        const easyChallenges = allChallenges.filter(challenge => challenge.dificuldade === 'facil');
+        const mediumChallenges = allChallenges.filter(challenge => challenge.dificuldade === 'medio');
+        const hardChallenges = allChallenges.filter(challenge => challenge.dificuldade === 'dificil');
+
+        // Mistura os desafios para dar uma chance igual para todos
+        const allAvailableChallenges = [...easyChallenges, ...mediumChallenges, ...hardChallenges];
+        return allAvailableChallenges[Math.floor(Math.random() * allAvailableChallenges.length)];
+    };
+
+    const handleCompleteChallenge = async () => {
+        const completedChallengesList = [...completedChallenges, currentChallenge.id];
+        setCompletedChallenges(completedChallengesList);
+        AsyncStorage.setItem('completedChallenges', JSON.stringify(completedChallengesList));
+    
+        // Atualizar o nível do usuário localmente
+        let newUserLevel = userLevel + 10;  // Adiciona 10 de nível imediatamente
+        setUserLevel(newUserLevel);
+        await AsyncStorage.setItem('userLevel', newUserLevel.toString());
+    
+        // Atualizar o nível no backend (chamando a API)
+        const userId = await AsyncStorage.getItem('userId');
+        try {
+            await axios.put(`http://192.168.0.102:3000/upUser/${userId}`, {
+                nivelNovo: 10 // Envia a quantidade de nível a ser somado
+            });
+        } catch (error) {
+            console.error('Erro ao atualizar o nível no servidor:', error);
+        }
+    
+        // Iniciar contagem para adicionar mais 20 após 2 horas
+        setTimeout(async () => {
+            const newLevelAfterTwoHours = newUserLevel + 20;  // Após 2 horas, adiciona mais 20 de nível
+            setUserLevel(newLevelAfterTwoHours);
+            await AsyncStorage.setItem('userLevel', newLevelAfterTwoHours.toString());
+    
+            // Atualiza o nível novamente no backend
+            try {
+                await axios.put(`http://192.168.0.102:3000/upUser/${userId}`, {
+                    nivelNovo: 20 // Envia a quantidade de nível a ser somado após 2 horas
+                });
+            } catch (error) {
+                console.error('Erro ao atualizar o nível no servidor após 2 horas:', error);
+            }
+        }, 2 * 60 * 60 * 1000);  // 2 horas em milissegundos
+    
+        // Remove o desafio concluído do "desafio do dia"
         setIsModalVisible(true);
-    };
+        AsyncStorage.removeItem('dailyChallenge');  // Limpa o desafio atual
+        setCurrentChallenge(null); // Reseta o desafio atual após a conclusão
+        setIsCompleteButtonVisible(false); // Esconde o botão de completar
+    };    
 
     return (
         <LinearGradient colors={["#FFFDFF", "#FFFDFF"]} style={[styles.projectCardGradient, { flex: 1 }]}>
-
             <View style={styles.container}>
                 {welcomeVisible && (
-                    <Animated.View style={[styles.welcomeOverlay, { opacity: animatedValue }]}>
+                    <Animated.View style={[styles.welcomeOverlay, { opacity: animatedValue }]} >
                         <Text style={styles.welcomeText}>Bem-vindo, {userName || 'Usuário'}!</Text>
                     </Animated.View>
                 )}
                 <ScrollView ref={scrollViewRef}>
-                    {/* Header */}
-                    <View style={[styles.header, { marginBottom: "5%" }]}>
+                    <View style={styles.header}>
                         <Text style={styles.greeting}>Pejo</Text>
                         <TouchableOpacity style={styles.icon} onPress={() => navigation.navigate('ChatScreen')}>
-                            <Ionicons style={{ position: "relative", marginTop: "55%" }} name="chatbubble-outline" size={30} color="white" />
+                            <Ionicons name="chatbubble-outline" size={28} color="white" />
                         </TouchableOpacity>
                     </View>
 
-                    {/* Daily Challenge Card */}
-                    {challenges.length > 0 && (
+                    {/* Challenge Card */}
+                    {currentChallenge && (
                         <View style={styles.challengeCard}>
                             <View style={styles.challengeContent}>
-                                <Text style={styles.challengeTitle}>{challenges[currentChallengeIndex].titulo}</Text>
-                                <Text style={styles.challengeDifficulty}>{challenges[currentChallengeIndex].dificuldade}</Text>
+                                <Text style={styles.challengeTitle}>{currentChallenge.titulo}</Text>
+                                <Text style={styles.challengeDifficulty}>{currentChallenge.dificuldade}</Text>
                                 <Text style={styles.challengeDescription}>
-                                    {challenges[currentChallengeIndex].descricao}
+                                    {currentChallenge.descricao}
                                 </Text>
-
-                                <View style={{ flexDirection: 'row', marginTop: 20, justifyContent: 'flex-end' }}>
-                                    <TouchableOpacity
-                                        onPress={handleCompleteChallenge}
-                                        style={{ marginLeft: 10, padding: -5, flexDirection: 'row', alignItems: 'center' }} // Flex para alinhar ícone e texto
-                                    >
-                                        <Icon
-                                            reverse
-                                            name='check-circle-fill'
-                                            type='octicon'
-                                            color='#3681d1'
-                                            size={15}
-                                        />
-                                        <Text style={{ marginLeft: 8, fontSize: 16, color: '#3681d1' }}>Concluir</Text> 
+                                {/* Condicional para exibir ou não o botão de "Concluir" */}
+                                {isCompleteButtonVisible && (
+                                    <TouchableOpacity onPress={handleCompleteChallenge} style={styles.completeButton}>
+                                        <Icon reverse name="check-circle-fill" type="octicon" color="#3681d1" size={15} />
+                                        <Text style={{ marginLeft: 8, fontSize: 16, color: '#3681d1' }}>Concluir</Text>
                                     </TouchableOpacity>
-                                </View>
-
+                                )}
                             </View>
                         </View>
                     )}
 
-                    {/* Custom Services Button */}
-                    <TouchableOpacity
-                        style={styles.customServicesButton}
-                        onPress={() => console.log("Contratar serviços personalizados")}
-                    >
-                        <Text style={styles.buttonText}>Contratar serviços personalizados</Text>
-                    </TouchableOpacity>
-
-
                     {/* Task Section */}
                     <View style={styles.tasks}>
-                        <Text style={styles.sectionTitle}>Concluidos 🤠</Text>
-                        <View style={styles.taskItem}>
-                            <Text style={styles.taskText}>Create menu in dashboard</Text>
-                            <Ionicons name="checkmark-circle-outline" size={24} color="#4CAF50" />
-                        </View>
-                        <View style={styles.taskItem}>
-                            <Text style={styles.taskText}>Make & send prototype to the client</Text>
-                            <Ionicons name="ellipse-outline" size={24} color="#b0b0b0" />
-                        </View>
+                        <Text style={styles.sectionTitle}>Concluídos 🤠</Text>
+                        {completedChallenges.length > 0 ? (
+                            completedChallenges.map((challengeId) => {
+                                const completedChallenge = challenges.find(challenge => challenge.id === challengeId);
+                                return (
+                                    <View style={styles.taskItem} key={challengeId}>
+                                        <Text style={styles.taskText}>{completedChallenge.titulo}</Text>
+                                        <Ionicons name="checkmark-circle-outline" size={24} color="#4CAF50" />
+                                    </View>
+                                );
+                            })
+                        ) : (
+                            <Text style={styles.noTasks}>Nenhum desafio concluído ainda.</Text>
+                        )}
                     </View>
 
-                    {/* Challenge Completion Modal */}
                     <Modal transparent={true} visible={isModalVisible} animationType="slide">
                         <View style={styles.modalContainer}>
                             <View style={styles.modalContent}>
-                                <Text style={styles.congratulationsText}>🎉 Parabéns! Desafio concluído! 🎉</Text>
-                                <TouchableOpacity onPress={() => setIsModalVisible(false)}>
-                                    <Text style={{ marginTop: 20, color: '#0088CC' }}>Fechar</Text>
+                                <Text style={styles.congratulationsText}>🎉 Parabéns! Você completou um desafio!</Text>
+                                <Text style={styles.levelText}>Seu nível: {userLevel}</Text>
+                                <TouchableOpacity onPress={() => setIsModalVisible(false)} style={styles.closeModalButton}>
+                                    <Text style={styles.closeModalButtonText}>Fechar</Text>
                                 </TouchableOpacity>
                             </View>
                         </View>
                     </Modal>
                 </ScrollView>
-
             </View>
         </LinearGradient>
     );

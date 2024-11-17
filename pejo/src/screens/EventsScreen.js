@@ -102,7 +102,7 @@ const EventsScreen = () => {
             <View style={styles.header}>
                 <Text style={styles.greeting}>Pejo</Text>
                 <TouchableOpacity style={styles.icon} onPress={() => navigation.navigate('ChatScreen')}>
-                    <Ionicons name="chatbubble-outline" size={30} color="white" />
+                    <Ionicons name="chatbubble-outline" size={28} color="white" />
                 </TouchableOpacity>
             </View>
 
@@ -179,7 +179,7 @@ const styles = StyleSheet.create({
     },
     icon: {
         position: "absolute",
-        top:41.2,
+        top:40,
         right: 30,
     },
     searchContainer: {

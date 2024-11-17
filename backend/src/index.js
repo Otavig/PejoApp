@@ -456,6 +456,39 @@ const updateUser = (req, res) => {
     });
 };
 
+const upUser = (req, res) => {
+    const { id } = req.params;
+    const { nivelNovo } = req.body;
+
+    // Primeiro, obtemos o nível atual do usuário
+    const getCurrentLevelQuery = 'SELECT nivel FROM usuarios WHERE id = ?';
+
+    db.query(getCurrentLevelQuery, [id], (err, results) => {
+        if (err) {
+            console.error('Erro ao buscar nível atual do usuário:', err);
+            return res.status(500).json({ error: 'Erro ao buscar nível do usuário' });
+        }
+
+        if (results.length === 0) {
+            return res.status(404).json({ error: 'Usuário não encontrado' });
+        }
+
+        const currentLevel = results[0].nivel;
+        const newLevel = currentLevel + nivelNovo; // Somamos o nível atual com o novo valor
+
+        // Agora, atualizamos o nível do usuário no banco
+        const updateQuery = 'UPDATE usuarios SET nivel = ? WHERE id = ?';
+        db.query(updateQuery, [newLevel, id], (err) => {
+            if (err) {
+                console.error('Erro ao atualizar usuário:', err);
+                return res.status(500).json({ error: 'Erro ao atualizar usuário' });
+            }
+            res.json({ mensagem: 'Nível do usuário atualizado com sucesso.', novoNivel: newLevel });
+        });
+    });
+};
+
+
 
 // Rota para obter mensagens
 const getMessages = (req, res) => {
@@ -665,6 +698,7 @@ app.get('/getDesafios', getDesafios);
 app.get('/getUsuarios', getUsuarios);
 app.get('/intra/getDesafio/:id', getDesafioIntra);
 app.put('/intra/updateDesafio/:id', updateDesafio); // Rota para atualizar um desafio
+app.put('/upUser/:id', upUser); // Rota para atualizar um desafio
 app.delete('/intra/deleteUsuario/:id', deleteUsuario); // Rota para deletar um usuário
 app.delete('/intra/deleteDesafio/:id', deleteDesafio); // Rota para deletar um desafio
 app.get('/user/:id', getUserById); // Adiciona a rota para obter usuário

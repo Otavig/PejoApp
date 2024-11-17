@@ -4,6 +4,8 @@ import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import axios from 'axios';
 
+const { width, height } = Dimensions.get('window');
+
 export default function RegisterScreen() {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
@@ -14,7 +16,6 @@ export default function RegisterScreen() {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const navigation = useNavigation();
-    const { width, height } = Dimensions.get('window');
 
     // Função para formatar a data no formato 'DD/MM/YYYY'
     const handleDateChange = (text) => {
