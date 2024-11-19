@@ -8,7 +8,7 @@ import axios from 'axios'; // Import axios para requisições HTTP
 
 import prohibitedWords from './../../assets/json/prohibitedWords.json';
 
-const socket = io('http://192.168.0.102:3000'); // Altere o endereço conforme necessário
+const socket = io('http://10.111.9.44:3000'); // Altere o endereço conforme necessário
 const SECRET_KEY = 'pejoapp_22_10_20024'; // A mesma chave usada no servidor
 
 const PROHIBITED_WORDS = prohibitedWords.words;
@@ -22,7 +22,7 @@ const ConversationScreen = ({ route }) => {
         const loadMessages = async () => {
             try {
                 // Requisição para buscar mensagens do banco de dados
-                const response = await axios.get(`http://localhost:3000/api/messages/${personId}`);
+                const response = await axios.get(`http://10.111.9.44:3000/api/messages/${personId}`);
                 setMessages(response.data); // Supondo que a resposta seja um array de mensagens
             } catch (error) {
                 console.error('Failed to load messages:', error);

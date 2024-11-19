@@ -18,6 +18,11 @@ import ContractScreen from './src/screens/subScreen/ContractScreen'
 import LoginScreen from './src/screens/LoginScreen'; // Importando a tela de login
 import RegisterScreen from './src/screens/RegisterScreen'; // Importando a tela de registro
 import ForgotScreen from './src/screens/ForgotScreen'; // Adicionando a tela de esqueci a senha
+import OpportunityScreen from './src/screens/OpportunityScreen';
+import NewOpportunityScreen from './src/screens/subScreen/NewOpportunityScreen';
+import SplashScreen from './src/screens/SplashScreen';
+
+
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -93,6 +98,16 @@ export default function App() {
           options={{ title: "Chat's" }} 
         />
         <Stack.Screen 
+          name="OpportunityScreen" 
+          component={OpportunityScreen} 
+          options={{ title: "Serviços" }} 
+        />
+        <Stack.Screen 
+          name="NewOpportunityScreen" 
+          component={NewOpportunityScreen} 
+          options={{ title: "Novo Serviço" }} 
+        />
+        <Stack.Screen 
           name="ConversationScreen" // Adicionando a tela de conversa
           component={ConversationScreen} 
           options={{ title: 'Conversa' }} 
@@ -125,6 +140,9 @@ export default function App() {
             headerShown: false 
           }} 
         />
+        {/* <Stack.Screen 
+        name="ProfileDetails" 
+        component={ProfileDetailsScreen} /> */}
       </Stack.Navigator>
       <StatusBar style="auto" />
     </NavigationContainer>

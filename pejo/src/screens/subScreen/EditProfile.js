@@ -15,7 +15,7 @@ export default function EditProfile({ route, navigation }) {
     // UseEffect to ensure profileImage is correctly initialized
     useEffect(() => {
         if (!profileImage && userData.profileImage) {
-            setProfileImage(`http://192.168.0.102:3000/imagesUsers/${userData.profileImage}`);
+            setProfileImage(`http://10.111.9.44:3000/imagesUsers/${userData.profileImage}`);
         }
     }, [userData.profileImage]);
 
@@ -40,7 +40,7 @@ export default function EditProfile({ route, navigation }) {
         }
     
         try {
-            const response = await axios.put(`http://192.168.0.102:3000/userEdit/${userData.id}`, formData, {
+            const response = await axios.put(`http://10.111.9.44:3000/userEdit/${userData.id}`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },

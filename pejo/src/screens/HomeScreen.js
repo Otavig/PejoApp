@@ -57,7 +57,7 @@ const HomeScreen = ({ route }) => {
     const fetchChallenges = async () => {
         const userId = await AsyncStorage.getItem('userId'); 
         try {
-            const response = await axios.get(`http://192.168.0.102:3000/desafios?userId=${userId}`);
+            const response = await axios.get(`http://10.111.9.44:3000/desafios?userId=${userId}`);
             setChallenges(response.data); 
             await AsyncStorage.setItem('userId', userId);
             assignDailyChallenge(response.data);
@@ -69,8 +69,12 @@ const HomeScreen = ({ route }) => {
     const assignDailyChallenge = async (allChallenges) => {
         const today = new Date().toDateString();
         const storedDate = await AsyncStorage.getItem('dailyChallengeDate');
-
-        if (storedDate === today) {
+        const storedTimestamp = await AsyncStorage.getItem('dailyChallengeTimestamp');
+    
+        const currentTimestamp = Date.now(); // Timestamp atual em milissegundos
+    
+        // Verifique se um novo dia começou (24 horas)
+        if (storedTimestamp && currentTimestamp - parseInt(storedTimestamp) < 24 * 60 * 60 * 1000) {
             // Se já tiver um desafio atribuído para hoje, apenas carrega ele
             const savedChallenge = await AsyncStorage.getItem('dailyChallenge');
             if (savedChallenge) {
@@ -82,15 +86,16 @@ const HomeScreen = ({ route }) => {
             setCurrentChallenge(randomChallenge);
             await AsyncStorage.setItem('dailyChallenge', JSON.stringify(randomChallenge));
             await AsyncStorage.setItem('dailyChallengeDate', today);
+            await AsyncStorage.setItem('dailyChallengeTimestamp', currentTimestamp.toString()); // Armazena o timestamp atual
         }
-
+    
         // Verificar se o desafio já foi concluído
         const completed = await AsyncStorage.getItem('completedChallenges');
         if (completed) {
             setCompletedChallenges(JSON.parse(completed));
         }
     };
-
+    
     const getRandomChallenge = (allChallenges) => {
         const easyChallenges = allChallenges.filter(challenge => challenge.dificuldade === 'facil');
         const mediumChallenges = allChallenges.filter(challenge => challenge.dificuldade === 'medio');
@@ -114,7 +119,7 @@ const HomeScreen = ({ route }) => {
         // Atualizar o nível no backend (chamando a API)
         const userId = await AsyncStorage.getItem('userId');
         try {
-            await axios.put(`http://192.168.0.102:3000/upUser/${userId}`, {
+            await axios.put(`http://10.111.9.44:3000/upUser/${userId}`, {
                 nivelNovo: 10 // Envia a quantidade de nível a ser somado
             });
         } catch (error) {
@@ -129,7 +134,7 @@ const HomeScreen = ({ route }) => {
     
             // Atualiza o nível novamente no backend
             try {
-                await axios.put(`http://192.168.0.102:3000/upUser/${userId}`, {
+                await axios.put(`http://10.111.9.44:3000/upUser/${userId}`, {
                     nivelNovo: 20 // Envia a quantidade de nível a ser somado após 2 horas
                 });
             } catch (error) {
@@ -171,14 +176,20 @@ const HomeScreen = ({ route }) => {
                                 </Text>
                                 {/* Condicional para exibir ou não o botão de "Concluir" */}
                                 {isCompleteButtonVisible && (
-                                    <TouchableOpacity onPress={handleCompleteChallenge} style={styles.completeButton}>
+                                    <TouchableOpacity onPress={handleCompleteChallenge} style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', width: '100%'}}>
                                         <Icon reverse name="check-circle-fill" type="octicon" color="#3681d1" size={15} />
-                                        <Text style={{ marginLeft: 8, fontSize: 16, color: '#3681d1' }}>Concluir</Text>
+                                        <Text style={{fontSize: 16, color: '#3681d1' }}>Concluir</Text>
                                     </TouchableOpacity>
                                 )}
                             </View>
                         </View>
                     )}
+
+                    <View style={styles.buttonContainerMid}>
+                        <TouchableOpacity style={styles.buttonMid}  onPress={() => navigation.navigate('OpportunityScreen')}>
+                            <Text style={styles.buttonTextMid}>Contratar Serviços</Text>
+                        </TouchableOpacity>
+                    </View>
 
                     {/* Task Section */}
                     <View style={styles.tasks}>
@@ -227,6 +238,7 @@ const styles = StyleSheet.create({
         padding: 40,
         borderBottomLeftRadius: 50,
         borderBottomRightRadius: 50,
+        marginBottom: '10%'
     },
     greeting: {
         color: "#fff",
@@ -248,7 +260,7 @@ const styles = StyleSheet.create({
     },
     icon: {
         position: "absolute",
-        top: 25,
+        top: 5,
         right: 30,
     },
     challengeCard: {
@@ -366,6 +378,28 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: 'white',
         fontWeight: 'bold',
+    },
+    buttonContainerMid: {
+        alignItems: 'center',
+        marginVertical: 20,
+    },
+    buttonMid: {
+        width: "80%",
+        backgroundColor: '#3681d1', // Cor de fundo do botão
+        paddingVertical: 15,        // Espaçamento vertical
+        paddingHorizontal: 30,      // Espaçamento horizontal
+        borderRadius: 25,           // Bordas arredondadas
+        elevation: 5,               // Sombra para Android
+        shadowColor: '#000',        // Cor da sombra para iOS
+        shadowOffset: { width: 0, height: 2 }, // Offset da sombra
+        shadowOpacity: 0.2,         // Opacidade da sombra
+        shadowRadius: 2.5,          // Raio da sombra
+    },
+    buttonTextMid: {
+        color: '#FFFFFF',           // Cor do texto
+        fontSize: 16,               // Tamanho da fonte
+        textAlign: 'center',        // Centraliza o texto
+        fontWeight: 'bold',         // Texto em negrito
     },
 });
 
