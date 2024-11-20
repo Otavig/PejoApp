@@ -4,23 +4,22 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Icon } from 'react-native-elements';
-import axios from 'axios'; 
+import axios from 'axios';
 import { LinearGradient } from "expo-linear-gradient";
 
 const { width, height } = Dimensions.get('window');
 
 const HomeScreen = ({ route }) => {
     const navigation = useNavigation();
-    const [challenges, setChallenges] = useState([]);
-    const [currentChallenge, setCurrentChallenge] = useState(null);
-    const [completedChallenges, setCompletedChallenges] = useState([]); // IDs dos desafios completados
+    const [challenges, setChallenges] = useState([]); // Todos os desafios
+    const [currentChallenge, setCurrentChallenge] = useState(null); // Desafio do dia
+    const [completedChallenges, setCompletedChallenges] = useState([]); // Desafios completados (detalhados)
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [userName, setUserName] = useState('');
-    const [userLevel, setUserLevel] = useState(0); // Novo estado para o nível do usuário
-    const [isCompleteButtonVisible, setIsCompleteButtonVisible] = useState(true);  // Novo estado
+    const [userLevel, setUserLevel] = useState(0);
+    const [isCompleteButtonVisible, setIsCompleteButtonVisible] = useState(true); // Para controlar visibilidade
     const scrollViewRef = useRef(null);
     const animatedValue = useRef(new Animated.Value(0)).current;
-    const [welcomeVisible, setWelcomeVisible] = useState(true);
 
     useEffect(() => {
         const newUserName = route.params?.userName || '';
@@ -28,135 +27,264 @@ const HomeScreen = ({ route }) => {
     }, [route.params]);
 
     useEffect(() => {
-        // Inicia a animação de boas-vindas
-        Animated.timing(animatedValue, {
-            toValue: 1,
-            duration: 1000,
-            useNativeDriver: true,
-        }).start(() => {
-            setTimeout(() => setWelcomeVisible(false), 3000);
-        });
+        listDesafiosFeitos(); // Buscar os desafios concluídos quando a tela for carregada
+        fetchChallenges(); // Carregar os desafios ao montar a tela
+        // checkAllChallengesCompleted(); // Verificar se todos os desafios foram completados
+    }, []); // Use uma dependência vazia para garantir que execute uma única vez na montagem do componente    
 
-        // Buscar os desafios do servidor
-        fetchChallenges();
 
-        // Carregar o nível do usuário do AsyncStorage
-        loadUserLevel();
-    }, []);
+    // Função que verifica se todos os desafios foram completados
+    const checkAllChallengesCompleted = async () => {
+        const completedChallengesList = await AsyncStorage.getItem('completedChallenges');
+        const completedChallengesArray = completedChallengesList ? JSON.parse(completedChallengesList) : [];
 
+        // Verificar se todos os desafios foram completados
+        if (completedChallengesArray.length === challenges.length) {
+            resetChallenges(); // Resetar tudo se todos os desafios foram completados
+        }
+    };
+
+    // Função listar os desafios
+    const listDesafiosFeitos = async () => {
+        try {
+            const userId = await AsyncStorage.getItem('userId');
+
+            // Obter os desafios completados do backend
+            const responseFeitos = await axios.get(`http://192.168.0.102:3000/desafios/feitos?userId=${userId}`);
+
+            // Obter todos os desafios disponíveis
+            const responseDesafios = await axios.get(`http://192.168.0.102:3000/desafios`);
+
+            // Filtrar os desafios completados com base nos IDs retornados
+            const completedChallengeIds = responseFeitos.data.completedChallenges;  // Ex: [2, 3]
+
+            // Filtrar os desafios que estão concluídos
+            const completedChallengesData = responseDesafios.data.filter(challenge =>
+                completedChallengeIds.includes(challenge.id)
+            );
+
+            // Atualizar o estado de completedChallenges com os desafios completados
+            setCompletedChallenges(completedChallengesData);
+
+        } catch (error) {
+            console.error('Erro ao listar desafios feitos', error);
+        }
+    };
+
+    // Função que verifica se o usuário pode pegar um novo desafio
+    const checkIfCanTakeNewChallenge = async () => {
+        const userId = await AsyncStorage.getItem('userId');
+    
+        try {
+            // Requisição para pegar a última data
+            const response = await axios.get(`http://192.168.0.102:3000/ultimaData?userId=${userId}`);
+            // console.log(response.data);
+    
+            // Pega a data que foi retornada pela API
+            const lastChallengeDate = new Date(response.data.date);
+    
+            // Pega a data atual
+            const currentDate = new Date();
+    
+            // Zera as horas, minutos, segundos e milissegundos para comparar apenas as datas
+            lastChallengeDate.setHours(0, 0, 0, 0);
+            currentDate.setHours(0, 0, 0, 0);
+    
+            // Calcula a diferença em dias
+            const timeDifference = currentDate - lastChallengeDate;
+            const daysDifference = timeDifference / (1000 * 3600 * 24); // Converte de milissegundos para dias
+            console.log(timeDifference, daysDifference)
+    
+            // Verifica se passou mais de 1 dia
+            if (daysDifference > 1) {
+                return true; // Pode pegar um novo desafio
+            } else {
+                return false; // Não pode pegar um novo desafio
+            }
+        } catch (error) {
+            console.error('Erro ao verificar se o usuário pode pegar um novo desafio', error);
+            return false; // Caso ocorra um erro, assume que não pode pegar novos desafios
+        }
+    };    
+
+    // Função que reseta os desafios
+    const resetChallenges = async () => {
+        try {
+            // Recuperar o userId do AsyncStorage
+            const userId = await AsyncStorage.getItem('userId');
+    
+            // Buscar todos os desafios disponíveis na rota /desafios
+            const response = await axios.get('http://192.168.0.102:3000/desafios');
+            const allChallenges = response.data; // Todos os desafios disponíveis
+            const completedChallenges = JSON.parse(await AsyncStorage.getItem('completedChallenges')) || []; // Desafios completados
+    
+            // Verificar se todos os desafios foram completados
+            const allCompleted = allChallenges.every(challenge => completedChallenges.includes(challenge.id));
+    
+            if (allCompleted) {
+                // Caso todos os desafios tenham sido completados, resetar os dados
+    
+                // Deletar os desafios completados no backend (resetar os dados)
+                await axios.post(`http://192.168.0.102:3000/reset-desafios-feitos?userId=${userId}`);
+    
+                // Resetar os dados no AsyncStorage
+                await AsyncStorage.setItem('completedChallenges', JSON.stringify([])); // Limpar lista de desafios concluídos
+                await AsyncStorage.setItem('lastCompletionDate', ''); // Resetar data de conclusão
+    
+                // Limpar o nível do usuário ou resetar se necessário
+                setUserLevel(0); // ou defina como quiser, dependendo da lógica do seu app
+                await AsyncStorage.setItem('userLevel', '0'); // Resetando o nível
+    
+                // Resetar os desafios diários
+                AsyncStorage.removeItem('dailyChallenge');
+    
+                // Atualizar os desafios no estado
+                setCompletedChallenges([]);
+                setCurrentChallenge(null);
+    
+                // Após resetar, chamar a função que carrega novos desafios
+                fetchChallenges(); // Recarregar os desafios para o estado
+            } else {
+                console.log("Nem todos os desafios foram concluídos. Não é possível reiniciar.");
+            }
+        } catch (error) {
+            console.error('Erro ao resetar desafios', error);
+        }
+    };    
+
+    // Carregar o nível do usuário
     const loadUserLevel = async () => {
         const storedLevel = await AsyncStorage.getItem('userLevel');
         if (storedLevel) {
             setUserLevel(parseInt(storedLevel));
         } else {
-            // Se não existir nível armazenado, define como 0
             setUserLevel(0);
         }
     };
 
+    // Carregar a visibilidade do botão
+    const checkButtonVisibility = async () => {
+        const completedChallengesString = await AsyncStorage.getItem('completedChallenges');
+        const completedChallengesList = completedChallengesString ? JSON.parse(completedChallengesString) : [];
+
+        // Atualiza a lista de desafios concluídos
+        setCompletedChallenges(completedChallengesList);
+
+        // Verificar se o desafio de hoje foi completado
+        const today = new Date().toDateString();
+        const lastCompletionDate = await AsyncStorage.getItem('lastCompletionDate');
+
+        if (lastCompletionDate === today) {
+            setIsCompleteButtonVisible(false); // Esconde o botão se o desafio já foi completado
+        } else {
+            setIsCompleteButtonVisible(true); // Mostra o botão se não foi completado
+        }
+    };
+
+    // Buscar os desafios
     const fetchChallenges = async () => {
-        const userId = await AsyncStorage.getItem('userId'); 
         try {
-            const response = await axios.get(`http://10.111.9.44:3000/desafios?userId=${userId}`);
-            setChallenges(response.data); 
-            await AsyncStorage.setItem('userId', userId);
-            assignDailyChallenge(response.data);
+            const response = await axios.get('http://192.168.0.102:3000/desafios');
+            setChallenges(response.data);
+            assignDailyChallenge(); // Atribui o desafio do dia
         } catch (error) {
             console.error('Erro ao buscar desafios', error);
         }
     };
 
-    const assignDailyChallenge = async (allChallenges) => {
-        const today = new Date().toDateString();
-        const storedDate = await AsyncStorage.getItem('dailyChallengeDate');
-        const storedTimestamp = await AsyncStorage.getItem('dailyChallengeTimestamp');
-    
-        const currentTimestamp = Date.now(); // Timestamp atual em milissegundos
-    
-        // Verifique se um novo dia começou (24 horas)
-        if (storedTimestamp && currentTimestamp - parseInt(storedTimestamp) < 24 * 60 * 60 * 1000) {
-            // Se já tiver um desafio atribuído para hoje, apenas carrega ele
-            const savedChallenge = await AsyncStorage.getItem('dailyChallenge');
-            if (savedChallenge) {
-                setCurrentChallenge(JSON.parse(savedChallenge));
-            }
+    const assignDailyChallenge = async () => {
+        const dailyChallenge = await AsyncStorage.getItem('dailyChallenge');
+
+        if (dailyChallenge) {
+            setCurrentChallenge(JSON.parse(dailyChallenge)); // Se já existe um desafio diário salvo, atribuí-lo
         } else {
-            // Atribui um novo desafio para o dia
-            const randomChallenge = getRandomChallenge(allChallenges);
-            setCurrentChallenge(randomChallenge);
-            await AsyncStorage.setItem('dailyChallenge', JSON.stringify(randomChallenge));
-            await AsyncStorage.setItem('dailyChallengeDate', today);
-            await AsyncStorage.setItem('dailyChallengeTimestamp', currentTimestamp.toString()); // Armazena o timestamp atual
-        }
-    
-        // Verificar se o desafio já foi concluído
-        const completed = await AsyncStorage.getItem('completedChallenges');
-        if (completed) {
-            setCompletedChallenges(JSON.parse(completed));
+            const completedChallengesList = completedChallenges.map(challenge => challenge.id);
+            const uncompletedChallenges = challenges.filter(challenge =>
+                !completedChallengesList.includes(challenge.id)
+            );
+
+            if (uncompletedChallenges.length > 0) {
+                const selectedChallenge = uncompletedChallenges[Math.floor(Math.random() * uncompletedChallenges.length)];
+                setCurrentChallenge(selectedChallenge);
+                AsyncStorage.setItem('dailyChallenge', JSON.stringify(selectedChallenge)); // Armazene o desafio diário
+            }
         }
     };
-    
-    const getRandomChallenge = (allChallenges) => {
-        const easyChallenges = allChallenges.filter(challenge => challenge.dificuldade === 'facil');
-        const mediumChallenges = allChallenges.filter(challenge => challenge.dificuldade === 'medio');
-        const hardChallenges = allChallenges.filter(challenge => challenge.dificuldade === 'dificil');
 
-        // Mistura os desafios para dar uma chance igual para todos
-        const allAvailableChallenges = [...easyChallenges, ...mediumChallenges, ...hardChallenges];
-        return allAvailableChallenges[Math.floor(Math.random() * allAvailableChallenges.length)];
-    };
-
+    // Finalizar o desafio
     const handleCompleteChallenge = async () => {
         const completedChallengesList = [...completedChallenges, currentChallenge.id];
         setCompletedChallenges(completedChallengesList);
         AsyncStorage.setItem('completedChallenges', JSON.stringify(completedChallengesList));
-    
-        // Atualizar o nível do usuário localmente
-        let newUserLevel = userLevel + 10;  // Adiciona 10 de nível imediatamente
+
+        // Atualizar o nível do usuário
+        let newUserLevel = userLevel + 10; // Adiciona 10 de nível
         setUserLevel(newUserLevel);
         await AsyncStorage.setItem('userLevel', newUserLevel.toString());
-    
-        // Atualizar o nível no backend (chamando a API)
+
+        // Registrar a conclusão do desafio
         const userId = await AsyncStorage.getItem('userId');
+        const today = new Date().toDateString();
         try {
-            await axios.put(`http://10.111.9.44:3000/upUser/${userId}`, {
-                nivelNovo: 10 // Envia a quantidade de nível a ser somado
+            await axios.post('http://192.168.0.102:3000/desafios/concluir', {
+                userId,
+                challengeId: currentChallenge.id,
+                completionDate: today
             });
         } catch (error) {
-            console.error('Erro ao atualizar o nível no servidor:', error);
+            console.error('Erro ao registrar a conclusão do desafio', error);
         }
-    
-        // Iniciar contagem para adicionar mais 20 após 2 horas
-        setTimeout(async () => {
-            const newLevelAfterTwoHours = newUserLevel + 20;  // Após 2 horas, adiciona mais 20 de nível
-            setUserLevel(newLevelAfterTwoHours);
-            await AsyncStorage.setItem('userLevel', newLevelAfterTwoHours.toString());
-    
-            // Atualiza o nível novamente no backend
-            try {
-                await axios.put(`http://10.111.9.44:3000/upUser/${userId}`, {
-                    nivelNovo: 20 // Envia a quantidade de nível a ser somado após 2 horas
-                });
-            } catch (error) {
-                console.error('Erro ao atualizar o nível no servidor após 2 horas:', error);
-            }
-        }, 2 * 60 * 60 * 1000);  // 2 horas em milissegundos
-    
-        // Remove o desafio concluído do "desafio do dia"
+
+        // Atualizar a data de conclusão no AsyncStorage
+        await AsyncStorage.setItem('lastCompletionDate', today);
+
+        // Exibir o modal de conclusão
         setIsModalVisible(true);
-        AsyncStorage.removeItem('dailyChallenge');  // Limpa o desafio atual
-        setCurrentChallenge(null); // Reseta o desafio atual após a conclusão
-        setIsCompleteButtonVisible(false); // Esconde o botão de completar
-    };    
+
+        // Limpar o desafio do dia
+        AsyncStorage.removeItem('dailyChallenge');
+        setIsCompleteButtonVisible(false); // Esconde o botão após completar o desafio
+
+        // Atualizar a lista de desafios concluídos para refletir os dados completos
+        fetchCompletedChallenges();  // Recarrega os desafios concluídos com detalhes completos
+    };
+
+    // Buscar os desafios completados
+    const fetchCompletedChallenges = async () => {
+        const userId = await AsyncStorage.getItem('userId');
+        try {
+            const response = await axios.get(`http://192.168.0.102:3000/desafios/feitos/?userId=${userId}`);
+            const completedChallengeIds = Array.isArray(response.data.completedChallenges) ? response.data.completedChallenges : JSON.parse(response.data.completedChallenges || '[]');
+            const completedChallengesData = challenges.filter(challenge =>
+                completedChallengeIds.includes(challenge.id)
+            );
+            setCompletedChallenges(completedChallengesData); // Atualiza com os dados dos desafios concluídos
+        } catch (error) {
+            console.error('Erro ao buscar desafios concluídos', error);
+        }
+    };
+
+    useEffect(() => {
+        fetchChallenges(); // Buscar os desafios quando a tela for carregada
+        // checkAllChallengesCompleted(); // Verificar se todos os desafios foram concluídos
+    }, [challenges]); // Adicione 'challenges' como dependência para verificar se novos desafios foram carregados
+
+    // Chamada dessa função no useEffect para verificar na carga da tela
+useEffect(() => {
+    checkIfCanTakeNewChallenge().then(canTakeNewChallenge => {
+        if (canTakeNewChallenge) {
+            fetchChallenges(); // Carregar novos desafios
+        } else {
+            // Mostrar mensagem ou lógica de que não pode pegar novos desafios
+            setIsCompleteButtonVisible(false)
+            alert('Você precisa esperar 1 dia para pegar um novo desafio.');
+        }
+    });
+}, []);
 
     return (
-        <LinearGradient colors={["#FFFDFF", "#FFFDFF"]} style={[styles.projectCardGradient, { flex: 1 }]}>
+        <LinearGradient colors={["#FFFDFF", "#FFFDFF"]} style={[styles.projectCardGradient, { flex: 1 }]} >
             <View style={styles.container}>
-                {welcomeVisible && (
-                    <Animated.View style={[styles.welcomeOverlay, { opacity: animatedValue }]} >
-                        <Text style={styles.welcomeText}>Bem-vindo, {userName || 'Usuário'}!</Text>
-                    </Animated.View>
-                )}
                 <ScrollView ref={scrollViewRef}>
                     <View style={styles.header}>
                         <Text style={styles.greeting}>Pejo</Text>
@@ -165,7 +293,7 @@ const HomeScreen = ({ route }) => {
                         </TouchableOpacity>
                     </View>
 
-                    {/* Challenge Card */}
+                    {/* Card do Desafio */}
                     {currentChallenge && (
                         <View style={styles.challengeCard}>
                             <View style={styles.challengeContent}>
@@ -174,11 +302,11 @@ const HomeScreen = ({ route }) => {
                                 <Text style={styles.challengeDescription}>
                                     {currentChallenge.descricao}
                                 </Text>
-                                {/* Condicional para exibir ou não o botão de "Concluir" */}
+                                {/* Exibe o botão de "Concluir" se não for completado */}
                                 {isCompleteButtonVisible && (
-                                    <TouchableOpacity onPress={handleCompleteChallenge} style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', width: '100%'}}>
+                                    <TouchableOpacity onPress={handleCompleteChallenge} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', width: '100%' }}>
                                         <Icon reverse name="check-circle-fill" type="octicon" color="#3681d1" size={15} />
-                                        <Text style={{fontSize: 16, color: '#3681d1' }}>Concluir</Text>
+                                        <Text style={{ fontSize: 16, color: '#3681d1' }}>Concluir</Text>
                                     </TouchableOpacity>
                                 )}
                             </View>
@@ -186,19 +314,18 @@ const HomeScreen = ({ route }) => {
                     )}
 
                     <View style={styles.buttonContainerMid}>
-                        <TouchableOpacity style={styles.buttonMid}  onPress={() => navigation.navigate('OpportunityScreen')}>
+                        <TouchableOpacity style={styles.buttonMid} onPress={() => navigation.navigate('OpportunityScreen')}>
                             <Text style={styles.buttonTextMid}>Contratar Serviços</Text>
                         </TouchableOpacity>
                     </View>
 
-                    {/* Task Section */}
+                    {/* Lista de Desafios Concluídos */}
                     <View style={styles.tasks}>
                         <Text style={styles.sectionTitle}>Concluídos 🤠</Text>
                         {completedChallenges.length > 0 ? (
-                            completedChallenges.map((challengeId) => {
-                                const completedChallenge = challenges.find(challenge => challenge.id === challengeId);
+                            completedChallenges.map((completedChallenge, index) => {
                                 return (
-                                    <View style={styles.taskItem} key={challengeId}>
+                                    <View style={styles.taskItem} key={completedChallenge.id || index}>
                                         <Text style={styles.taskText}>{completedChallenge.titulo}</Text>
                                         <Ionicons name="checkmark-circle-outline" size={24} color="#4CAF50" />
                                     </View>
@@ -209,6 +336,7 @@ const HomeScreen = ({ route }) => {
                         )}
                     </View>
 
+                    {/* Modal de Conclusão */}
                     <Modal transparent={true} visible={isModalVisible} animationType="slide">
                         <View style={styles.modalContainer}>
                             <View style={styles.modalContent}>
@@ -225,6 +353,7 @@ const HomeScreen = ({ route }) => {
         </LinearGradient>
     );
 };
+
 
 const styles = StyleSheet.create({
     container: {
@@ -260,8 +389,9 @@ const styles = StyleSheet.create({
     },
     icon: {
         position: "absolute",
-        top: 5,
-        right: 30,
+        top: height / 18,  // Ajuste com base no tamanho do ícone (25 é um exemplo)
+        left: width / 1.18,  // Ajuste com base no tamanho do ícone (25 é um exemplo)
+        // Caso queira o ícone no canto superior direito
     },
     challengeCard: {
         backgroundColor: '#FFF',
@@ -297,6 +427,7 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: '#888',
         marginTop: 2,
+        textTransform: "uppercase"
     },
     nextChallengeButton: {
         borderRadius: 50,
@@ -327,6 +458,10 @@ const styles = StyleSheet.create({
     },
     tasks: {
         padding: 20,
+    },
+    closeModalButtonText: {
+        fontSize: 16,
+        marginTop: 20
     },
     taskItem: {
         flexDirection: "row",

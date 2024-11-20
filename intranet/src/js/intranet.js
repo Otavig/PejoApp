@@ -78,6 +78,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (response.ok) {
                     closeCreateCardModal();
                     loadChallenges(); // Certifique-se de que esta função está definida
+                    document.getElementById('newCardTitle').value = ""
+                    document.getElementById('newCardDescription').value = ""
                 } else {
                     console.error('Erro ao criar desafio');
                 }

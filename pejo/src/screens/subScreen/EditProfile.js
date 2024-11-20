@@ -9,13 +9,12 @@ export default function EditProfile({ route, navigation }) {
     const [name, setName] = useState(userData.name);
     const [email, setEmail] = useState(userData.email);
     const [phone, setPhone] = useState(userData.phone);
-    const [bio, setBio] = useState(userData.bio);
     const [profileImage, setProfileImage] = useState(userData.profileImage || '');
 
     // UseEffect to ensure profileImage is correctly initialized
     useEffect(() => {
         if (!profileImage && userData.profileImage) {
-            setProfileImage(`http://10.111.9.44:3000/imagesUsers/${userData.profileImage}`);
+            setProfileImage(`http://192.168.0.102:3000/imagesUsers/${userData.profileImage}`);
         }
     }, [userData.profileImage]);
 
@@ -24,7 +23,6 @@ export default function EditProfile({ route, navigation }) {
         formData.append('name', name);
         formData.append('email', email);
         formData.append('phone', phone);
-        formData.append('bio', bio);
     
         // Verifica se uma nova imagem foi selecionada
         if (profileImage !== userData.profileImage) {
@@ -40,7 +38,7 @@ export default function EditProfile({ route, navigation }) {
         }
     
         try {
-            const response = await axios.put(`http://10.111.9.44:3000/userEdit/${userData.id}`, formData, {
+            const response = await axios.put(`http://192.168.0.102:3000/userEdit/${userData.id}`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
@@ -95,8 +93,6 @@ export default function EditProfile({ route, navigation }) {
             <TextInput value={email} onChangeText={setEmail} style={styles.input} />
             <Text style={styles.label}>Phone</Text>
             <TextInput value={phone} onChangeText={setPhone} style={styles.input} />
-            <Text style={styles.label}>Bio</Text>
-            <TextInput value={bio} onChangeText={setBio} style={styles.input} />
             <Button title="Alterar" onPress={handleSave} />
         </ScrollView>
     );

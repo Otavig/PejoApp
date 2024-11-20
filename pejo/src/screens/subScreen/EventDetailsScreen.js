@@ -36,7 +36,7 @@ const EventDetailsScreen = () => {
         <ScrollView style={styles.container}>
             {/* Image at the top */}
             <View style={styles.imageContainer}>
-                <Image source={{  uri: `http://10.111.9.44:3000/imagesEventos/${imagensArray.length > 0 ? imagensArray[0] : 'default.png'}`, }} style={styles.eventImage} />
+                <Image source={{  uri: `http://192.168.0.102:3000/imagesEventos/${imagensArray.length > 0 ? imagensArray[0] : 'default.png'}`, }} style={styles.eventImage} />
             </View>
 
             {/* Event Info */}

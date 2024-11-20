@@ -22,7 +22,7 @@ if (!fs.existsSync(directoryPath)) {
 const db = mysql.createConnection({
     host: "localhost",
     user: "root",
-    password: "",
+    password: "root",
     database: "db_pejo"
 });
 
@@ -130,7 +130,7 @@ const register = async (req, res) => {
                     return res.status(500).json({ erro: 'Erro ao registrar usuário' });
                 }
 
-                const confirmationLink = `http://10.111.9.44:3000/reset-password?token=${confirmationToken}`;
+                const confirmationLink = `http://192.168.0.102:3000/reset-password?token=${confirmationToken}`;
                 await sendConfirmationEmail(email, nome, confirmationLink);
 
                 res.json({ mensagem: 'Usuário registrado com sucesso. Verifique seu e-mail para confirmar.' });
@@ -321,7 +321,7 @@ const sendPasswordResetEmail = async (email, token) => {
             <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ccc; border-radius: 5px;">
                 <h2 style="color: #2196F3;">Redefinição de Senha</h2>
                 <p>Você solicitou a redefinição de sua senha. Clique no link abaixo para redefinir sua senha:</p>
-                <a href="http://10.111.9.44:3000/reset-password?token=${token}" style="background-color: #2196F3; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px;">Redefinir Senha</a>
+                <a href="http://192.168.0.102:3000/reset-password?token=${token}" style="background-color: #2196F3; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px;">Redefinir Senha</a>
                 <p>Se você não solicitou essa mudança, ignore este e-mail.</p>
             </div>
         `,
@@ -451,12 +451,12 @@ const uploadPerfil = multer({ storage: storagePerfil });
 // Função para atualizar o usuário
 const updateUser = (req, res) => {
     const { id } = req.params;
-    const { name, email, phone, bio } = req.body;
+    const { name, email, phone } = req.body;
     // Se uma imagem foi enviada, usa ela. Caso contrário, mantém a imagem anterior.
     const profileImage = req.file ? req.file.filename : req.body.profileImage;
 
-    const query = 'UPDATE usuarios SET nome = ?, email = ?, telefone = ?, bio = ?, profileImage = ? WHERE id = ?';
-    db.query(query, [name, email, phone, bio, profileImage, id], (err) => {
+    const query = 'UPDATE usuarios SET nome = ?, email = ?, telefone = ?, profileImage = ? WHERE id = ?';
+    db.query(query, [name, email, phone, profileImage, id], (err) => {
         if (err) {
             console.error('Erro ao atualizar usuário:', err);
             return res.status(500).json({ error: 'Erro ao atualizar usuário' });
@@ -682,6 +682,126 @@ const getTopPlayers = async (req, res) => {
     });
 };
 
+// Rota pegar desafios feitos
+const desafiosFeitos = (req, res) => {
+    const userId = req.query.userId;
+
+    const query = 'SELECT desafios_feitos FROM usuarios WHERE id = ?';
+
+    db.query(query, [userId], (err, results) => {
+        if (err) {
+            return res.status(500).json({ error: 'Erro ao buscar desafios concluídos' });
+        }
+
+        // Verifique se há resultados
+        if (results.length === 0) {
+            return res.status(404).json({ error: 'Usuário não encontrado' });
+        }
+
+        // Pegue o valor de desafios_feitos do primeiro item do resultado
+        const desafiosFeitos = results[0].desafios_feitos;
+
+        res.json({ completedChallenges: desafiosFeitos });
+    });
+}
+
+// Rota para resetar desafios feitos
+const resetDesafiosFeitos = (req, res) => {
+    const userId = req.query.userId;
+
+    // A consulta de atualização para resetar desafios_feitos
+    const query = 'UPDATE usuarios SET desafios_feitos = ? WHERE id = ?';
+
+    // Aqui, você define o valor como um array vazio
+    db.query(query, [JSON.stringify([]), userId], (err, results) => {
+        if (err) {
+            return res.status(500).json({ error: 'Erro ao resetar desafios concluídos' });
+        }
+
+        // Verifique se o usuário foi encontrado
+        if (results.affectedRows === 0) {
+            return res.status(404).json({ error: 'Usuário não encontrado' });
+        }
+
+        res.json({ message: 'Desafios concluídos resetados com sucesso' });
+    });
+};
+
+// Rota pegar ultima data
+const ultimaData = (req, res) => {
+    const userId = req.query.userId;
+    const query = 'SELECT dia_desafio_feito FROM ultimadata WHERE userId = "7"';
+
+    db.query(query, [userId], (err, results) => {
+        if (err) {
+            return res.status(500).json({ error: 'Erro ao buscar a última data' });
+        }
+
+        if (results.length > 0) {
+            res.json({ date: results[0].dia_desafio_feito });
+        } else {
+            res.status(404).json({ error: 'Usuário não encontrado' });
+        }
+    });
+}
+
+// 3. Registrar um desafio como concluído
+const desafiosConcluidos = (req, res) => {
+    const { userId, challengeId, completionDate } = req.body;
+
+    if (!userId || !challengeId || !completionDate) {
+        return res.status(400).json({ error: 'Faltam dados necessários' });
+    }
+
+    // Converte a data para o formato correto (YYYY-MM-DD)
+    const formattedCompletionDate = formatDate(completionDate);
+
+    const queryUsuario = 'SELECT desafios_feitos FROM usuarios WHERE id = ?';
+
+    db.query(queryUsuario, [userId], (err, results) => {
+        if (err) {
+            console.error('Erro ao buscar dados do usuário:', err);
+            return res.status(500).json({ error: 'Erro ao buscar dados do usuário' });
+        }
+
+        if (results.length === 0) {
+            return res.status(404).json({ error: 'Usuário não encontrado' });
+        }
+
+        const desafiosFeitos = results[0].desafios_feitos ? JSON.parse(results[0].desafios_feitos) : [];
+        desafiosFeitos.push(challengeId);
+
+        // Atualiza a tabela ultimaData com a data do último desafio
+        const queryUltimaData = 'INSERT INTO ultimaData (userId, dia_desafio_feito) VALUES (?, ?) ' +
+            'ON DUPLICATE KEY UPDATE dia_desafio_feito = ?';
+
+        db.query(queryUltimaData, [userId, formattedCompletionDate, formattedCompletionDate], (err) => {
+            if (err) {
+                console.error('Erro ao atualizar a última data de conclusão:', err);
+                return res.status(500).json({ error: 'Erro ao atualizar a última data de conclusão' });
+            }
+
+            // Atualiza a tabela de usuários com os novos dados de desafios feitos
+            const queryUpdateUsuario = 'UPDATE usuarios SET desafios_feitos = ? WHERE id = ?';
+            db.query(queryUpdateUsuario, [JSON.stringify(desafiosFeitos), userId], (err) => {
+                if (err) {
+                    console.error('Erro ao atualizar os dados do usuário:', err);
+                    return res.status(500).json({ error: 'Erro ao atualizar os dados do usuário' });
+                }
+
+                res.status(200).json({ message: 'Desafio concluído com sucesso!' });
+            });
+        });
+    });
+};
+
+const formatDate = (date) => {
+    const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
+    const formattedDate = new Date(date).toLocaleDateString('en-GB', options); // Formato 'DD/MM/YYYY'
+    const [day, month, year] = formattedDate.split('/');
+    return `${year}-${month}-${day}`; // Formato 'YYYY-MM-DD'
+};
+
 
 // Configuração do Express e rotas
 const app = express();
@@ -692,6 +812,10 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.post('/reset-desafios-feitos', resetDesafiosFeitos);
+app.get('/ultimaData', ultimaData);
+app.post('/desafios/concluir', desafiosConcluidos);
+app.get('/desafios/feitos', desafiosFeitos);
 app.get('/api/desafios/count', getDesafiosCount);
 app.get('/api/usuarios/count', getUsuariosCount);
 app.get('/api/eventos/recent', getRecentEventos);

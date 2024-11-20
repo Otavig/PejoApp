@@ -20,9 +20,7 @@ import RegisterScreen from './src/screens/RegisterScreen'; // Importando a tela 
 import ForgotScreen from './src/screens/ForgotScreen'; // Adicionando a tela de esqueci a senha
 import OpportunityScreen from './src/screens/OpportunityScreen';
 import NewOpportunityScreen from './src/screens/subScreen/NewOpportunityScreen';
-import SplashScreen from './src/screens/SplashScreen';
-
-
+import OpportunityDetailScreen from './src/screens/subScreen/OpportunityDetailScreen';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -101,6 +99,11 @@ export default function App() {
           name="OpportunityScreen" 
           component={OpportunityScreen} 
           options={{ title: "Serviços" }} 
+        />
+        <Stack.Screen 
+          name="OpportunityDetailScreen" 
+          component={OpportunityDetailScreen} 
+          options={{ title: "Detalhes" }} 
         />
         <Stack.Screen 
           name="NewOpportunityScreen" 
