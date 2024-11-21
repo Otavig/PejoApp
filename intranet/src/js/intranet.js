@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        fetch('http://localhost:3000/intra/createDesafio', {
+        fetch('http://10.111.9.44:3000/intra/createDesafio', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -127,7 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Função para carregar os desafios
     function loadChallenges() {
-        fetch('http://localhost:3000/getDesafios')  // URL do servidor Node.js
+        fetch('http://10.111.9.44:3000/getDesafios')  // URL do servidor Node.js
             .then(response => response.json())
             .then(data => {
                 const desafiosContainer = document.getElementById('desafiosContainer');
@@ -170,6 +170,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error('Erro ao carregar desafios:', error);
             });
     }
+
+    document.getElementById('nextPage').addEventListener('click', () => {
+        changePage(1);
+    })
+
+    document.getElementById('prevPage').addEventListener('click', () => {
+        changePage(-1);
+    })
 
     // Função para mudar de página
     function changePage(direction) {
@@ -284,7 +292,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Envia a requisição POST para criar o evento
-        fetch('http://localhost:3000/intra/createEvento', {
+        fetch('http://10.111.9.44:3000/intra/createEvento', {
             method: 'POST',
             body: formData, // Envia os dados com as imagens
         })
@@ -341,10 +349,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Função para carregar dados do dashboard
     function loadDashboardData() {
         Promise.all([
-            fetch('http://localhost:3000/api/desafios/count'), // Endpoint para contar desafios
-            fetch('http://localhost:3000/api/usuarios/count'), // Endpoint para contar usuários
-            fetch('http://localhost:3000/api/eventos/recent'), // Endpoint para eventos recentes
-            fetch('http://localhost:3000/api/top-players') // Endpoint para jogadores com maiores níveis
+            fetch('http://10.111.9.44:3000/api/desafios/count'), // Endpoint para contar desafios
+            fetch('http://10.111.9.44:3000/api/usuarios/count'), // Endpoint para contar usuários
+            fetch('http://10.111.9.44:3000/api/eventos/recent'), // Endpoint para eventos recentes
+            fetch('http://10.111.9.44:3000/api/top-players') // Endpoint para jogadores com maiores níveis
         ])
             .then(responses => Promise.all(responses.map(res => res.json())))
             .then(data => {
@@ -385,7 +393,7 @@ function searchCard(containerId, searchTerm) {
 
 // Função para carregar os usuários
 function loadUsers() {
-    fetch('http://localhost:3000/getUsuarios')  // URL do servidor Node.js
+    fetch('http://10.111.9.44:3000/getUsuarios')  // URL do servidor Node.js
         .then(response => response.json())
         .then(data => {
             const usuariosContainer = document.getElementById('usuariosContainer');
@@ -428,7 +436,7 @@ function logout() {
 
 // Função para editar um desafio
 function editItemDesafio(id) {
-    fetch(`http://localhost:3000/intra/getDesafio/${id}`)
+    fetch(`http://10.111.9.44:3000/intra/getDesafio/${id}`)
         .then(response => {
             if (!response.ok) {
                 throw new Error(`Erro ao buscar desafio: ${response.statusText}`);
@@ -477,7 +485,7 @@ function saveDesafioEdit(id) {
         dificuldade: document.getElementById('editDesafioDificuldade').value
     };
 
-    fetch(`http://localhost:3000/intra/updateDesafio/${id}`, {
+    fetch(`http://10.111.9.44:3000/intra/updateDesafio/${id}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
@@ -501,7 +509,7 @@ function closeEditDesafioModal() {
 }
 
 function editItemUsers(id) {
-    fetch(`http://localhost:3000/user/${id}`)
+    fetch(`http://10.111.9.44:3000/user/${id}`)
         .then(response => {
             if (!response.ok) {
                 throw new Error(`Erro ao buscar usuário: ${response.statusText}`);
@@ -540,7 +548,7 @@ function saveUserEdit(id) {
         nivel: document.getElementById('editUserLevel').value,
     };
 
-    fetch(`http://localhost:3000/intra/updateUsuario/${id}`, {
+    fetch(`http://10.111.9.44:3000/intra/updateUsuario/${id}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
@@ -569,7 +577,7 @@ function closeCreateCardModal() {
 }
 
 function deleteUser(id) {
-    fetch(`http://localhost:3000/intra/deleteUsuario/${id}`, { // Supondo que você tenha uma rota para deletar
+    fetch(`http://10.111.9.44:3000/intra/deleteUsuario/${id}`, { // Supondo que você tenha uma rota para deletar
         method: 'DELETE',
     })
         .then(response => {
@@ -588,7 +596,7 @@ function deleteUser(id) {
 
 // Função para deletar um desafio
 function deleteDesafio(id) {
-    fetch(`http://localhost:3000/intra/deleteDesafio/${id}`, {
+    fetch(`http://10.111.9.44:3000/intra/deleteDesafio/${id}`, {
         method: 'DELETE',
     })
         .then(response => {
@@ -607,7 +615,7 @@ function deleteDesafio(id) {
 
 // Função para carregar os eventos
 function loadEventos() {
-    fetch('http://localhost:3000/getEventos')  // URL do servidor Node.js
+    fetch('http://10.111.9.44:3000/getEventos')  // URL do servidor Node.js
         .then(response => {
             if (!response.ok) {
                 throw new Error('Erro ao carregar eventos: ' + response.statusText);
@@ -648,7 +656,7 @@ function loadEventos() {
 
 // Função para editar um evento
 function editItemEvento(id) {
-    fetch(`http://localhost:3000/intra/getEvento/${id}`)
+    fetch(`http://10.111.9.44:3000/intra/getEvento/${id}`)
         .then(response => {
             if (!response.ok) {
                 throw new Error(`Erro ao buscar evento: ${response.statusText}`);
@@ -693,7 +701,7 @@ function saveEventEdit(id) {
     console.log('Dados do evento:', updatedEvent);
 
     // Envia a requisição PUT para atualizar o evento
-    fetch(`http://localhost:3000/intra/updateEvento/${id}`, {
+    fetch(`http://10.111.9.44:3000/intra/updateEvento/${id}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json', // Definindo o tipo de conteúdo como JSON
@@ -721,7 +729,7 @@ function closeEditEventModal() {
 
 // Função para deletar um evento
 function deleteEvento(id) {
-    fetch(`http://localhost:3000/intra/deleteEvento/${id}`, {
+    fetch(`http://10.111.9.44:3000/intra/deleteEvento/${id}`, {
         method: 'DELETE',
     })
         .then(response => {

@@ -366,6 +366,11 @@
                 <!-- Card de Desafio Exemplo -->
                 <!-- Adicione mais cards conforme necessário -->
             </div>
+            <div id="pagination" class="pagination">
+                <button id="prevPage">&#10094; Anterior</button>
+                <span id="pageInfo">Página 1</span>
+                <button id="nextPage">Próximo &#10095;</button>
+            </div>
         </div>
 
         <div id="usuarios" class="screen">
@@ -397,6 +402,11 @@
             <div class="horizontal-card-container" id="eventosContainer">
                 <!-- Card de Evento Exemplo -->
                 <!-- Adicione mais cards conforme necessário -->
+            </div>
+            <div id="pagination" class="pagination">
+                <button id="prevPage">&#10094; Anterior</button>
+                <span id="pageInfo">Página 1</span>
+                <button id="nextPage">Próximo &#10095;</button>
             </div>
         </div>
     </main>
@@ -485,12 +495,6 @@
             <button style="background-color: #1a2c45; color: white; border: 0px; padding: 10px; border-radius: 5px;"
                 id="createCardButton">Criar</button>
         </div>
-    </div>
-
-    <div id="pagination" class="pagination">
-        <button id="prevPage" onclick="changePage(-1)">&#10094; Anterior</button>
-        <span id="pageInfo">Página 1</span>
-        <button id="nextPage" onclick="changePage(1)">Próximo &#10095;</button>
     </div>
 
     <!-- Modal para Criar Novo Evento -->
@@ -685,6 +689,7 @@
             saveEditButton.addEventListener('click', saveChallenge); // ou saveEvent, dependendo do contexto
         }
     });
+
 </script>
 
 </html>

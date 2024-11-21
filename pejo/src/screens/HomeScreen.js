@@ -50,10 +50,10 @@ const HomeScreen = ({ route }) => {
             const userId = await AsyncStorage.getItem('userId');
 
             // Obter os desafios completados do backend
-            const responseFeitos = await axios.get(`http://192.168.0.102:3000/desafios/feitos?userId=${userId}`);
+            const responseFeitos = await axios.get(`http://10.111.9.44:3000/desafios/feitos?userId=${userId}`);
 
             // Obter todos os desafios disponíveis
-            const responseDesafios = await axios.get(`http://192.168.0.102:3000/desafios`);
+            const responseDesafios = await axios.get(`http://10.111.9.44:3000/desafios`);
 
             // Filtrar os desafios completados com base nos IDs retornados
             const completedChallengeIds = responseFeitos.data.completedChallenges;  // Ex: [2, 3]
@@ -77,7 +77,7 @@ const HomeScreen = ({ route }) => {
     
         try {
             // Requisição para pegar a última data
-            const response = await axios.get(`http://192.168.0.102:3000/ultimaData?userId=${userId}`);
+            const response = await axios.get(`http://10.111.9.44:3000/ultimaData?userId=${userId}`);
             // console.log(response.data);
     
             // Pega a data que foi retornada pela API
@@ -114,7 +114,7 @@ const HomeScreen = ({ route }) => {
             const userId = await AsyncStorage.getItem('userId');
     
             // Buscar todos os desafios disponíveis na rota /desafios
-            const response = await axios.get('http://192.168.0.102:3000/desafios');
+            const response = await axios.get('http://10.111.9.44:3000/desafios');
             const allChallenges = response.data; // Todos os desafios disponíveis
             const completedChallenges = JSON.parse(await AsyncStorage.getItem('completedChallenges')) || []; // Desafios completados
     
@@ -125,7 +125,7 @@ const HomeScreen = ({ route }) => {
                 // Caso todos os desafios tenham sido completados, resetar os dados
     
                 // Deletar os desafios completados no backend (resetar os dados)
-                await axios.post(`http://192.168.0.102:3000/reset-desafios-feitos?userId=${userId}`);
+                await axios.post(`http://10.111.9.44:3000/reset-desafios-feitos?userId=${userId}`);
     
                 // Resetar os dados no AsyncStorage
                 await AsyncStorage.setItem('completedChallenges', JSON.stringify([])); // Limpar lista de desafios concluídos
@@ -184,7 +184,7 @@ const HomeScreen = ({ route }) => {
     // Buscar os desafios
     const fetchChallenges = async () => {
         try {
-            const response = await axios.get('http://192.168.0.102:3000/desafios');
+            const response = await axios.get('http://10.111.9.44:3000/desafios');
             setChallenges(response.data);
             assignDailyChallenge(); // Atribui o desafio do dia
         } catch (error) {
@@ -226,7 +226,7 @@ const HomeScreen = ({ route }) => {
         const userId = await AsyncStorage.getItem('userId');
         const today = new Date().toDateString();
         try {
-            await axios.post('http://192.168.0.102:3000/desafios/concluir', {
+            await axios.post('http://10.111.9.44:3000/desafios/concluir', {
                 userId,
                 challengeId: currentChallenge.id,
                 completionDate: today
@@ -253,7 +253,7 @@ const HomeScreen = ({ route }) => {
     const fetchCompletedChallenges = async () => {
         const userId = await AsyncStorage.getItem('userId');
         try {
-            const response = await axios.get(`http://192.168.0.102:3000/desafios/feitos/?userId=${userId}`);
+            const response = await axios.get(`http://10.111.9.44:3000/desafios/feitos/?userId=${userId}`);
             const completedChallengeIds = Array.isArray(response.data.completedChallenges) ? response.data.completedChallenges : JSON.parse(response.data.completedChallenges || '[]');
             const completedChallengesData = challenges.filter(challenge =>
                 completedChallengeIds.includes(challenge.id)

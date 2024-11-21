@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert, ScrollView, Dimensions, Image } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker'; // Para selecionar a imagem do certificado
-import { Picker } from '@react-native-picker/picker'; // Alteração para importar do novo pacote
 
 const { width, height } = Dimensions.get('window');
 
 const NewOpportunityScreen = ({ route, navigation }) => {
     // Estados para armazenar os dados do formulário
-    const [localizacao, setLocalizacao] = useState('');
+    const [cidade, setCidade] = useState('');
     const [cpf, setCpf] = useState('');
     const [horarios, setHorarios] = useState('');
     const [certificado, setCertificado] = useState(null); // Armazena a imagem do certificado
@@ -30,7 +29,7 @@ const NewOpportunityScreen = ({ route, navigation }) => {
     // Função de validação e envio dos dados
     const handleSubmit = () => {
         // Verifica se todos os campos foram preenchidos
-        if (!localizacao || !cpf || !horarios || !certificado || !pagamento) {
+        if (!cidade || !cpf || !horarios || !certificado || !pagamento) {
             Alert.alert('Erro', 'Todos os campos são obrigatórios.');
             return;
         }
@@ -46,7 +45,7 @@ const NewOpportunityScreen = ({ route, navigation }) => {
         Alert.alert('Sucesso', 'Oportunidade criada com sucesso!');
         
         // Reseta os campos após o envio
-        setLocalizacao('');
+        setCidade('');
         setCpf('');
         setHorarios('');
         setCertificado(null);
@@ -69,12 +68,12 @@ const NewOpportunityScreen = ({ route, navigation }) => {
     return (
         <ScrollView style={styles.container}>
             <View style={styles.formContainer}>
-                <Text style={styles.label}>Localização</Text>
+                <Text style={styles.label}>Cidade</Text>
                 <TextInput
                     style={styles.input}
-                    placeholder="Digite a localização"
-                    value={localizacao}
-                    onChangeText={setLocalizacao}
+                    placeholder="Digite a cidade"
+                    value={cidade}
+                    onChangeText={setCidade}
                 />
 
                 <Text style={styles.label}>CPF</Text>
@@ -101,16 +100,6 @@ const NewOpportunityScreen = ({ route, navigation }) => {
                 {certificado && <Image source={{ uri: certificado }} style={styles.certificadoImage} />}
 
                 <Text style={styles.label}>Forma de Pagamento</Text>
-                <Picker
-                    selectedValue={pagamento}
-                    style={styles.picker}
-                    onValueChange={(itemValue) => setPagamento(itemValue)}
-                >
-                    <Picker.Item label="Selecione uma forma de pagamento" value="" />
-                    <Picker.Item label="Cartão de Crédito" value="cartao_credito" />
-                    <Picker.Item label="Boleto" value="boleto" />
-                    <Picker.Item label="Pix" value="pix" />
-                </Picker>
 
                 <TouchableOpacity style={styles.button} onPress={handleSubmit}>
                     <Text style={styles.buttonText}>Criar Oportunidade</Text>
