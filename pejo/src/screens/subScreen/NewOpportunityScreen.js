@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert, ScrollView, Dimensions, Image } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker'; // Para selecionar a imagem do certificado
+import { Picker } from '@react-native-picker/picker'; // Importação corrigida
 
 const { width, height } = Dimensions.get('window');
 
@@ -11,7 +12,9 @@ const NewOpportunityScreen = ({ route, navigation }) => {
     const [horarios, setHorarios] = useState('');
     const [certificado, setCertificado] = useState(null); // Armazena a imagem do certificado
     const [pagamento, setPagamento] = useState(''); // Forma de pagamento
-
+    const [chavePix, setChavePix] = useState(''); // Chave Pix (email ou número)
+    const [documentoBoleto, setDocumentoBoleto] = useState(''); // Documento para o boleto
+    
     // Função para formatar o CPF
     const formatCpf = (text) => {
         let cpf = text.replace(/\D/g, ''); // Remove qualquer caractere que não seja número
@@ -34,6 +37,18 @@ const NewOpportunityScreen = ({ route, navigation }) => {
             return;
         }
 
+        // Verifica se o pagamento é Pix e a chave Pix está preenchida
+        if (pagamento === 'pix' && !chavePix) {
+            Alert.alert('Erro', 'A chave Pix é obrigatória.');
+            return;
+        }
+
+        // Verifica se o pagamento é Boleto e o número do documento está preenchido
+        if (pagamento === 'boleto' && !documentoBoleto) {
+            Alert.alert('Erro', 'O número do documento é obrigatório para o boleto.');
+            return;
+        }
+
         // Exemplo de validação do CPF (apenas verificando se tem o número correto de caracteres)
         if (cpf.length !== 14) {
             Alert.alert('Erro', 'CPF inválido.');
@@ -50,6 +65,8 @@ const NewOpportunityScreen = ({ route, navigation }) => {
         setHorarios('');
         setCertificado(null);
         setPagamento('');
+        setChavePix('');
+        setDocumentoBoleto('');
     };
 
     // Função para selecionar a imagem do certificado
@@ -100,6 +117,41 @@ const NewOpportunityScreen = ({ route, navigation }) => {
                 {certificado && <Image source={{ uri: certificado }} style={styles.certificadoImage} />}
 
                 <Text style={styles.label}>Forma de Pagamento</Text>
+                <Picker
+                    selectedValue={pagamento}
+                    onValueChange={(itemValue) => setPagamento(itemValue)}
+                    style={styles.picker}
+                >
+                    <Picker.Item label="Selecione a forma de pagamento" value="" />
+                    <Picker.Item label="Pix" value="pix" />
+                    <Picker.Item label="Boleto" value="boleto" />
+                </Picker>
+
+                {/* Exibe campo para chave Pix, se o pagamento for Pix */}
+                {pagamento === 'pix' && (
+                    <>
+                        <Text style={styles.label}>Chave Pix (e-mail ou número)</Text>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Digite a chave Pix"
+                            value={chavePix}
+                            onChangeText={setChavePix}
+                        />
+                    </>
+                )}
+
+                {/* Exibe campo para número de documento para boleto, se o pagamento for Boleto */}
+                {pagamento === 'boleto' && (
+                    <>
+                        <Text style={styles.label}>Número do Documento (CPF ou CNPJ)</Text>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Digite o número do documento"
+                            value={documentoBoleto}
+                            onChangeText={setDocumentoBoleto}
+                        />
+                    </>
+                )}
 
                 <TouchableOpacity style={styles.button} onPress={handleSubmit}>
                     <Text style={styles.buttonText}>Criar Oportunidade</Text>
@@ -133,7 +185,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
     },
     button: {
-        backgroundColor: '#4CAF50',
+        backgroundColor: '#3681d1',
         height: 50,
         justifyContent: 'center',
         alignItems: 'center',
