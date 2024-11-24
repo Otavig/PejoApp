@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image, Button, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 
 const OpportunityDetailScreen = ({ route, navigation }) => {
     const { opportunity } = route.params;
@@ -25,9 +25,11 @@ const OpportunityDetailScreen = ({ route, navigation }) => {
             <Text style={styles.sectionTitle}>Horários Disponíveis:</Text>
             <Text style={styles.availableHours}>Segunda a Sexta: 09:00 - 18:00</Text>
 
-            {/* Foto do Certificado */}
-            <Text style={styles.sectionTitle}>Certificado:</Text>
-            <Image source={{ uri: 'https://via.placeholder.com/150' }} style={styles.certificateImage} />
+            {/* CPF e CFP */}
+            <Text style={styles.sectionTitle}>CPF:</Text>
+            <Text style={styles.text}>{opportunity.cpf}</Text>
+            <Text style={styles.sectionTitle}>CFP:</Text>
+            <Text style={styles.text}>{opportunity.cfp}</Text>
 
             {/* Botões */}
             <View style={styles.buttonsContainer}>
@@ -81,9 +83,9 @@ const styles = StyleSheet.create({
         color: '#555',
         marginBottom: 20,
     },
-    certificateImage: {
-        width: 150,
-        height: 150,
+    text: {
+        fontSize: 16,
+        color: '#555',
         marginBottom: 20,
     },
     buttonsContainer: {

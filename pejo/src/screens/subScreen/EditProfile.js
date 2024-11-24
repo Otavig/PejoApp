@@ -11,34 +11,46 @@ export default function EditProfile({ route, navigation }) {
     const [phone, setPhone] = useState(userData.phone);
     const [profileImage, setProfileImage] = useState(userData.profileImage || '');
 
-    // UseEffect to ensure profileImage is correctly initialized
-    useEffect(() => {
-        if (!profileImage && userData.profileImage) {
-            setProfileImage(`http://10.111.9.44:3000/imagesUsers/${userData.profileImage}`);
+    // Função para formatar o número de telefone
+    const formatPhoneNumber = (text) => {
+        // Remove todos os caracteres não numéricos
+        let phoneNumber = text.replace(/[^\d]/g, '');
+        
+        // Aplica a formatação (18) 99666-0212
+        if (phoneNumber.length <= 2) {
+            phoneNumber = phoneNumber.replace(/(\d{2})/, '($1) ');
+        } else if (phoneNumber.length <= 7) {
+            phoneNumber = phoneNumber.replace(/(\d{2})(\d{5})/, '($1) $2-');
+        } else {
+            phoneNumber = phoneNumber.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
         }
-    }, [userData.profileImage]);
+
+        return phoneNumber;
+    };
+
+    // Função para limpar a formatação do número de telefone
+    const cleanPhoneNumber = (text) => {
+        return text.replace(/[^\d]/g, ''); // Remove qualquer caractere que não seja número
+    };
 
     const handleSave = async () => {
         const formData = new FormData();
         formData.append('name', name);
         formData.append('email', email);
-        formData.append('phone', phone);
-    
-        // Verifica se uma nova imagem foi selecionada
-        if (profileImage !== userData.profileImage) {
-            // Se o caminho da imagem foi alterado, anexa a nova imagem
+        formData.append('phone', cleanPhoneNumber(phone)); // Envia apenas os números
+
+        if (profileImage && profileImage !== userData.profileImage) {
             formData.append('profileImage', {
                 uri: profileImage,
                 type: 'image/jpeg',
                 name: `profile_${userData.id}.jpg`,
             });
         } else {
-            // Se a imagem não foi alterada, anexa o caminho atual
-            formData.append('profileImage', userData.profileImage);
+            formData.append('profileImage', userData.profileImage || null);
         }
     
         try {
-            const response = await axios.put(`http://10.111.9.44:3000/userEdit/${userData.id}`, formData, {
+            const response = await axios.put(`http://192.168.0.102:3000/userEdit/${userData.id}`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
@@ -48,7 +60,7 @@ export default function EditProfile({ route, navigation }) {
         } catch (error) {
             console.error('Erro ao atualizar perfil:', error);
         }
-    };    
+    };
     
     const handleImagePick = async () => {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -65,8 +77,8 @@ export default function EditProfile({ route, navigation }) {
         console.log('Resultado do ImagePicker:', result);
         
         if (!result.canceled) {
-            console.log('Imagem selecionada:', result.assets[0].uri); // Alterado para acessar o uri correto
-            setProfileImage(result.assets[0].uri); // Atualize a imagem com o uri correto
+            console.log('Imagem selecionada:', result.assets[0].uri);
+            setProfileImage(result.assets[0].uri);
         } else {
             console.log('Usuário cancelou a seleção de imagem');
         }
@@ -92,7 +104,12 @@ export default function EditProfile({ route, navigation }) {
             <Text style={styles.label}>Email</Text>
             <TextInput value={email} onChangeText={setEmail} style={styles.input} />
             <Text style={styles.label}>Phone</Text>
-            <TextInput value={phone} onChangeText={setPhone} style={styles.input} />
+            <TextInput
+                value={formatPhoneNumber(phone)} // Formata o número de telefone ao ser exibido
+                onChangeText={(text) => setPhone(formatPhoneNumber(text))} // Formata o número conforme o usuário digita
+                style={styles.input}
+                keyboardType="phone-pad"
+            />
             <Button title="Alterar" onPress={handleSave} />
         </ScrollView>
     );

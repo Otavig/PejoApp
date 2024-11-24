@@ -1,18 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, FlatList, StyleSheet, Image, TouchableOpacity, Button } from 'react-native';
+import { View, Text, TextInput, FlatList, StyleSheet, Image, TouchableOpacity } from 'react-native';
 
 const mockData = [
-    { id: '1', name: 'Jane Doe', details: 'Additional details 1', avatar: null },
-    { id: '2', name: 'Jane Smith', details: 'Additional details 2', avatar: null },
-    { id: '3', name: 'Jane Johnson', details: 'Additional details 3', avatar: 'https://via.placeholder.com/50' },
-    { id: '4', name: 'Jane Williams', details: 'Additional details 4', avatar: null },
-
+    { id: '1', name: 'Jane Doe', details: 'Hey, how’s it going?', avatar: null },
+    { id: '2', name: 'Jane Smith', details: 'Let’s grab lunch!', avatar: null },
+    { id: '3', name: 'Jane Johnson', details: 'See you there!', avatar: 'https://via.placeholder.com/50' },
+    { id: '4', name: 'Jane Williams', details: 'Sounds good!', avatar: null },
 ];
 
 const ChatScreen = ({ navigation }) => {
     const [search, setSearch] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState(search);
-    const [isFocused, setIsFocused] = useState(false); // Novo estado para foco
 
     useEffect(() => {
         const handler = setTimeout(() => {
@@ -29,10 +27,9 @@ const ChatScreen = ({ navigation }) => {
     );
 
     const handleChatPress = (person) => {
-        console.log('Navigating to ConversationScreen with:', person); // Adicionado para depuração
+        console.log('Navigating to ConversationScreen with:', person);
         navigation.navigate('ConversationScreen', { person });
     };
-
 
     return (
         <View style={styles.container}>
@@ -67,49 +64,43 @@ const ChatScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: 16,
-        backgroundColor: '#F0F2F5',
+        backgroundColor: '#FFFFFF',
     },
     searchBar: {
-        height: 40,
-        borderColor: '#ccc',
+        height: 45,
+        borderColor: '#E0E0E0',
         borderWidth: 1,
-        borderRadius: 5,
-        marginBottom: 16,
-        paddingHorizontal: 8,
-        backgroundColor: '#fff',
+        borderRadius: 20,
+        margin: 10,
+        paddingHorizontal: 15,
+        backgroundColor: '#F5F5F5',
     },
     card: {
         flexDirection: 'row',
-        padding: 15,
-        backgroundColor: '#FFFFFF',
-        marginVertical: 5,
-        borderRadius: 10,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.2,
-        shadowRadius: 1.41,
-        elevation: 2,
         alignItems: 'center',
+        paddingVertical: 10,
+        paddingHorizontal: 15,
     },
     avatar: {
-        width: 50,
-        height: 50,
-        borderRadius: 25,
-        marginRight: 10,
-        backgroundColor: '#ddd',
+        width: 70,
+        height: 70,
+        borderRadius: 80,
+        marginRight: 15,
+        backgroundColor: '#E0E0E0',
     },
     textContainer: {
         flex: 1,
+        justifyContent: 'center',
     },
     cardName: {
-        fontWeight: 'bold',
+        fontSize: 18,
+        fontWeight: '600',
+        color: '#222',
     },
     cardMessage: {
+        fontSize: 14,
         color: '#666',
-    },
-    searchBarFocused: { // Estilo adicional para foco
-        borderColor: '#3641bf', // Borda azul ao focar
+        marginTop: 4,
     },
 });
 

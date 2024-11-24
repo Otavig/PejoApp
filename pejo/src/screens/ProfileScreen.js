@@ -10,6 +10,25 @@ export default function ProfileScreen() {
     const navigation = useNavigation(); 
     const [userData, setUserData] = useState(null);
 
+    // Função para formatar o número de telefone
+    const formatPhoneNumber = (phoneNumber) => {
+        if (!phoneNumber) return phoneNumber;
+
+        // Remove todos os caracteres não numéricos
+        phoneNumber = phoneNumber.replace(/[^\d]/g, '');
+
+        // Aplica a formatação (18) 99666-0212
+        if (phoneNumber.length <= 2) {
+            phoneNumber = phoneNumber.replace(/(\d{2})/, '($1) ');
+        } else if (phoneNumber.length <= 7) {
+            phoneNumber = phoneNumber.replace(/(\d{2})(\d{5})/, '($1) $2-');
+        } else {
+            phoneNumber = phoneNumber.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+        }
+
+        return phoneNumber;
+    };
+
     const fetchUserData = async () => {
         const userId = await AsyncStorage.getItem('userId');
         if (!userId) {
@@ -19,7 +38,7 @@ export default function ProfileScreen() {
             return; // Sai da função se o ID for nulo
         }
         try {
-            const response = await axios.get(`http://10.111.9.44:3000/user/${userId}`);
+            const response = await axios.get(`http://192.168.0.102:3000/user/${userId}`);
             const level = response.data.nivel;
             // Calcula o nível real e o progresso
             const calculatedLevel = Math.floor(level / 100);  // Divide o nível por 100 para determinar o nível
@@ -62,7 +81,7 @@ export default function ProfileScreen() {
             fetchUserData(); // Chama a função sempre que a tela é focada
         });
 
-        return unsubscribe; // Limpa o listener ao desmontar
+        return unsubscribe; 
     }, [navigation]);
 
     if (!userData) {
@@ -74,7 +93,7 @@ export default function ProfileScreen() {
             <View style={[styles.profileContainer, {marginTop: 100}]} >
                 <Image
                     style={styles.profileImage}
-                    source={{ uri: `http://10.111.9.44:3000/imagesUsers/${userData.profileImage}`  || 'https://example.com/default-profile-picture.jpg' }}
+                    source={{ uri: `http://192.168.0.102:3000/imagesUsers/${userData.profileImage}`  || 'https://example.com/default-profile-picture.jpg' }}
                 />
             </View>
 
@@ -106,7 +125,7 @@ export default function ProfileScreen() {
 
             <View style={styles.section}>
                 <Text style={styles.label}>Telefone</Text> 
-                <Text style={styles.info}>{userData.phone}</Text>
+                <Text style={styles.info}>{formatPhoneNumber(userData.phone)}</Text> 
             </View>
         </ScrollView>
     );

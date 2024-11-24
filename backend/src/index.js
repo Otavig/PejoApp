@@ -22,7 +22,7 @@ if (!fs.existsSync(directoryPath)) {
 const db = mysql.createConnection({
     host: "localhost",
     user: "root",
-    password: "",
+    password: "root",
     database: "db_pejo"
 });
 
@@ -130,7 +130,7 @@ const register = async (req, res) => {
                     return res.status(500).json({ erro: 'Erro ao registrar usuário' });
                 }
 
-                const confirmationLink = `http://10.111.9.44:3000/reset-password?token=${confirmationToken}`;
+                const confirmationLink = `http://192.168.0.102:3000/reset-password?token=${confirmationToken}`;
                 await sendConfirmationEmail(email, nome, confirmationLink);
 
                 res.json({ mensagem: 'Usuário registrado com sucesso. Verifique seu e-mail para confirmar.' });
@@ -166,8 +166,16 @@ const confirmEmail = async (req, res) => {
                 return res.status(500).send('Erro ao confirmar e-mail.');
             }
 
-            // Enviar o arquivo HTML de confirmação
-            res.sendFile(path.join(__dirname, 'public', 'siteConfirm.html'));
+            // Após a confirmação, enviar a página HTML de confirmação
+            const confirmationPage = path.join(__dirname, 'public', 'siteConfirm.html');
+            
+            // Para garantir que a página seja enviada de forma adequada, você pode enviar uma resposta HTML diretamente aqui
+            res.sendFile(confirmationPage, (err) => {
+                if (err) {
+                    console.error('Erro ao enviar o arquivo:', err);
+                    return res.status(500).send('Erro ao carregar a página de confirmação.');
+                }
+            });
         });
     });
 };
@@ -221,33 +229,6 @@ const adminLogin = (req, res) => {
             res.status(200).json({ mensagem: 'Login admin bem-sucedido', usuario: { id: usuario.id, nome: usuario.nome, email: usuario.email, tipo_usuario: usuario.tipo_usuario } });
         } else {
             res.status(401).json({ erro: 'Senha incorreta' });
-        }
-    });
-};
-
-// Rota para pegar desafios diários
-const getDesafiosApp = (req, res) => {
-    // Consulta para pegar os desafios diários ativos ('ativado') que estão disponíveis
-    const query = `
-        SELECT d.* 
-        FROM desafios d
-        WHERE d.estado = 'ativado'
-          AND d.tipo = 'diario'
-        ORDER BY RAND()  -- Pode ajustar para pegar desafios aleatórios
-        LIMIT 5;  -- Ajuste conforme necessário
-    `;
-
-    db.query(query, (err, results) => {
-        if (err) {
-            console.error('Erro ao buscar desafios:', err);
-            return res.status(500).json({ error: 'Erro ao buscar desafios' });
-        }
-
-        if (results.length > 0) {
-            // Retorna os desafios para o frontend
-            res.json(results);
-        } else {
-            res.json([]);  // Caso não tenha desafios disponíveis
         }
     });
 };
@@ -321,7 +302,7 @@ const sendPasswordResetEmail = async (email, token) => {
             <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ccc; border-radius: 5px;">
                 <h2 style="color: #2196F3;">Redefinição de Senha</h2>
                 <p>Você solicitou a redefinição de sua senha. Clique no link abaixo para redefinir sua senha:</p>
-                <a href="http://10.111.9.44:3000/reset-password?token=${token}" style="background-color: #2196F3; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px;">Redefinir Senha</a>
+                <a href="http://192.168.0.102:3000/reset-password?token=${token}" style="background-color: #2196F3; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px;">Redefinir Senha</a>
                 <p>Se você não solicitou essa mudança, ignore este e-mail.</p>
             </div>
         `,
@@ -465,9 +446,8 @@ const updateUser = (req, res) => {
     });
 };
 
-const upUser = (req, res) => {
-    const { id } = req.params;
-    const { nivelNovo } = req.body;
+const novoLevelConcluido = (req, res) => {
+    const { id, quantia } = req.params;  // Correct way to destructure both id and quantia from req.params
 
     // Primeiro, obtemos o nível atual do usuário
     const getCurrentLevelQuery = 'SELECT nivel FROM usuarios WHERE id = ?';
@@ -483,7 +463,7 @@ const upUser = (req, res) => {
         }
 
         const currentLevel = results[0].nivel;
-        const newLevel = currentLevel + nivelNovo; // Somamos o nível atual com o novo valor
+        const newLevel = currentLevel + parseInt(quantia, 10); // Ensure quantia is an integer
 
         // Agora, atualizamos o nível do usuário no banco
         const updateQuery = 'UPDATE usuarios SET nivel = ? WHERE id = ?';
@@ -492,11 +472,23 @@ const upUser = (req, res) => {
                 console.error('Erro ao atualizar usuário:', err);
                 return res.status(500).json({ error: 'Erro ao atualizar usuário' });
             }
-            res.json({ mensagem: 'Nível do usuário atualizado com sucesso.', novoNivel: newLevel });
+            res.json({ mensagem: `Nível do usuário atualizado com sucesso. Novo nível: ${newLevel}`, novoNivel: newLevel });
         });
     });
 };
 
+// Rota para criar uma oportunidade
+const criarOportunidade = (req, res) => {
+    const { idUser, cpf, horarios, cfp, cidade, forma_de_pagamento, descricao_forma_pagamento } = req.body;
+
+    const query = `INSERT INTO oportunidades (user_id, cpf, horarios, cfp, forma_de_pagamento, cidade, descricao_forma_pagamento) 
+                    VALUES (${idUser}, '${cpf}', '${horarios}', '${cfp}', '${forma_de_pagamento}', '${cidade}, '${descricao_forma_pagamento}');`;
+
+    db.query(query, (err, results) => {
+        if (err) return res.status(500).send(`Houve um erro: ${err}`);
+        res.json(results);
+    });
+};
 
 
 // Rota para obter mensagens
@@ -507,6 +499,7 @@ const getMessages = (req, res) => {
         res.json(results);
     });
 };
+
 
 // Rota para criar um novo desafio
 const createDesafio = (req, res) => {
@@ -701,13 +694,13 @@ const desafiosFeitos = (req, res) => {
         // Pegue o valor de desafios_feitos do primeiro item do resultado
         const desafiosFeitos = results[0].desafios_feitos;
 
-        res.json({ completedChallenges: desafiosFeitos });
+        res.json({ desafiosConcluidos: desafiosFeitos });
     });
 }
 
 // Rota para resetar desafios feitos
 const resetDesafiosFeitos = (req, res) => {
-    const userId = req.query.userId;
+    const userId = req.params;
 
     // A consulta de atualização para resetar desafios_feitos
     const query = 'UPDATE usuarios SET desafios_feitos = ? WHERE id = ?';
@@ -729,8 +722,8 @@ const resetDesafiosFeitos = (req, res) => {
 
 // Rota pegar ultima data
 const ultimaData = (req, res) => {
-    const userId = req.query.userId;
-    const query = 'SELECT dia_desafio_feito FROM ultimadata WHERE userId = "7"';
+    const userId = req.params.id;
+    const query = `SELECT dia_desafio_feito FROM ultimadata WHERE userId = "${userId}"`;
 
     db.query(query, [userId], (err, results) => {
         if (err) {
@@ -745,55 +738,152 @@ const ultimaData = (req, res) => {
     });
 }
 
+const ultimaDataMarcar = (req, res) => {
+    const userId = req.params.id;
+    const novaData = req.params.dia_desafio_feito; // Agora pega do parâmetro da URL.
+
+    // Query para atualizar a data
+    const query = `UPDATE ultimadata SET dia_desafio_feito = ? WHERE userId = ?`;
+
+    db.query(query, [novaData, userId], (err, results) => {
+        if (err) {
+            return res.status(500).json({ error: 'Erro ao atualizar a última data', details: err.message });
+        }
+
+        if (results.affectedRows > 0) {
+            res.json({ success: true, message: 'Data atualizada com sucesso' });
+        } else {
+            res.status(404).json({ error: 'Usuário não encontrado para atualização' });
+        }
+    });
+};
+
+// Rota cadastrar Último Desafio Realizado!
+const cadastrarUltimoDesafioRealizado = (req, res) => {
+    // Corrigindo o destructuring dos parâmetros
+    const { idUser, desafioId } = req.params;
+
+    const hoje = new Date();
+
+    // Usando prepared statements para evitar SQL Injection
+    const query = `UPDATE usuarios SET ultimo_desafio_montado = ?, data_ultimo_desafio_entregue = ? WHERE id = ?`;
+
+    // Executando a query
+    db.query(query, [desafioId, hoje, idUser], (err, results) => {
+        if (err) {
+            // Se houver erro, retorna status 500
+            return res.status(500).json({ error: 'Erro ao dar um update no ultimo desafio Realizado' });
+        }
+
+        // Se a atualização for bem-sucedida, retorna um status 200 com sucesso
+        return res.status(200).json({ message: 'Último desafio realizado atualizado com sucesso!' });
+    });
+};
+
+// Rota para consultar ultima data_ultimo_desafio_entregue
+const dataUltimoDesafioEntregue = (req, res) => {
+        const idUsuario = req.params.id
+
+        // Usando prepared statements para evitar SQL Injection
+        const query = `SELECT data_ultimo_desafio_entregue FROM usuarios WHERE id = ${idUsuario}`;
+
+        // Executando a query
+        db.query(query, (err, results) => {
+            if (err) {
+                // Se houver erro, retorna status 500
+                return res.status(500).json({ error: 'Erro de puxar as informações' });
+            }
+            
+            // Verifique se há resultados
+            if (results.length === 0) {
+                return res.status(404).json({ error: 'Usuário não encontrado' });
+            }
+
+            // Pegue o valor de desafios_feitos do primeiro item do resultado
+            const data = results[0];
+
+            return res.json({ utlimoDataDesafio: data });
+        });
+}
+
+// Rota para buscar o Último Desafio Realizado
+const buscarUltimoDesafioMontado = (req, res) => {
+    // Corrigindo o destructuring dos parâmetros
+    const { idUser } = req.params;
+
+    // Usando prepared statement para evitar SQL Injection
+    const query = `SELECT ultimo_desafio_montado FROM usuarios WHERE id = ?`;
+
+    // Executando a query
+    db.query(query, [idUser], (err, results) => {
+        if (err) {
+            // Se houver erro, retorna status 500
+            return res.status(500).json({ error: 'Erro ao buscar o último desafio realizado' });
+        }
+
+        if (results.length === 0) {
+            // Se não encontrar o usuário, retorna status 404
+            return res.status(404).json({ message: 'Usuário não encontrado' });
+        }
+
+        // Se encontrado, retorna o desafio
+        return res.status(200).json({ ultimoDesafioRealizado: results[0].ultimo_desafio_montado });
+    });
+};
+
+
 // 3. Registrar um desafio como concluído
 const desafiosConcluidos = (req, res) => {
-    const { userId, challengeId, completionDate } = req.body;
+    const userId = req.params.userId; // Identificador do usuário
+    const idDesafio = Number(req.params.idDesafio); // Convertendo o idDesafio para número
 
-    if (!userId || !challengeId || !completionDate) {
-        return res.status(400).json({ error: 'Faltam dados necessários' });
-    }
+    // Query para buscar os desafios concluídos do usuário
+    const querySelect = 'SELECT desafios_feitos FROM usuarios WHERE id = ?';
 
-    // Converte a data para o formato correto (YYYY-MM-DD)
-    const formattedCompletionDate = formatDate(completionDate);
-
-    const queryUsuario = 'SELECT desafios_feitos FROM usuarios WHERE id = ?';
-
-    db.query(queryUsuario, [userId], (err, results) => {
+    db.query(querySelect, [userId], (err, results) => {
         if (err) {
-            console.error('Erro ao buscar dados do usuário:', err);
-            return res.status(500).json({ error: 'Erro ao buscar dados do usuário' });
+            return res.status(500).json({ error: 'Erro ao buscar desafios concluídos' });
         }
 
         if (results.length === 0) {
             return res.status(404).json({ error: 'Usuário não encontrado' });
         }
 
-        const desafiosFeitos = results[0].desafios_feitos ? JSON.parse(results[0].desafios_feitos) : [];
-        desafiosFeitos.push(challengeId);
+        // Recupera os desafios concluídos (em formato de string)
+        let desafiosFeitos = results[0].desafios_feitos;
 
-        // Atualiza a tabela ultimaData com a data do último desafio
-        const queryUltimaData = 'INSERT INTO ultimaData (userId, dia_desafio_feito) VALUES (?, ?) ' +
-            'ON DUPLICATE KEY UPDATE dia_desafio_feito = ?';
+        // Converte a string de desafios para um array
+        if (desafiosFeitos) {
+            desafiosFeitos = JSON.parse(desafiosFeitos);
+        } else {
+            desafiosFeitos = [];
+        }
 
-        db.query(queryUltimaData, [userId, formattedCompletionDate, formattedCompletionDate], (err) => {
+        // Adiciona o novo desafio, caso ainda não esteja presente no array
+        if (!desafiosFeitos.includes(idDesafio)) {
+            desafiosFeitos.push(idDesafio);
+        }
+
+        // Converte o array de volta para uma string
+        const desafiosFeitosString = JSON.stringify(desafiosFeitos);
+
+        // Query para atualizar os desafios do usuário no banco de dados
+        const queryUpdate = 'UPDATE usuarios SET desafios_feitos = ? WHERE id = ?';
+
+        db.query(queryUpdate, [desafiosFeitosString, userId], (err, updateResults) => {
             if (err) {
-                console.error('Erro ao atualizar a última data de conclusão:', err);
-                return res.status(500).json({ error: 'Erro ao atualizar a última data de conclusão' });
+                return res.status(500).json({ error: 'Erro ao registrar desafio concluído' });
             }
 
-            // Atualiza a tabela de usuários com os novos dados de desafios feitos
-            const queryUpdateUsuario = 'UPDATE usuarios SET desafios_feitos = ? WHERE id = ?';
-            db.query(queryUpdateUsuario, [JSON.stringify(desafiosFeitos), userId], (err) => {
-                if (err) {
-                    console.error('Erro ao atualizar os dados do usuário:', err);
-                    return res.status(500).json({ error: 'Erro ao atualizar os dados do usuário' });
-                }
+            if (updateResults.affectedRows === 0) {
+                return res.status(404).json({ error: 'Usuário não encontrado' });
+            }
 
-                res.status(200).json({ message: 'Desafio concluído com sucesso!' });
-            });
+            res.status(200).json({ message: 'Desafio registrado como concluído' });
         });
     });
 };
+
 
 const formatDate = (date) => {
     const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
@@ -812,9 +902,14 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.post('/reset-desafios-feitos', resetDesafiosFeitos);
-app.get('/ultimaData', ultimaData);
-app.post('/desafios/concluir', desafiosConcluidos);
+app.post('/reset-desafios-feitos/:idUser', resetDesafiosFeitos);
+app.post('/criar-oportunidade', criarOportunidade);
+app.get('/data-ultimo-desafio-entregue/:id', dataUltimoDesafioEntregue);
+app.put('/user/:idUser/desafio/:desafioId', cadastrarUltimoDesafioRealizado);
+app.get('/ultimaData/:id', ultimaData);
+app.get('/ultimoDesafioMontado/:idUser', buscarUltimoDesafioMontado);
+app.put('/ultimaData/marcar/:id/:dia_desafio_feito', ultimaDataMarcar);
+app.put('/desafios/concluir/:userId/:idDesafio', desafiosConcluidos);
 app.get('/desafios/feitos', desafiosFeitos);
 app.get('/api/desafios/count', getDesafiosCount);
 app.get('/api/usuarios/count', getUsuariosCount);
@@ -823,7 +918,6 @@ app.get('/api/top-players', getTopPlayers);
 app.post('/login', login);
 app.post('/register', register);
 app.post('/confirm-email', confirmEmail);
-app.get('/desafios', getDesafiosApp);
 app.post('/forgot-password', forgot_password);
 app.post('/reset-password', resetPassword);
 app.post('/admin-login', adminLogin);
@@ -831,7 +925,7 @@ app.get('/getDesafios', getDesafios);
 app.get('/getUsuarios', getUsuarios);
 app.get('/intra/getDesafio/:id', getDesafioIntra);
 app.put('/intra/updateDesafio/:id', updateDesafio); // Rota para atualizar um desafio
-app.put('/upUser/:id', upUser); // Rota para atualizar um desafio
+app.put('/upUser/:id/:quantia', novoLevelConcluido); // Rota para atualizar um desafio
 app.delete('/intra/deleteUsuario/:id', deleteUsuario); // Rota para deletar um usuário
 app.delete('/intra/deleteDesafio/:id', deleteDesafio); // Rota para deletar um desafio
 app.get('/user/:id', getUserById); // Adiciona a rota para obter usuário

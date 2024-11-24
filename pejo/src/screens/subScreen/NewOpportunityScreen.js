@@ -1,23 +1,39 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert, ScrollView, Dimensions, Image } from 'react-native';
-import { launchImageLibrary } from 'react-native-image-picker'; // Para selecionar a imagem do certificado
-import { Picker } from '@react-native-picker/picker'; // Importação corrigida
+import React, { useState, useEffect } from 'react';
+import {
+    View,
+    Text,
+    StyleSheet,
+    TextInput,
+    TouchableOpacity,
+    Alert,
+    ScrollView,
+    Dimensions,
+    Image,
+} from 'react-native';
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width, height } = Dimensions.get('window');
 
 const NewOpportunityScreen = ({ route, navigation }) => {
-    // Estados para armazenar os dados do formulário
+    const [idUsuario, setIdUsuario] = useState(null);
     const [cidade, setCidade] = useState('');
     const [cpf, setCpf] = useState('');
     const [horarios, setHorarios] = useState('');
-    const [certificado, setCertificado] = useState(null); // Armazena a imagem do certificado
+    const [cfp, setCFP] = useState('');
     const [pagamento, setPagamento] = useState(''); // Forma de pagamento
-    const [chavePix, setChavePix] = useState(''); // Chave Pix (email ou número)
-    const [documentoBoleto, setDocumentoBoleto] = useState(''); // Documento para o boleto
+    const [chavePix, setChavePix] = useState('');
+    const [documentoBoleto, setDocumentoBoleto] = useState('');
     
-    // Função para formatar o CPF
+    const pegarIdPerfil = async () => {
+        const storedId = await AsyncStorage.getItem('userId');
+        setIdUsuario(storedId);
+    }
+
+    pegarIdPerfil();
+
     const formatCpf = (text) => {
-        let cpf = text.replace(/\D/g, ''); // Remove qualquer caractere que não seja número
+        let cpf = text.replace(/\D/g, '');
         if (cpf.length <= 3) {
             return cpf;
         } else if (cpf.length <= 6) {
@@ -29,58 +45,82 @@ const NewOpportunityScreen = ({ route, navigation }) => {
         }
     };
 
-    // Função de validação e envio dos dados
-    const handleSubmit = () => {
-        // Verifica se todos os campos foram preenchidos
-        if (!cidade || !cpf || !horarios || !certificado || !pagamento) {
-            Alert.alert('Erro', 'Todos os campos são obrigatórios.');
+    const handleSubmit = async () => {
+        if (!cidade) {
+            Alert.alert('Erro', 'O campo "Cidade" é obrigatório.');
             return;
         }
-
-        // Verifica se o pagamento é Pix e a chave Pix está preenchida
+        if (!cpf || cpf.length !== 14) {
+            Alert.alert('Erro', 'O CPF é obrigatório e deve estar no formato válido.');
+            return;
+        }
+        if (!cfp) {
+            Alert.alert('Erro', 'O CRP é obrigatório.');
+            return;
+        }
+        if (!horarios) {
+            Alert.alert('Erro', 'O campo "Horários" é obrigatório.');
+            return;
+        }
+        if (!pagamento) {
+            Alert.alert('Erro', 'O campo "Forma de pagamento" é obrigatório.');
+            return;
+        }
         if (pagamento === 'pix' && !chavePix) {
             Alert.alert('Erro', 'A chave Pix é obrigatória.');
             return;
         }
-
-        // Verifica se o pagamento é Boleto e o número do documento está preenchido
         if (pagamento === 'boleto' && !documentoBoleto) {
             Alert.alert('Erro', 'O número do documento é obrigatório para o boleto.');
             return;
         }
-
-        // Exemplo de validação do CPF (apenas verificando se tem o número correto de caracteres)
-        if (cpf.length !== 14) {
-            Alert.alert('Erro', 'CPF inválido.');
+        if (!idUsuario) {
+            Alert.alert('Erro', 'Usuário não encontrado ou não carregado ainda.');
             return;
         }
-
-        // Aqui você pode enviar os dados para uma API ou fazer o que for necessário
-        // Por enquanto, apenas uma mensagem de sucesso
-        Alert.alert('Sucesso', 'Oportunidade criada com sucesso!');
-        
-        // Reseta os campos após o envio
+    
+        const crpPattern = /^\d{4,6}\/[A-Z]{2}$/;
+        if (!crpPattern.test(cfp)) {
+            Alert.alert('Erro', 'CFP inválido. O formato deve ser "12345/SP".');
+            return;
+        }
+    
+        // Definir a descrição da forma de pagamento
+        let descricaoFormaPagamento = '';
+        if (pagamento === 'pix') {
+            descricaoFormaPagamento = cpf; // Envia o CPF se for Pix
+        } else if (pagamento === 'boleto') {
+            descricaoFormaPagamento = documentoBoleto; // Envia o número do documento se for boleto
+        }
+    
+        try {
+            const response = await axios.post('http://192.168.0.102:3000/criar-oportunidade', {
+                idUser: idUsuario,
+                cpf: cpf,
+                horarios: horarios,
+                cfp: cfp,
+                cidade: cidade,
+                forma_de_pagamento: pagamento,
+                descricao_forma_pagamento: descricaoFormaPagamento
+            });
+    
+            console.log('Oportunidade criada:', response.data);
+            Alert.alert('Sucesso', 'Oportunidade criada com sucesso!');
+            navigation.goBack();
+        } catch (error) {
+            console.error('Erro ao criar oportunidade:', error.response ? error.response.data : error.message);
+            Alert.alert('Erro', 'Não foi possível criar a oportunidade.');
+        }
+    
+        // Limpar os campos
         setCidade('');
         setCpf('');
         setHorarios('');
-        setCertificado(null);
+        setCFP('');
         setPagamento('');
         setChavePix('');
         setDocumentoBoleto('');
-    };
-
-    // Função para selecionar a imagem do certificado
-    const selectCertificadoImage = () => {
-        launchImageLibrary({ mediaType: 'photo' }, (response) => {
-            if (response.didCancel) {
-                console.log('Seleção de imagem cancelada');
-            } else if (response.errorCode) {
-                console.log('Erro ao selecionar imagem', response.errorMessage);
-            } else {
-                setCertificado(response.assets[0].uri); // Armazena a URI da imagem selecionada
-            }
-        });
-    };
+    };    
 
     return (
         <ScrollView style={styles.container}>
@@ -99,7 +139,15 @@ const NewOpportunityScreen = ({ route, navigation }) => {
                     placeholder="Digite o CPF"
                     keyboardType="numeric"
                     value={cpf}
-                    onChangeText={(text) => setCpf(formatCpf(text))} // Formata o CPF automaticamente
+                    onChangeText={(text) => setCpf(formatCpf(text))}
+                />
+
+                <Text style={styles.label}>CFP</Text>
+                <TextInput
+                    style={styles.input}
+                    placeholder="Digite o CRP (ex: 12345/SP)"
+                    value={cfp}
+                    onChangeText={setCFP}
                 />
 
                 <Text style={styles.label}>Horários Disponíveis</Text>
@@ -110,24 +158,28 @@ const NewOpportunityScreen = ({ route, navigation }) => {
                     onChangeText={setHorarios}
                 />
 
-                <Text style={styles.label}>Certificado</Text>
-                <TouchableOpacity style={styles.imagePicker} onPress={selectCertificadoImage}>
-                    <Text style={styles.imagePickerText}>{certificado ? 'Imagem Selecionada' : 'Escolher Imagem do Certificado'}</Text>
-                </TouchableOpacity>
-                {certificado && <Image source={{ uri: certificado }} style={styles.certificadoImage} />}
-
                 <Text style={styles.label}>Forma de Pagamento</Text>
-                <Picker
-                    selectedValue={pagamento}
-                    onValueChange={(itemValue) => setPagamento(itemValue)}
-                    style={styles.picker}
-                >
-                    <Picker.Item label="Selecione a forma de pagamento" value="" />
-                    <Picker.Item label="Pix" value="pix" />
-                    <Picker.Item label="Boleto" value="boleto" />
-                </Picker>
+                <View style={styles.paymentOptions}>
+                    <TouchableOpacity
+                        style={[
+                            styles.paymentOption,
+                            pagamento === 'pix' && styles.paymentOptionSelected,
+                        ]}
+                        onPress={() => setPagamento('pix')}
+                    >
+                        <Text style={styles.paymentOptionText}>Pix</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={[
+                            styles.paymentOption,
+                            pagamento === 'boleto' && styles.paymentOptionSelected,
+                        ]}
+                        onPress={() => setPagamento('boleto')}
+                    >
+                        <Text style={styles.paymentOptionText}>Boleto</Text>
+                    </TouchableOpacity>
+                </View>
 
-                {/* Exibe campo para chave Pix, se o pagamento for Pix */}
                 {pagamento === 'pix' && (
                     <>
                         <Text style={styles.label}>Chave Pix (e-mail ou número)</Text>
@@ -140,7 +192,6 @@ const NewOpportunityScreen = ({ route, navigation }) => {
                     </>
                 )}
 
-                {/* Exibe campo para número de documento para boleto, se o pagamento for Boleto */}
                 {pagamento === 'boleto' && (
                     <>
                         <Text style={styles.label}>Número do Documento (CPF ou CNPJ)</Text>
@@ -184,6 +235,30 @@ const styles = StyleSheet.create({
         marginBottom: 15,
         fontSize: 16,
     },
+    paymentOptions: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 15,
+    },
+    paymentOption: {
+        flex: 1,
+        marginHorizontal: 5,
+        height: 50,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: '#ccc',
+    },
+    paymentOptionSelected: {
+        backgroundColor: '#3681d1',
+        borderColor: '#3681d1',
+    },
+    paymentOptionText: {
+        color: '#fff',
+        color: 'black',
+        fontSize: 16,
+    },
     button: {
         backgroundColor: '#3681d1',
         height: 50,
@@ -195,31 +270,6 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 18,
         fontWeight: 'bold',
-    },
-    imagePicker: {
-        backgroundColor: '#ddd',
-        padding: 15,
-        borderRadius: 8,
-        marginBottom: 15,
-        alignItems: 'center',
-    },
-    imagePickerText: {
-        fontSize: 16,
-        color: '#333',
-    },
-    certificadoImage: {
-        width: width - 40,
-        height: 200,
-        marginBottom: 15,
-        resizeMode: 'contain',
-        borderRadius: 8,
-    },
-    picker: {
-        height: 50,
-        borderColor: '#ccc',
-        borderWidth: 1,
-        borderRadius: 8,
-        marginBottom: 15,
     },
 });
 

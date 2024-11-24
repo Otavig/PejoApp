@@ -1,6 +1,6 @@
 -- --------------------------------------------------------
 -- Servidor:                     localhost
--- Versão do servidor:           10.4.32-MariaDB - mariadb.org binary distribution
+-- Versão do servidor:           5.7.24 - MySQL Community Server (GPL)
 -- OS do Servidor:               Win64
 -- HeidiSQL Versão:              12.8.0.6908
 -- --------------------------------------------------------
@@ -16,38 +16,8 @@
 
 
 -- Copiando estrutura do banco de dados para db_pejo
-CREATE DATABASE IF NOT EXISTS `db_pejo` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci */;
+CREATE DATABASE IF NOT EXISTS `db_pejo` /*!40100 DEFAULT CHARACTER SET utf8mb4 */;
 USE `db_pejo`;
-
--- Copiando estrutura para tabela db_pejo.assinaturas
-CREATE TABLE IF NOT EXISTS `assinaturas` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `usuario_id` int(11) DEFAULT NULL,
-  `data_inicio` timestamp NOT NULL DEFAULT current_timestamp(),
-  `data_fim` timestamp NULL DEFAULT NULL,
-  `status` tinyint(1) DEFAULT 1,
-  PRIMARY KEY (`id`),
-  KEY `usuario_id` (`usuario_id`),
-  CONSTRAINT `assinaturas_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- Copiando dados para a tabela db_pejo.assinaturas: ~0 rows (aproximadamente)
-
--- Copiando estrutura para tabela db_pejo.cartao_profissional
-CREATE TABLE IF NOT EXISTS `cartao_profissional` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `profissional_id` int(11) DEFAULT NULL,
-  `descricao` text DEFAULT NULL,
-  `nome` varchar(255) NOT NULL,
-  `avaliacao` float DEFAULT 0,
-  `estrelas` int(11) DEFAULT 0,
-  `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`id`) USING BTREE,
-  KEY `profissional_id` (`profissional_id`),
-  CONSTRAINT `cartao_profissional_ibfk_1` FOREIGN KEY (`profissional_id`) REFERENCES `usuarios` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- Copiando dados para a tabela db_pejo.cartao_profissional: ~0 rows (aproximadamente)
 
 -- Copiando estrutura para tabela db_pejo.chats
 CREATE TABLE IF NOT EXISTS `chats` (
@@ -55,13 +25,13 @@ CREATE TABLE IF NOT EXISTS `chats` (
   `remetente_id` int(11) DEFAULT NULL,
   `destinatario_id` int(11) DEFAULT NULL,
   `mensagem` text NOT NULL,
-  `data_envio` timestamp NOT NULL DEFAULT current_timestamp(),
+  `data_envio` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `remetente_id` (`remetente_id`),
   KEY `destinatario_id` (`destinatario_id`),
   CONSTRAINT `chats_ibfk_1` FOREIGN KEY (`remetente_id`) REFERENCES `usuarios` (`id`),
   CONSTRAINT `chats_ibfk_2` FOREIGN KEY (`destinatario_id`) REFERENCES `usuarios` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Copiando dados para a tabela db_pejo.chats: ~0 rows (aproximadamente)
 
@@ -72,12 +42,12 @@ CREATE TABLE IF NOT EXISTS `desafios` (
   `descricao` text NOT NULL,
   `dificuldade` enum('facil','media','dificil') NOT NULL,
   `tipo` enum('diario','semanal','mensal') NOT NULL,
-  `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
+  `data_criacao` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `estado` enum('ativado','desativado') NOT NULL DEFAULT 'desativado',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=63 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=63 DEFAULT CHARSET=utf8mb4;
 
--- Copiando dados para a tabela db_pejo.desafios: ~32 rows (aproximadamente)
+-- Copiando dados para a tabela db_pejo.desafios: ~55 rows (aproximadamente)
 INSERT INTO `desafios` (`id`, `titulo`, `descricao`, `dificuldade`, `tipo`, `data_criacao`, `estado`) VALUES
 	(7, 'Cumprimente uma Pessoa Desconhecida', 'Cumprimente uma pessoa que você não conhece e inicie uma breve interação.\n', 'facil', 'diario', '2024-11-21 15:39:27', 'ativado'),
 	(8, 'Sorria para o Espelho', 'Sorria para o espelho e diga com entusiasmo: "Eu me sinto ótimo!"\n', 'facil', 'diario', '2024-11-21 15:40:24', 'ativado'),
@@ -139,28 +109,47 @@ INSERT INTO `desafios` (`id`, `titulo`, `descricao`, `dificuldade`, `tipo`, `dat
 CREATE TABLE IF NOT EXISTS `eventos` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `nome` varchar(255) NOT NULL,
-  `descricao` text DEFAULT NULL,
-  `data_evento` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `descricao` text,
+  `data_evento` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `local` varchar(255) NOT NULL,
-  `imagens` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
-  `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
+  `imagens` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin,
+  `data_criacao` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `coordenadas` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4;
 
 -- Copiando dados para a tabela db_pejo.eventos: ~0 rows (aproximadamente)
 INSERT INTO `eventos` (`id`, `nome`, `descricao`, `data_evento`, `local`, `imagens`, `data_criacao`, `coordenadas`) VALUES
 	(12, 'Desenvoltura no trabalho', 'Palestra com o Gustavo Prado sobre como se comportar e destacar no seu ambiente de trabalho', '2024-12-06 17:30:00', 'SP - Presidente Prudente', '["1732205629239-matarazo.jpg"]', '2024-11-21 16:13:49', '-22.12082877981584, -51.37948396191292');
 
--- Copiando estrutura para tabela db_pejo.profissional_dados
-CREATE TABLE IF NOT EXISTS `profissional_dados` (
+-- Copiando estrutura para tabela db_pejo.oportunidades
+CREATE TABLE IF NOT EXISTS `oportunidades` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `cpf` varchar(50) NOT NULL,
-  `certificado` varchar(50) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `cpf` varchar(50) NOT NULL DEFAULT '',
+  `horarios` varchar(255) DEFAULT NULL,
+  `forma_de_pagamento` varchar(50) DEFAULT NULL,
+  `cfp` varchar(50) DEFAULT NULL,
+  `cidade` varchar(50) DEFAULT NULL,
+  `descricao_forma_pagamento` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4;
 
--- Copiando dados para a tabela db_pejo.profissional_dados: ~0 rows (aproximadamente)
+-- Copiando dados para a tabela db_pejo.oportunidades: ~0 rows (aproximadamente)
+INSERT INTO `oportunidades` (`id`, `user_id`, `cpf`, `horarios`, `forma_de_pagamento`, `cfp`, `cidade`, `descricao_forma_pagamento`) VALUES
+	(1, 8, '47348752861', '18:30 a 20:00', 'Pix', '123183', 'São Paulo', NULL);
+
+-- Copiando estrutura para tabela db_pejo.ultimadata
+CREATE TABLE IF NOT EXISTS `ultimadata` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `userId` int(11) NOT NULL,
+  `dia_desafio_feito` date DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4;
+
+-- Copiando dados para a tabela db_pejo.ultimadata: ~1 rows (aproximadamente)
+INSERT INTO `ultimadata` (`id`, `userId`, `dia_desafio_feito`) VALUES
+	(5, 10, '2024-11-24');
 
 -- Copiando estrutura para tabela db_pejo.usuarios
 CREATE TABLE IF NOT EXISTS `usuarios` (
@@ -172,23 +161,38 @@ CREATE TABLE IF NOT EXISTS `usuarios` (
   `senha` varchar(255) NOT NULL,
   `token_confirmacao_email` varchar(255) DEFAULT NULL,
   `token_recuperacao_senha` varchar(255) DEFAULT NULL,
-  `status_email` tinyint(1) DEFAULT 0,
+  `status_email` tinyint(1) DEFAULT '0',
   `tipo_usuario` enum('confirmação','usuario','profissional','admin') DEFAULT 'confirmação',
-  `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
+  `data_criacao` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `data_nascimento` date DEFAULT NULL,
-  `nivel` int(11) DEFAULT 0,
+  `nivel` int(11) DEFAULT '0',
   `bio` varchar(255) DEFAULT NULL,
   `profileImage` varchar(255) DEFAULT NULL,
   `token` varchar(255) DEFAULT NULL,
-  `dailyChallenge` int(11) DEFAULT NULL,
-  `dailyChallengeDate` date DEFAULT NULL,
+  `desafios_feitos` varchar(255) DEFAULT '[]',
+  `ultimo_desafio_montado` int(11) DEFAULT NULL,
+  `data_ultimo_desafio_entregue` date DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4;
 
 -- Copiando dados para a tabela db_pejo.usuarios: ~1 rows (aproximadamente)
-INSERT INTO `usuarios` (`id`, `token_expiration`, `nome`, `email`, `telefone`, `senha`, `token_confirmacao_email`, `token_recuperacao_senha`, `status_email`, `tipo_usuario`, `data_criacao`, `data_nascimento`, `nivel`, `bio`, `profileImage`, `token`, `dailyChallenge`, `dailyChallengeDate`) VALUES
-	(7, '2024-11-21 10:34:42', 'admin', 'admin@gmail.com', NULL, '$2b$10$B457wnrMbc57DRfEVcUHTuGv64m7rKrCIECDholKS6bWHI1TTbZRK', NULL, NULL, 0, 'admin', '2024-11-21 13:34:44', NULL, 0, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `usuarios` (`id`, `token_expiration`, `nome`, `email`, `telefone`, `senha`, `token_confirmacao_email`, `token_recuperacao_senha`, `status_email`, `tipo_usuario`, `data_criacao`, `data_nascimento`, `nivel`, `bio`, `profileImage`, `token`, `desafios_feitos`, `ultimo_desafio_montado`, `data_ultimo_desafio_entregue`) VALUES
+	(10, NULL, 'Otávio Garcia', 'admin@gmail.com', '18996660212', '$2b$10$B457wnrMbc57DRfEVcUHTuGv64m7rKrCIECDholKS6bWHI1TTbZRK', NULL, NULL, 0, 'admin', '2024-11-24 19:58:33', NULL, 40, NULL, NULL, NULL, '[52,59]', 59, '2024-11-24');
+
+-- Copiando estrutura para trigger db_pejo.after_user_insert
+SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION';
+DELIMITER //
+CREATE TRIGGER after_user_insert
+AFTER INSERT ON usuarios
+FOR EACH ROW
+BEGIN
+    -- Insere o registro na tabela ultimadata com userId e a data de ontem
+    INSERT INTO ultimadata (userId, dia_desafio_feito)
+    VALUES (NEW.id, DATE_SUB(NEW.data_criacao, INTERVAL 1 DAY));
+END//
+DELIMITER ;
+SET SQL_MODE=@OLDTMP_SQL_MODE;
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
