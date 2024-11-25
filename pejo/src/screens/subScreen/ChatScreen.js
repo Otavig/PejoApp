@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, FlatList, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, FlatList, StyleSheet, Image, TouchableOpacity, Alert } from 'react-native';
 
 const mockData = [
     { id: '1', name: 'Jane Doe', details: 'Hey, how’s it going?', avatar: null },
@@ -21,6 +21,11 @@ const ChatScreen = ({ navigation }) => {
             clearTimeout(handler);
         };
     }, [search]);
+
+    useEffect(() => {
+        // Mensagem que será exibida quando o chat for aberto
+        Alert.alert('Bem-vindo ao Chat', 'Este é um protótipo do nosso chat!');
+    }, []);
 
     const filteredData = mockData.filter(person =>
         person.name.toLowerCase().includes(debouncedSearch.toLowerCase())

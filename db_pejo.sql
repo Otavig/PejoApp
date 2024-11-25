@@ -137,7 +137,7 @@ CREATE TABLE IF NOT EXISTS `oportunidades` (
 
 -- Copiando dados para a tabela db_pejo.oportunidades: ~0 rows (aproximadamente)
 INSERT INTO `oportunidades` (`id`, `user_id`, `cpf`, `horarios`, `forma_de_pagamento`, `cfp`, `cidade`, `descricao_forma_pagamento`) VALUES
-	(1, 8, '47348752861', '18:30 a 20:00', 'Pix', '123183', 'São Paulo', NULL);
+	(1, 10, '47348752861', '18:30 a 20:00', 'Pix', '123183', 'São Paulo', NULL);
 
 -- Copiando estrutura para tabela db_pejo.ultimadata
 CREATE TABLE IF NOT EXISTS `ultimadata` (
@@ -145,11 +145,13 @@ CREATE TABLE IF NOT EXISTS `ultimadata` (
   `userId` int(11) NOT NULL,
   `dia_desafio_feito` date DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4;
 
--- Copiando dados para a tabela db_pejo.ultimadata: ~1 rows (aproximadamente)
+-- Copiando dados para a tabela db_pejo.ultimadata: ~2 rows (aproximadamente)
 INSERT INTO `ultimadata` (`id`, `userId`, `dia_desafio_feito`) VALUES
-	(5, 10, '2024-11-24');
+	(5, 10, '2024-11-25'),
+	(6, 11, '2024-11-24'),
+	(7, 12, '2024-11-25');
 
 -- Copiando estrutura para tabela db_pejo.usuarios
 CREATE TABLE IF NOT EXISTS `usuarios` (
@@ -172,13 +174,16 @@ CREATE TABLE IF NOT EXISTS `usuarios` (
   `desafios_feitos` varchar(255) DEFAULT '[]',
   `ultimo_desafio_montado` int(11) DEFAULT NULL,
   `data_ultimo_desafio_entregue` date DEFAULT NULL,
+  `avaliacao` float DEFAULT '0',
+  `contratados` varchar(255) DEFAULT '[]',
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4;
 
--- Copiando dados para a tabela db_pejo.usuarios: ~1 rows (aproximadamente)
-INSERT INTO `usuarios` (`id`, `token_expiration`, `nome`, `email`, `telefone`, `senha`, `token_confirmacao_email`, `token_recuperacao_senha`, `status_email`, `tipo_usuario`, `data_criacao`, `data_nascimento`, `nivel`, `bio`, `profileImage`, `token`, `desafios_feitos`, `ultimo_desafio_montado`, `data_ultimo_desafio_entregue`) VALUES
-	(10, NULL, 'Otávio Garcia', 'admin@gmail.com', '18996660212', '$2b$10$B457wnrMbc57DRfEVcUHTuGv64m7rKrCIECDholKS6bWHI1TTbZRK', NULL, NULL, 0, 'admin', '2024-11-24 19:58:33', NULL, 40, NULL, NULL, NULL, '[52,59]', 59, '2024-11-24');
+-- Copiando dados para a tabela db_pejo.usuarios: ~2 rows (aproximadamente)
+INSERT INTO `usuarios` (`id`, `token_expiration`, `nome`, `email`, `telefone`, `senha`, `token_confirmacao_email`, `token_recuperacao_senha`, `status_email`, `tipo_usuario`, `data_criacao`, `data_nascimento`, `nivel`, `bio`, `profileImage`, `token`, `desafios_feitos`, `ultimo_desafio_montado`, `data_ultimo_desafio_entregue`, `avaliacao`, `contratados`) VALUES
+	(10, NULL, 'Otávio Garcia', 'admin@gmail.com', '18996660212', '$2b$10$B457wnrMbc57DRfEVcUHTuGv64m7rKrCIECDholKS6bWHI1TTbZRK', NULL, NULL, 0, 'admin', '2024-11-24 19:58:33', NULL, 60, NULL, '1732563896072-profile_10.jpg', NULL, '[52,59,58]', 58, '2024-11-25', 3.5, '[1,10]'),
+	(12, NULL, 'Otavio ', 'murfpp321@gmail.com', '18996660211', '$2b$10$s3qV5U9xzy.fu3tK74N/5u85d1kAy0v/SDZVen7Xb9KJpueF9E7Wq', NULL, NULL, 1, 'usuario', '2024-11-25 22:38:46', '2006-03-29', 20, NULL, NULL, NULL, '[32]', 32, '2024-11-25', 0, '[10]');
 
 -- Copiando estrutura para trigger db_pejo.after_user_insert
 SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION';

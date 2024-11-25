@@ -44,8 +44,8 @@ function generateToken() {
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
+        user: 'pejoapp@gmail.com',
+        pass: 'ebwh dzei junm ypev',
     },
     tls: {
         rejectUnauthorized: false  // Ignorar problemas com certificados SSL (use com cuidado)
@@ -83,7 +83,7 @@ const register = async (req, res) => {
     const formattedDate = data_nascimento ? new Date(data_nascimento).toISOString().split('T')[0] : null;
 
     // Verificação se o email ou telefone já existe
-    const emailCheckQuery = 'SELECT * FROM usuarios WHERE email = ? OR telefone = ?';
+    const emailCheckQuery = 'SELECT * FROM usuarios WHERE email = "?" OR telefone = "?"';
     db.query(emailCheckQuery, [email, telefone], async (err, results) => {
         if (err) {
             console.error('Erro ao verificar email ou telefone:', err);
@@ -122,15 +122,16 @@ const register = async (req, res) => {
             const confirmationToken = await generateUniqueToken(); // Gera um token único
             const tokenExpiration = new Date(Date.now() + 15 * 60 * 1000);
 
-            const query = 'INSERT INTO usuarios (nome, email, senha, telefone, data_nascimento, token_confirmacao_email, token_expiration) VALUES (?, ?, ?, ?, ?, ?, ?)';
+            // Adiciona o campo 'tipo_usuario' com o valor 'confirmação'
+            const query = 'INSERT INTO usuarios (nome, email, senha, telefone, data_nascimento, token_confirmacao_email, token_expiration, tipo_usuario) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
 
-            db.query(query, [nome, email, hashedPassword, telefone, formattedDate, confirmationToken, tokenExpiration], async (err, result) => {
+            db.query(query, [nome, email, hashedPassword, telefone, formattedDate, confirmationToken, tokenExpiration, 'confirmação'], async (err, result) => {
                 if (err) {
                     console.error('Erro ao registrar usuário:', err);
                     return res.status(500).json({ erro: 'Erro ao registrar usuário' });
                 }
 
-                const confirmationLink = `http://192.168.0.102:3000/reset-password?token=${confirmationToken}`;
+                const confirmationLink = `http://192.168.0.102:3000/siteConfirm.html?token=${confirmationToken}`;
                 await sendConfirmationEmail(email, nome, confirmationLink);
 
                 res.json({ mensagem: 'Usuário registrado com sucesso. Verifique seu e-mail para confirmar.' });
@@ -148,34 +149,24 @@ const confirmEmail = async (req, res) => {
     const { token } = req.body;
 
     if (!token) {
-        return res.status(400).send('Token não fornecido. Acesso negado.');
+        return res.status(400).send({ erro: 'Token não fornecido. Acesso negado.' });
     }
 
     // Verificar o token no banco de dados
     const query = 'SELECT * FROM usuarios WHERE token_confirmacao_email = ? AND token_expiration > ?';
     db.query(query, [token, new Date()], async (err, results) => {
         if (err || results.length === 0) {
-            return res.status(400).send('Link inválido ou expirado. Acesso negado.');
+            return res.status(400).send({ erro: 'Link inválido ou expirado. Acesso negado.' });
         }
 
         // Token válido, atualizar o status do e-mail
-        const updateQuery = 'UPDATE usuarios SET status_email = 1, tipo_usuario = "usuario", token_confirmacao_email = NULL WHERE token_confirmacao_email = ?';
+        const updateQuery = 'UPDATE usuarios SET tipo_usuario = "usuario", token_confirmacao_email = NULL WHERE token_confirmacao_email = ?';
         db.query(updateQuery, [token], (err) => {
             if (err) {
                 console.error('Erro ao atualizar status do e-mail:', err);
-                return res.status(500).send('Erro ao confirmar e-mail.');
+                return res.status(500).send({ erro: 'Erro ao confirmar e-mail.' });
             }
-
-            // Após a confirmação, enviar a página HTML de confirmação
-            const confirmationPage = path.join(__dirname, 'public', 'siteConfirm.html');
-            
-            // Para garantir que a página seja enviada de forma adequada, você pode enviar uma resposta HTML diretamente aqui
-            res.sendFile(confirmationPage, (err) => {
-                if (err) {
-                    console.error('Erro ao enviar o arquivo:', err);
-                    return res.status(500).send('Erro ao carregar a página de confirmação.');
-                }
-            });
+            return res.status(200).send({ mensagem: 'E-mail confirmado com sucesso!' });
         });
     });
 };
@@ -302,7 +293,7 @@ const sendPasswordResetEmail = async (email, token) => {
             <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ccc; border-radius: 5px;">
                 <h2 style="color: #2196F3;">Redefinição de Senha</h2>
                 <p>Você solicitou a redefinição de sua senha. Clique no link abaixo para redefinir sua senha:</p>
-                <a href="http://192.168.0.102:3000/reset-password?token=${token}" style="background-color: #2196F3; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px;">Redefinir Senha</a>
+                <a href="http://192.168.0.102:3000/siteRecovery.html?token=${token}" style="background-color: #2196F3; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px;">Redefinir Senha</a>
                 <p>Se você não solicitou essa mudança, ignore este e-mail.</p>
             </div>
         `,
@@ -361,25 +352,35 @@ const getUsuarios = async (req, res) => {
 const resetPassword = async (req, res) => {
     const { token, newPassword } = req.body;
 
-    // Verificar se o token é válido
+    // Verificar se o token e a nova senha foram fornecidos
+    if (!token || !newPassword) {
+        return res.status(400).json({ erro: 'Token e nova senha são obrigatórios.' });
+    }
+
+    // Verificar se o token é válido e não expirou
     const query = 'SELECT * FROM usuarios WHERE token_recuperacao_senha = ? AND token_expiration > ?';
     db.query(query, [token, new Date()], async (err, results) => {
         if (err || results.length === 0) {
             return res.status(400).json({ erro: 'Token inválido ou expirado.' });
         }
 
-        // Atualizar a senha do usuário
         const usuario = results[0];
+
         try {
+            // Criptografar a nova senha
             const salt = await bcrypt.genSalt(10);
             const hashedPassword = await bcrypt.hash(newPassword, salt);
-            const updateQuery = 'UPDATE usuarios SET senha = ?, token_recuperacao_senha = NULL WHERE id = ?';
+
+            // Atualizar a senha no banco de dados e limpar o token
+            const updateQuery = 'UPDATE usuarios SET senha = ?, token_recuperacao_senha = NULL, token_expiration = NULL WHERE id = ?';
             db.query(updateQuery, [hashedPassword, usuario.id], (err) => {
                 if (err) {
                     console.error('Erro ao atualizar a senha:', err);
                     return res.status(500).json({ erro: 'Erro ao redefinir a senha.' });
                 }
-                res.json({ mensagem: 'Senha redefinida com sucesso.' });
+
+                // Sucesso na atualização
+                res.json({ mensagem: 'Senha redefinida com sucesso!' });
             });
         } catch (err) {
             console.error('Erro ao criptografar a nova senha:', err);
@@ -490,6 +491,38 @@ const criarOportunidade = (req, res) => {
     });
 };
 
+const buscarOportunidades = async (req, res) =>{
+    const query = "SELECT * FROM oportunidades;"
+    db.query(query, (err, results) => {
+        if (err) return res.status(500).send(`Houve um erro: ${err}`);
+        res.json(results);
+    })
+}
+
+
+const buscarNome = async (req, res) => {
+    const { id } = req.params; // Desestrutura o parâmetro id da URL
+
+    // Valida se o id é um número
+    if (isNaN(id)) {
+        return res.status(400).json({ error: 'O ID fornecido é inválido.' });
+    }
+
+    const query = 'SELECT nome FROM usuarios WHERE id = ?'; // Usa ? para prevenir SQL Injection
+
+    db.query(query, [id], (err, results) => {
+        if (err) {
+            console.error('Erro ao buscar nome:', err); // Log no servidor para debug
+            return res.status(500).json({ error: `Houve um erro: ${err.message}` });
+        }
+
+        if (results.length === 0) {
+            return res.status(404).json({ error: 'Usuário não encontrado.' });
+        }
+
+        res.json(results[0]); // Envia apenas o primeiro resultado, já que é por ID
+    });
+};
 
 // Rota para obter mensagens
 const getMessages = (req, res) => {
@@ -720,6 +753,145 @@ const resetDesafiosFeitos = (req, res) => {
     });
 };
 
+const oportunidadeCriadaOuNao = (req, res) => {
+    const {id} = req.params;
+    const queryVerify = `SELECT user_id FROM oportunidades WHERE user_id = ${id};`
+    db.query(queryVerify, (err, resultado) => {
+        console.log(resultado)
+        // Verifique se o usuário foi encontrado
+        if (resultado <= 0) {
+            return res.status(404).json({"existe": false});
+        }
+
+        res.json({"existe": true});
+    })
+}
+
+const buscarAvaliacoes = (req, res) => {
+    const { id } = req.params;
+
+    console.log(`Recebida solicitação para buscar avaliações com ID: ${id}`);
+
+    if (!id || isNaN(id)) {
+        console.error("ID inválido:", id);
+        return res.status(400).json({ error: "ID inválido" });
+    }
+
+    const queryVerify = `SELECT avaliacao FROM usuarios WHERE id = ?;`;
+    db.query(queryVerify, [id], (err, resultado) => {
+        if (err) {
+            console.error("Erro no banco de dados:", err);
+            return res.status(500).json({ error: "Erro interno do servidor" });
+        }
+
+        if (resultado.length === 0) {
+            console.warn("Nenhuma avaliação encontrada para o ID:", id);
+            return res.status(404).json({ message: "Nenhuma avaliação encontrada" });
+        }
+
+        console.log("Avaliação encontrada:", resultado);
+        // Retorna apenas o campo 'avaliacao' para melhor clareza
+        res.json({ avaliacao: resultado[0].avaliacao });
+    });
+};
+
+const buscarContratadoPorId = (req, res) => {
+    const { idUser, idContratado } = req.query;
+    console.log(idUser,idContratado)
+
+    // Verifica se os IDs fornecidos são válidos
+    if (!idUser || isNaN(idUser)) {
+        console.error("ID do usuário inválido:", idUser);
+        return res.status(400).json({ error: "ID do usuário inválido" });
+    }
+    if (!idContratado || isNaN(idContratado)) {
+        console.error("ID do contratado inválido:", idContratado);
+        return res.status(400).json({ error: "ID do contratado inválido" });
+    }
+
+    const query = `SELECT contratados FROM usuarios WHERE id = ?;`;
+    db.query(query, [idUser], (err, resultado) => {
+        if (err) {
+            console.error("Erro no banco de dados:", err);
+            return res.status(500).json({ error: "Erro interno do servidor" });
+        }
+
+        if (resultado.length === 0) {
+            console.warn("Nenhum contratado encontrado para o ID do usuário:", idUser);
+            return res.status(404).json({ message: "Nenhum contratado encontrado" });
+        }
+
+        const contratadosString = resultado[0].contratados;
+
+        try {
+            // Converte a string para um array
+            const contratadosArray = JSON.parse(contratadosString);
+
+            if (!Array.isArray(contratadosArray)) {
+                throw new Error("Formato de contratados inválido");
+            }
+
+            // Verifica se o idContratado está na lista
+            const isContratado = contratadosArray.includes(parseInt(idContratado, 10));
+
+            res.json({
+                contratado: { idContratado },
+                canHire: !isContratado, // Se não estiver contratado, o botão aparece
+            });
+        } catch (parseError) {
+            console.error("Erro ao processar a lista de contratados:", parseError);
+            return res.status(500).json({ error: "Erro ao processar a lista de contratados" });
+        }
+    });
+};
+
+const adicionarContratado = (req, res) => {
+    const { id, contratadoId } = req.body;
+
+    console.log(`Recebida solicitação para adicionar contratado ${contratadoId} para o usuário com ID: ${id}`);
+
+    // Verifica se os IDs são válidos
+    if (!id || isNaN(id) || !contratadoId || isNaN(contratadoId)) {
+        console.error("ID ou contratadoId inválido:", { id, contratadoId });
+        return res.status(400).json({ error: "ID ou contratadoId inválido" });
+    }
+
+    // Consulta para verificar os contratados atuais do usuário
+    const queryVerify = `SELECT contratados FROM usuarios WHERE id = ?;`;
+    db.query(queryVerify, [id], (err, resultado) => {
+        if (err) {
+            console.error("Erro no banco de dados:", err);
+            return res.status(500).json({ error: "Erro interno do servidor" });
+        }
+
+        if (resultado.length === 0) {
+            console.warn("Usuário não encontrado com ID:", id);
+            return res.status(404).json({ message: "Usuário não encontrado" });
+        }
+
+        // Converte a coluna 'contratados' de JSON para um array
+        let contratados = JSON.parse(resultado[0].contratados);
+
+        // Verifica se o contratadoId já está na lista de contratados
+        if (!contratados.includes(Number(contratadoId))) {
+            contratados.push(Number(contratadoId)); // Adiciona o contratadoId à lista
+        }
+
+        // Atualiza a coluna 'contratados' no banco de dados
+        const queryUpdate = `UPDATE usuarios SET contratados = ? WHERE id = ?;`;
+        db.query(queryUpdate, [JSON.stringify(contratados), id], (err, updateResult) => {
+            if (err) {
+                console.error("Erro ao atualizar banco de dados:", err);
+                return res.status(500).json({ error: "Erro ao atualizar os contratados" });
+            }
+
+            console.log("Contratado adicionado com sucesso.");
+            res.json({ message: "Contratado adicionado com sucesso", contratados });
+        });
+    });
+};
+
+
 // Rota pegar ultima data
 const ultimaData = (req, res) => {
     const userId = req.params.id;
@@ -899,11 +1071,20 @@ const server = http.createServer(app);
 const io = socketIo(server);
 
 app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static('public'));
 
 app.post('/reset-desafios-feitos/:idUser', resetDesafiosFeitos);
+app.get('/verificar-oportunidade-foi-criada/:id', oportunidadeCriadaOuNao)
+app.get('/buscar-avaliacoes/:id', buscarAvaliacoes);
+app.get('/buscar-contratado-por-id', buscarContratadoPorId)
+app.post('/contratar', adicionarContratado);
 app.post('/criar-oportunidade', criarOportunidade);
+app.get('/buscar-oportunidades', buscarOportunidades);
+app.get('/buscar-nome-usuario-unico/:id', buscarNome);
 app.get('/data-ultimo-desafio-entregue/:id', dataUltimoDesafioEntregue);
 app.put('/user/:idUser/desafio/:desafioId', cadastrarUltimoDesafioRealizado);
 app.get('/ultimaData/:id', ultimaData);

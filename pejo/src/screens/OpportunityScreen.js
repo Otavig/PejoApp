@@ -11,42 +11,127 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width } = Dimensions.get('window');
 
 const OpportunityScreen = () => {
     const navigation = useNavigation();
-
+    const [idUsuario, setIdUsuario] = useState({});
     const [opportunities, setOpportunities] = useState([]);
     const [filteredOpportunities, setFilteredOpportunities] = useState([]);
     const [searchText, setSearchText] = useState('');
     const [isTopRated, setIsTopRated] = useState(false);
+    const [isOpportunityCreated, setIsOpportunityCreated] = useState(false); // New state to store opportunity creation status
+    const [opportunityId, setOpportunityId] = useState(null); // Store opportunity ID for verification
+
+    const capturarNome = async (idpasse) => {
+        try {
+            const responseNome = await axios.get(`http://192.168.0.102:3000/buscar-nome-usuario-unico/${idpasse}`);
+            return responseNome.data.nome;
+        } catch (error) {
+            console.error(`Erro ao buscar nome para user_id ${idpasse}:`, error);
+            return 'Nome não encontrado';
+        }
+    };
+
+    const capturarImagem = async (idpasse) => {
+        const response = await axios.get(`http://192.168.0.102:3000/user/${idpasse}`);
+        return response.data.profileImage;
+    };
+
+    const capturarAvaliacao = async (idpasse) => {
+        try {
+            const response = await axios.get(`http://192.168.0.102:3000/buscar-avaliacoes/${idpasse}`);
+            return response.data.avaliacao; // Retorna os dados capturados
+        } catch (error) {
+            console.error("Erro ao capturar avaliação:", error);
+            throw error; // Propaga o erro para ser tratado externamente
+        }
+    };
+    
+    
 
     useEffect(() => {
-        const fetchedOpportunities = [
-            { id: 1, name: 'João Silva', rating: 4.5, photo: 'https://via.placeholder.com/150', location: 'São Paulo' },
-            { id: 2, name: 'Maria Oliveira', rating: 5.0, photo: 'https://via.placeholder.com/150', location: 'Rio de Janeiro' },
-            { id: 3, name: 'Carlos Souza', rating: 3.7, photo: 'https://via.placeholder.com/150', location: 'Belo Horizonte' },
-            { id: 4, name: 'Ana Costa', rating: 4.9, photo: 'https://via.placeholder.com/150', location: 'Curitiba' },
-        ];
+        const fetchOpportunities = async () => {
+            try {
+                const response = await axios.get('http://192.168.0.102:3000/buscar-oportunidades');
+                // console.log(response.data)
+                if (!response.data || !Array.isArray(response.data)) {
+                    throw new Error('Dados inválidos retornados pela API');
+                }
 
-        setOpportunities(fetchedOpportunities);
-        setFilteredOpportunities(fetchedOpportunities);
+                const adaptedData = await Promise.all(
+                    response.data.map(async (item) => {
+                        if (!item.user_id) {
+                            console.warn('user_id ausente:', item);
+                            return null;
+                        }
+                        const name = await capturarNome(item.user_id);
+                        const img = await capturarImagem(item.user_id);
+                        const pegarAvaliacao = await capturarAvaliacao(item.user_id);
+                        const avaliacao = pegarAvaliacao ? pegarAvaliacao : 0;
+                        return {
+                            id: item.id,
+                            name: name,
+                            rating: avaliacao,
+                            photo: img ? `http://192.168.0.102:3000/imagesUsers/${img}` : 'https://via.placeholder.com/150',
+                            location: item.cidade,
+                            times: item.horarios,
+                            cpf: item.cpf,
+                            cfp: item.cfp,
+                            userIdContract: item.user_id
+                        };
+                    })
+                );
+
+                const filteredData = adaptedData.filter((item) => item !== null);
+                setOpportunities(filteredData);
+                setFilteredOpportunities(filteredData);
+            } catch (error) {
+                console.error('Erro ao buscar oportunidades:', error);
+            }
+        };
+
+        fetchOpportunities();
     }, []);
 
     useEffect(() => {
+        const checkUserAndOpportunity = async () => {
+            try {
+                // Obter o ID do usuário do AsyncStorage
+                const storedUserId = await AsyncStorage.getItem('userId');
+                if (!storedUserId) {
+                    console.warn('ID do usuário não encontrado');
+                    return;
+                }
+                setIdUsuario(storedUserId);
+
+                // Verificar se a oportunidade foi criada
+                const response = await axios.get(`http://192.168.0.102:3000/verificar-oportunidade-foi-criada/${storedUserId}`);
+                setIsOpportunityCreated(response.data); // Supondo que `response.data` seja um booleano
+            } catch (error) {
+                console.error('Erro ao verificar usuário ou oportunidade:', error);
+            }
+        };
+
+        checkUserAndOpportunity();
+    }, []); // Este efeito só roda uma vez ao montar o componente.
+
+    useEffect(() => {
         const filtered = opportunities.filter(opportunity =>
-            opportunity.name.toLowerCase().includes(searchText.toLowerCase())
+            opportunity.name && opportunity.name.toLowerCase().includes(searchText.toLowerCase())
         );
         setFilteredOpportunities(filtered);
     }, [searchText, opportunities]);
 
     const toggleTopRatedFilter = () => {
         if (isTopRated) {
-            setFilteredOpportunities(opportunities); // Show all
+            setFilteredOpportunities(opportunities); // Exibe todos
         } else {
             const topRated = opportunities.filter(opportunity => opportunity.rating >= 4.5);
-            setFilteredOpportunities(topRated); // Show top-rated
+            setFilteredOpportunities(topRated); // Exibe os bem avaliados
         }
         setIsTopRated(!isTopRated);
     };
@@ -68,17 +153,27 @@ const OpportunityScreen = () => {
 
     return (
         <View style={styles.container}>
-            {/* Header */}
             <View style={styles.header}>
                 <TouchableOpacity
-                    onPress={() => navigation.navigate('NewOpportunityScreen')}
-                    style={styles.newOpportunityButton}
+                    onPress={() => {
+                        if (isOpportunityCreated) {
+                            // Exibe um alerta informando que a funcionalidade está em breve
+                            alert('A funcionalidade de edição estará disponível em breve!');
+                        } else {
+                            // Navega para a tela de criação de oportunidade
+                            navigation.navigate('NewOpportunityScreen');
+                        }
+                    }}
+                    style={[styles.newOpportunityButton, isOpportunityCreated ? styles.editButton : null]}
                 >
-                    <Text style={styles.newOpportunityText}>Criar Oportunidade</Text>
+                    <Text style={styles.newOpportunityText}>
+                        {isOpportunityCreated ? 'Editar Oportunidade' : 'Criar Oportunidade'}
+                    </Text>
                 </TouchableOpacity>
+
             </View>
 
-            {/* Filter Section */}
+
             <View style={styles.filterContainer}>
                 <Text style={styles.filterTitle}>Filtrar:</Text>
                 <TouchableOpacity
@@ -90,7 +185,6 @@ const OpportunityScreen = () => {
                 </TouchableOpacity>
             </View>
 
-            {/* Search Bar */}
             <View style={styles.searchContainer}>
                 <Ionicons name="search" size={20} color="#777" style={styles.searchIcon} />
                 <TextInput
@@ -101,7 +195,6 @@ const OpportunityScreen = () => {
                 />
             </View>
 
-            {/* Card List */}
             <FlatList
                 data={filteredOpportunities}
                 keyExtractor={item => item.id.toString()}
@@ -201,10 +294,12 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     image: {
-        width: '100%',
+        width: 120,
         height: 120,
-        borderRadius: 12,
+        borderRadius: 60,
         marginBottom: 10,
+        borderWidth: 2,
+        borderColor: '#ddd',
     },
     name: {
         fontSize: 18,
