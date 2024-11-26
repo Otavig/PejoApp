@@ -7,6 +7,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Icon } from 'react-native-elements';
 import axios from 'axios';
 import { LinearGradient } from "expo-linear-gradient";
+import { useFocusEffect } from '@react-navigation/native';
 
 const { width, height } = Dimensions.get('window');
 
@@ -23,7 +24,7 @@ const HomeScreen = ({ route }) => {
     // Buscar desafios
     const buscarDesafios = async () => {
         try {
-            const resposta = await axios.get('http://192.168.0.102:3000/getDesafios');
+            const resposta = await axios.get('http://10.111.9.44:3000/getDesafios');
             return resposta.data;
         } catch (error) {
             console.error('Erro ao buscar desafios', error);
@@ -35,7 +36,7 @@ const HomeScreen = ({ route }) => {
     const buscarUltimaData = async () => {
         try {
             if (idUser) {
-                const respostaUltimaData = await axios.get(`http://192.168.0.102:3000/ultimaData/${idUser}`);
+                const respostaUltimaData = await axios.get(`http://10.111.9.44:3000/ultimaData/${idUser}`);
                 return respostaUltimaData;
             }
         } catch (error) {
@@ -65,12 +66,12 @@ const HomeScreen = ({ route }) => {
     // Buscar desafios realizados pelo usuário
     const buscarDesafiosFeitos = async () => {
         try {
-            const respostaFeitos = await axios.get(`http://192.168.0.102:3000/desafios/feitos?userId=${idUser}`);
+            const respostaFeitos = await axios.get(`http://10.111.9.44:3000/desafios/feitos?userId=${idUser}`);
             const desafiosFeitosIds = JSON.parse(respostaFeitos.data.desafiosConcluidos || '[]'); // Parse IDs
 
             // Busque detalhes dos desafios concluídos
             const desafiosDetalhesPromises = desafiosFeitosIds.map(id =>
-                axios.get(`http://192.168.0.102:3000/intra/getDesafio/${id}`)
+                axios.get(`http://10.111.9.44:3000/intra/getDesafio/${id}`)
             );
 
             const desafiosDetalhes = await Promise.all(desafiosDetalhesPromises);
@@ -123,7 +124,7 @@ const HomeScreen = ({ route }) => {
             // Salvar o desafio montado e a data no AsyncStorage
             await AsyncStorage.setItem('desafioMontado', JSON.stringify({ desafioId: desafioMontado, data: dataHoje }));
 
-            await axios.put(`http://192.168.0.102:3000/user/${idUser}/desafio/${desafioMontado.id}`)
+            await axios.put(`http://10.111.9.44:3000/user/${idUser}/desafio/${desafioMontado.id}`)
 
             console.log('Desafio montado salvo com sucesso!');
         } catch (error) {
@@ -133,17 +134,18 @@ const HomeScreen = ({ route }) => {
 
     const pegarUltimoDesafioMontado = async (idUsuario) => {
         try {
-            const respostaBuscaMontado = await axios.get(`http://192.168.0.102:3000/ultimoDesafioMontado/${idUsuario}`, {
+            const respostaBuscaMontado = await axios.get(`http://10.111.9.44:3000/ultimoDesafioMontado/${idUsuario}`, {
                 headers: {
                     'Content-Type': 'application/json',
                 },
             });
 
             // A resposta já será tratada como JSON
-            const resultado = await axios.get(`http://192.168.0.102:3000/intra/getDesafio/${respostaBuscaMontado.data.ultimoDesafioRealizado}`);
+            const resultado = await axios.get(`http://10.111.9.44:3000/intra/getDesafio/${respostaBuscaMontado.data.ultimoDesafioRealizado}`);
 
             // Atualiza o estado com o desafio anterior
             setDesafioAtual(resultado.data);
+            return resultado.data
         } catch (error) {
             console.error('Erro ao buscar o último desafio montado', error);
         }
@@ -156,17 +158,16 @@ const HomeScreen = ({ route }) => {
             setIsModalVisible(true);
             const hoje = new Date().toISOString().split('T')[0]; // Converte para o formato 'YYYY-MM-DD'.
 
-            const marcarDataResponse = await axios.put(`http://192.168.0.102:3000/ultimaData/marcar/${idUser}/${hoje}`);
+            const marcarDataResponse = await axios.put(`http://10.111.9.44:3000/ultimaData/marcar/${idUser}/${hoje}`);
 
             console.log("Marcar data response:", marcarDataResponse.data);
 
             // Segundo PUT
-            const concluirResponse = await axios.put(`http://192.168.0.102:3000/desafios/concluir/${idUser}/${idDesafio}`);
+            const concluirResponse = await axios.put(`http://10.111.9.44:3000/desafios/concluir/${idUser}/${idDesafio}`);
             console.log("Concluir desafio response:", concluirResponse.data);
 
             await novoLevelConcluido(20);
 
-            return concluirResponse;
         } catch (error) {
             console.error("Erro ao concluir desafio:", error.message, error.response?.data);
             throw error; // Repassa o erro para tratamento adicional
@@ -177,7 +178,7 @@ const HomeScreen = ({ route }) => {
     const resetarDesafiosFeitos = async (usuarioID) => {
         try {
             // Lógica para resetar os desafios no backend
-            await axios.post(`http://192.168.0.102:3000/reset-desafios-feitos/${usuarioID}}`)
+            await axios.post(`http://10.111.9.44:3000/reset-desafios-feitos/${usuarioID}}`)
         } catch (error) {
             console.error('Erro ao resetar os desafios:', error);
             throw new Error('Falha ao resetar os desafios.');
@@ -187,7 +188,7 @@ const HomeScreen = ({ route }) => {
     const novoLevelConcluido = async (quantia) => {
         try {
             // Envia a requisição para atualizar o nível do usuário
-            const response = await axios.put(`http://192.168.0.102:3000/upUser/${idUser}/${quantia}`);
+            const response = await axios.put(`http://10.111.9.44:3000/upUser/${idUser}/${quantia}`);
 
             console.log('Resposta do servidor (Nível atualizado):', response.data);
         } catch (error) {
@@ -212,7 +213,7 @@ const HomeScreen = ({ route }) => {
 
     const buscarDesafioUnico = async (desafioSelecionado) => {
         try {
-            const desafioResposta = await axios.get(`http://192.168.0.102:3000/intra/getDesafio/${desafioSelecionado}`, {
+            const desafioResposta = await axios.get(`http://10.111.9.44:3000/intra/getDesafio/${desafioSelecionado}`, {
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -245,8 +246,9 @@ const HomeScreen = ({ route }) => {
     };
 
     const dataUltimoDesafioEntregueParaUser = async () => {
-        const resultado = await axios.get(`http://192.168.0.102:3000/data-ultimo-desafio-entregue/${idUser}`);
+        const resultado = await axios.get(`http://10.111.9.44:3000/data-ultimo-desafio-entregue/${idUser}`);
         return resultado.data.utlimoDataDesafio.data_ultimo_desafio_entregue;
+
     }
 
     const montarNovoCardDesafioDeHoje = async () => {
@@ -258,6 +260,7 @@ const HomeScreen = ({ route }) => {
             const dataDeAgora = await buscarUltimaData();
             const dataDeAgoraFormatada = dataDeAgora.data.date.split('T')[0];
             const fazerVarredura = await buscarDesafiosFeitos();
+            const fazerVarreduraJson = JSON.parse(fazerVarredura);
             let dataUltimoFormatado;
     
             const dataUltimo = await dataUltimoDesafioEntregueParaUser();
@@ -266,17 +269,19 @@ const HomeScreen = ({ route }) => {
             }
     
             if (dataUltimoFormatado === dataHoje) {
-                await pegarUltimoDesafioMontado(idUser);  // || await buscarDesafioUnico(dadosDesafios.desafioId.id);
-    
-                const feito = fazerVarredura.includes(desafioAtual.id)
-    
+                // await pegarUltimoDesafioMontado(idUser);  // || await buscarDesafioUnico(dadosDesafios.desafioId.id);
+                let desafio = await pegarUltimoDesafioMontado(idUser);  
+                const feito = fazerVarreduraJson.includes(desafio.id)
+                
                 if (feito) {
                     setBotaoCompletarVisibilidade(false);
                 } else {
-                setBotaoCompletarVisibilidade(true);
+                    setBotaoCompletarVisibilidade(true);
                 } 
+
+                return;
             }
-    
+            
             if (dataHoje != dataDeAgoraFormatada) {
                 const desafiosParaFazer = await sortearDesafios();
                 const infoCard = await buscarDesafioUnico(desafiosParaFazer);
@@ -292,9 +297,10 @@ const HomeScreen = ({ route }) => {
             } else {
                 // Converte a string JSON em um objeto JavaScript
                 const dadosDesafio = JSON.parse(dadosDesafioRaw);
-    
+                let desafio = await pegarUltimoDesafioMontado(idUser);  
+        
                 // Verifica se o desafio já foi feito
-                const jaFeito = fazerVarredura.includes(dadosDesafio.desafioId.id);
+                const jaFeito = fazerVarreduraJson.includes(desafio.id);
                 const DesafioExistenteDeHoje = await pegarUltimoDesafioMontado(idUser) || await buscarDesafioUnico(dadosDesafio.desafioId.id);
     
                 // Salva o desafio atual
@@ -308,7 +314,7 @@ const HomeScreen = ({ route }) => {
                 }
             }
         } catch (error) {
-            console.log(error)
+            console.log("Erro aqui", error)
         }
     };
 
@@ -344,7 +350,9 @@ const HomeScreen = ({ route }) => {
     }, []); // Apenas ao carregar o componente
 
     // Verificar desafios quando o idUser for atualizado
-    useEffect(() => {
+    useFocusEffect(
+        React.useCallback(() => {
+        
         const fetchDesafios = async () => {
             if (idUser) {
                 setLoading(true); // Começa a carregar
@@ -365,7 +373,8 @@ const HomeScreen = ({ route }) => {
         };
 
         fetchDesafios();
-    }, [idUser]);
+    }, [idUser]) 
+    );
     return (
         <LinearGradient colors={["#FFFDFF", "#FFFDFF"]} style={[styles.projectCardGradient, { flex: 1 }]} >
             <View style={styles.container}>
@@ -418,9 +427,16 @@ const HomeScreen = ({ route }) => {
                             desafiosCompletos.map((desafioCompleto, index) => {
                                 return (
                                     <View style={styles.taskItem} key={desafioCompleto.id || index}>
-                                        <Text style={styles.taskText}>{desafioCompleto.titulo}</Text>
+                                        <Text 
+                                            style={styles.taskText} 
+                                            numberOfLines={1} 
+                                            ellipsizeMode="tail"
+                                        >
+                                            {desafioCompleto.titulo}
+                                        </Text>
                                         <Ionicons name="checkmark-circle-outline" size={24} color="#4CAF50" />
                                     </View>
+
                                 );
                             })
                         ) : (
@@ -596,7 +612,9 @@ const styles = StyleSheet.create({
     },
     taskText: {
         fontSize: 16,
-    },
+        flex: 1, // Permite que o texto ocupe o espaço disponível antes do ícone
+        marginRight: 10, // Dá espaço entre o texto e o ícone
+    },    
     sectionTitle: {
         fontSize: 20,
         fontWeight: "bold",

@@ -1,6 +1,6 @@
 -- --------------------------------------------------------
 -- Servidor:                     localhost
--- Versão do servidor:           5.7.24 - MySQL Community Server (GPL)
+-- Versão do servidor:           10.4.32-MariaDB - mariadb.org binary distribution
 -- OS do Servidor:               Win64
 -- HeidiSQL Versão:              12.8.0.6908
 -- --------------------------------------------------------
@@ -16,7 +16,7 @@
 
 
 -- Copiando estrutura do banco de dados para db_pejo
-CREATE DATABASE IF NOT EXISTS `db_pejo` /*!40100 DEFAULT CHARACTER SET utf8mb4 */;
+CREATE DATABASE IF NOT EXISTS `db_pejo` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci */;
 USE `db_pejo`;
 
 -- Copiando estrutura para tabela db_pejo.chats
@@ -25,13 +25,13 @@ CREATE TABLE IF NOT EXISTS `chats` (
   `remetente_id` int(11) DEFAULT NULL,
   `destinatario_id` int(11) DEFAULT NULL,
   `mensagem` text NOT NULL,
-  `data_envio` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `data_envio` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `remetente_id` (`remetente_id`),
   KEY `destinatario_id` (`destinatario_id`),
   CONSTRAINT `chats_ibfk_1` FOREIGN KEY (`remetente_id`) REFERENCES `usuarios` (`id`),
   CONSTRAINT `chats_ibfk_2` FOREIGN KEY (`destinatario_id`) REFERENCES `usuarios` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Copiando dados para a tabela db_pejo.chats: ~0 rows (aproximadamente)
 
@@ -42,10 +42,10 @@ CREATE TABLE IF NOT EXISTS `desafios` (
   `descricao` text NOT NULL,
   `dificuldade` enum('facil','media','dificil') NOT NULL,
   `tipo` enum('diario','semanal','mensal') NOT NULL,
-  `data_criacao` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   `estado` enum('ativado','desativado') NOT NULL DEFAULT 'desativado',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=63 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=63 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Copiando dados para a tabela db_pejo.desafios: ~55 rows (aproximadamente)
 INSERT INTO `desafios` (`id`, `titulo`, `descricao`, `dificuldade`, `tipo`, `data_criacao`, `estado`) VALUES
@@ -109,18 +109,23 @@ INSERT INTO `desafios` (`id`, `titulo`, `descricao`, `dificuldade`, `tipo`, `dat
 CREATE TABLE IF NOT EXISTS `eventos` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `nome` varchar(255) NOT NULL,
-  `descricao` text,
-  `data_evento` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `descricao` text DEFAULT NULL,
+  `data_evento` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `local` varchar(255) NOT NULL,
-  `imagens` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin,
-  `data_criacao` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `imagens` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
+  `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   `coordenadas` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Copiando dados para a tabela db_pejo.eventos: ~0 rows (aproximadamente)
+-- Copiando dados para a tabela db_pejo.eventos: ~1 rows (aproximadamente)
 INSERT INTO `eventos` (`id`, `nome`, `descricao`, `data_evento`, `local`, `imagens`, `data_criacao`, `coordenadas`) VALUES
-	(12, 'Desenvoltura no trabalho', 'Palestra com o Gustavo Prado sobre como se comportar e destacar no seu ambiente de trabalho', '2024-12-06 17:30:00', 'SP - Presidente Prudente', '["1732205629239-matarazo.jpg"]', '2024-11-21 16:13:49', '-22.12082877981584, -51.37948396191292');
+	(12, 'Desenvoltura no trabalho', 'Palestra com o Gustavo Prado sobre como se comportar e destacar no seu ambiente de trabalho', '2024-12-06 17:30:00', 'SP - Presidente Prudente', '["1732205629239-matarazo.jpg"]', '2024-11-21 16:13:49', '-22.12082877981584, -51.37948396191292'),
+	(13, 'Desbloqueando a Voz Interior: Superando a Timidez', 'Palestra motivacional com especialistas que exploram técnicas para enfrentar e superar a timidez.', '2025-01-15 22:00:00', 'Shopping Iguatemi, São Paulo, SP', '["1732647213659-shopping.jfif"]', '2024-11-26 18:53:33', '-23.576847914133587, -46.68823411953956'),
+	(14, 'Sem Medo: Transformando a Timidez em Confiança', 'Palestra interativa sobre técnicas de autoconfiança e como lidar com situações que geram timidez.', '2025-04-25 21:30:00', 'Centro Cultural Banco do Brasil (CCBB), Rio de Janeiro, RJ', '["1732647335442-CCBB-RJ.jfif"]', '2024-11-26 18:55:35', '-22.900831466161982, -43.176542761889195'),
+	(15, 'Fala Sem Medo: Enfrentando a Timidez no Ambiente de Trabalho', 'Workshop de 2 horas focado em superar a timidez profissional e melhorar a expressão verbal no ambiente de trabalho.', '2024-10-16 16:00:00', 'Museu da Imagem e do Som (MIS), São Paulo, SP', '["1732647510953-MIS-SP.jfif"]', '2024-11-26 18:58:30', '-23.57265417370287, -46.676102619539535'),
+	(16, 'Timidez Zero: Como Ser Você Mesmo em Qualquer Situação', 'Palestra interativa com dinâmicas e técnicas para deixar a timidez de lado e conquistar segurança nas interações sociais.', '2024-11-04 20:30:00', 'Parque Ibirapuera, São Paulo, SP', '["1732647618503-parque-ibirapuera.jpg"]', '2024-11-26 19:00:18', '-23.5896, -46.6611'),
+	(17, 'A Arte de Começar Conversas', 'Uma palestra dinâmica com um especialista em comunicação, abordando técnicas práticas para iniciar conversas em diferentes contextos sociais. Ideal para quem deseja melhorar suas interações diárias.', '2024-08-08 21:10:00', 'Biblioteca Parque Estadual, Centro, Rio de Janeiro, RJ', '["1732648074690-Biblioteca-RJ.jfif"]', '2024-11-26 19:07:54', '-22.905400, -43.194500');
 
 -- Copiando estrutura para tabela db_pejo.oportunidades
 CREATE TABLE IF NOT EXISTS `oportunidades` (
@@ -133,9 +138,9 @@ CREATE TABLE IF NOT EXISTS `oportunidades` (
   `cidade` varchar(50) DEFAULT NULL,
   `descricao_forma_pagamento` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Copiando dados para a tabela db_pejo.oportunidades: ~0 rows (aproximadamente)
+-- Copiando dados para a tabela db_pejo.oportunidades: ~1 rows (aproximadamente)
 INSERT INTO `oportunidades` (`id`, `user_id`, `cpf`, `horarios`, `forma_de_pagamento`, `cfp`, `cidade`, `descricao_forma_pagamento`) VALUES
 	(1, 10, '47348752861', '18:30 a 20:00', 'Pix', '123183', 'São Paulo', NULL);
 
@@ -145,13 +150,13 @@ CREATE TABLE IF NOT EXISTS `ultimadata` (
   `userId` int(11) NOT NULL,
   `dia_desafio_feito` date DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Copiando dados para a tabela db_pejo.ultimadata: ~2 rows (aproximadamente)
 INSERT INTO `ultimadata` (`id`, `userId`, `dia_desafio_feito`) VALUES
-	(5, 10, '2024-11-25'),
-	(6, 11, '2024-11-24'),
-	(7, 12, '2024-11-25');
+	(5, 10, '2024-11-26'),
+	(8, 13, '2024-11-26'),
+	(9, 14, '2024-11-25');
 
 -- Copiando estrutura para tabela db_pejo.usuarios
 CREATE TABLE IF NOT EXISTS `usuarios` (
@@ -163,27 +168,26 @@ CREATE TABLE IF NOT EXISTS `usuarios` (
   `senha` varchar(255) NOT NULL,
   `token_confirmacao_email` varchar(255) DEFAULT NULL,
   `token_recuperacao_senha` varchar(255) DEFAULT NULL,
-  `status_email` tinyint(1) DEFAULT '0',
   `tipo_usuario` enum('confirmação','usuario','profissional','admin') DEFAULT 'confirmação',
-  `data_criacao` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `data_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
   `data_nascimento` date DEFAULT NULL,
-  `nivel` int(11) DEFAULT '0',
-  `bio` varchar(255) DEFAULT NULL,
+  `nivel` int(11) DEFAULT 0,
   `profileImage` varchar(255) DEFAULT NULL,
   `token` varchar(255) DEFAULT NULL,
   `desafios_feitos` varchar(255) DEFAULT '[]',
   `ultimo_desafio_montado` int(11) DEFAULT NULL,
   `data_ultimo_desafio_entregue` date DEFAULT NULL,
-  `avaliacao` float DEFAULT '0',
+  `avaliacao` float DEFAULT 0,
   `contratados` varchar(255) DEFAULT '[]',
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Copiando dados para a tabela db_pejo.usuarios: ~2 rows (aproximadamente)
-INSERT INTO `usuarios` (`id`, `token_expiration`, `nome`, `email`, `telefone`, `senha`, `token_confirmacao_email`, `token_recuperacao_senha`, `status_email`, `tipo_usuario`, `data_criacao`, `data_nascimento`, `nivel`, `bio`, `profileImage`, `token`, `desafios_feitos`, `ultimo_desafio_montado`, `data_ultimo_desafio_entregue`, `avaliacao`, `contratados`) VALUES
-	(10, NULL, 'Otávio Garcia', 'admin@gmail.com', '18996660212', '$2b$10$B457wnrMbc57DRfEVcUHTuGv64m7rKrCIECDholKS6bWHI1TTbZRK', NULL, NULL, 0, 'admin', '2024-11-24 19:58:33', NULL, 60, NULL, '1732563896072-profile_10.jpg', NULL, '[52,59,58]', 58, '2024-11-25', 3.5, '[1,10]'),
-	(12, NULL, 'Otavio ', 'murfpp321@gmail.com', '18996660211', '$2b$10$s3qV5U9xzy.fu3tK74N/5u85d1kAy0v/SDZVen7Xb9KJpueF9E7Wq', NULL, NULL, 1, 'usuario', '2024-11-25 22:38:46', '2006-03-29', 20, NULL, NULL, NULL, '[32]', 32, '2024-11-25', 0, '[10]');
+INSERT INTO `usuarios` (`id`, `token_expiration`, `nome`, `email`, `telefone`, `senha`, `token_confirmacao_email`, `token_recuperacao_senha`, `tipo_usuario`, `data_criacao`, `data_nascimento`, `nivel`, `profileImage`, `token`, `desafios_feitos`, `ultimo_desafio_montado`, `data_ultimo_desafio_entregue`, `avaliacao`, `contratados`) VALUES
+	(10, NULL, 'Equipe Pejo', 'admin@gmail.com', '18996660212', '$2b$10$B457wnrMbc57DRfEVcUHTuGv64m7rKrCIECDholKS6bWHI1TTbZRK', NULL, NULL, 'admin', '2024-11-24 19:58:33', NULL, 100, '1732649496136-profile_10.jpg', NULL, '[33]', 33, '2024-11-25', 3.5, '[]'),
+	(13, NULL, 'Conta do jorginho', 'teste@gmail.com', '18996660211', '$2b$10$B457wnrMbc57DRfEVcUHTuGv64m7rKrCIECDholKS6bWHI1TTbZRK', NULL, NULL, 'usuario', '2024-11-26 16:56:41', NULL, 220, '1732649099326-profile_13.jpg', NULL, '[7]', 7, '2024-11-26', 0, '[]'),
+	(14, '2024-11-26 17:02:23', 'José ', 'jocbrandao2@gmail.com', '18998091310', '$2b$10$z/BC2VFcWeis5EJHGmTAyO0y6ItnnN8JcMVjKbFr8.jFsaHjbhpLi', '971bcb99f1acf612264d97959346f66d', NULL, 'confirmação', '2024-11-26 19:47:23', '2007-02-16', 0, NULL, NULL, '[]', NULL, NULL, 0, '[]');
 
 -- Copiando estrutura para trigger db_pejo.after_user_insert
 SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION';

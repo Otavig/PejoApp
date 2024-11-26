@@ -26,19 +26,19 @@ const EventsScreen = () => {
     // Função para buscar os eventos da API
     const fetchEvents = async () => {
         try {
-            const response = await fetch('http://192.168.0.102:3000/getEventos');
+            const response = await fetch('http://10.111.9.44:3000/getEventos');
             const data = await response.json();
             const today = new Date();
-    
+
             // Separar eventos futuros e passados
             const future = data
                 .filter(event => new Date(event.data_evento) >= today)
                 .sort((a, b) => new Date(a.data_evento) - new Date(b.data_evento)); // Ordena eventos futuros
-    
+
             const past = data
                 .filter(event => new Date(event.data_evento) < today)
                 .sort((a, b) => new Date(b.data_evento) - new Date(a.data_evento)); // Ordena eventos passados do mais recente para o mais antigo
-    
+
             setFutureEvents(future);
             setPastEvents(past);
             setLoading(false);
@@ -47,7 +47,7 @@ const EventsScreen = () => {
             setLoading(false);
         }
     };
-    
+
     // UseFocusEffect para recarregar eventos toda vez que a tela for reaberta
     useFocusEffect(
         React.useCallback(() => {
@@ -62,10 +62,10 @@ const EventsScreen = () => {
         const year = date.getFullYear();
         const hours = String(date.getHours()).padStart(2, '0');
         const minutes = String(date.getMinutes()).padStart(2, '0');
-    
+
         return `${day}/${month}/${year} às ${hours}:${minutes}`;
     };
-    
+
     const renderEventItem = ({ item }) => {
         let imagensArray = [];
         try {
@@ -81,7 +81,7 @@ const EventsScreen = () => {
             >
                 <ImageBackground
                     source={{
-                        uri: `http://192.168.0.102:3000/imagesEventos/${imagensArray.length > 0 ? imagensArray[0] : 'default.png'}`,
+                        uri: `http://10.111.9.44:3000/imagesEventos/${imagensArray.length > 0 ? imagensArray[0] : 'default.png'}`,
                     }}
                     style={styles.eventImage}
                     imageStyle={{ borderRadius: 10 }}
@@ -106,23 +106,23 @@ const EventsScreen = () => {
                 </TouchableOpacity>
             </View>
 
-            <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-                {/* Eventos Futuros */}
-                <View style={styles.eventsSection}>
-                    <Text style={[styles.sectionTitle, { marginTop: 20 }]}>Próximos Eventos</Text>
-                    <FlatList
-                        data={futureEvents}
-                        renderItem={renderEventItem}
-                        keyExtractor={(item) => item.id.toString()}
-                        horizontal
-                        showsHorizontalScrollIndicator={false}
-                        style={styles.eventsList}
-                        ListEmptyComponent={
-                            loading ? <Text>Carregando eventos...</Text> : <Text>Nenhum evento futuro encontrado</Text>
-                        }
-                    />
-                </View>
+            {/* Eventos Futuros */}
+            <View style={styles.eventsSection}>
+                <Text style={[styles.sectionTitle, { marginTop: 20 }]}>Próximos Eventos</Text>
+                <FlatList
+                    data={futureEvents}
+                    renderItem={renderEventItem}
+                    keyExtractor={(item) => item.id.toString()}
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    style={styles.eventsList}
+                    ListEmptyComponent={
+                        loading ? <Text>Carregando eventos...</Text> : <Text>Nenhum evento futuro encontrado</Text>
+                    }
+                />
+            </View>
 
+            <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
                 {/* Eventos Passados */}
                 <View style={styles.pastEventsSection}>
                     <Text style={styles.sectionTitle}>Eventos Passados</Text>
@@ -135,7 +135,7 @@ const EventsScreen = () => {
                             >
                                 <Image
                                     source={{
-                                        uri: `http://192.168.0.102:3000/imagesEventos/${JSON.parse(item.imagens)[0] || 'default.png'}`,
+                                        uri: `http://10.111.9.44:3000/imagesEventos/${JSON.parse(item.imagens)[0] || 'default.png'}`,
                                     }}
                                     style={styles.eventImageOld}
                                 />

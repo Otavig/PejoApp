@@ -22,7 +22,7 @@ if (!fs.existsSync(directoryPath)) {
 const db = mysql.createConnection({
     host: "localhost",
     user: "root",
-    password: "root",
+    password: "",
     database: "db_pejo"
 });
 
@@ -131,7 +131,7 @@ const register = async (req, res) => {
                     return res.status(500).json({ erro: 'Erro ao registrar usuário' });
                 }
 
-                const confirmationLink = `http://192.168.0.102:3000/siteConfirm.html?token=${confirmationToken}`;
+                const confirmationLink = `http://10.111.9.44:3000/siteConfirm.html?token=${confirmationToken}`;
                 await sendConfirmationEmail(email, nome, confirmationLink);
 
                 res.json({ mensagem: 'Usuário registrado com sucesso. Verifique seu e-mail para confirmar.' });
@@ -293,7 +293,7 @@ const sendPasswordResetEmail = async (email, token) => {
             <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ccc; border-radius: 5px;">
                 <h2 style="color: #2196F3;">Redefinição de Senha</h2>
                 <p>Você solicitou a redefinição de sua senha. Clique no link abaixo para redefinir sua senha:</p>
-                <a href="http://192.168.0.102:3000/siteRecovery.html?token=${token}" style="background-color: #2196F3; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px;">Redefinir Senha</a>
+                <a href="http://10.111.9.44:3000/siteRecovery.html?token=${token}" style="background-color: #2196F3; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px;">Redefinir Senha</a>
                 <p>Se você não solicitou essa mudança, ignore este e-mail.</p>
             </div>
         `,
@@ -754,23 +754,27 @@ const resetDesafiosFeitos = (req, res) => {
 };
 
 const oportunidadeCriadaOuNao = (req, res) => {
-    const {id} = req.params;
-    const queryVerify = `SELECT user_id FROM oportunidades WHERE user_id = ${id};`
-    db.query(queryVerify, (err, resultado) => {
-        console.log(resultado)
-        // Verifique se o usuário foi encontrado
-        if (resultado <= 0) {
-            return res.status(404).json({"existe": false});
+    const { id } = req.params;
+    const queryVerify = `SELECT user_id FROM oportunidades WHERE user_id = ?`;
+
+    db.query(queryVerify, [id], (err, resultado) => {
+        if (err) {
+            console.error("Erro ao consultar o banco de dados:", err);
+            return res.status(500).json({ error: "Erro interno do servidor" });
         }
 
-        res.json({"existe": true});
-    })
-}
+        // Verifique se o usuário foi encontrado
+        if (resultado.length === 0) {
+            return res.status(200).json({ "existe": false });
+        }
+        res.status(200).json({ "existe": true });
+    });
+};
 
 const buscarAvaliacoes = (req, res) => {
     const { id } = req.params;
 
-    console.log(`Recebida solicitação para buscar avaliações com ID: ${id}`);
+    // console.log(`Recebida solicitação para buscar avaliações com ID: ${id}`);
 
     if (!id || isNaN(id)) {
         console.error("ID inválido:", id);
@@ -789,7 +793,7 @@ const buscarAvaliacoes = (req, res) => {
             return res.status(404).json({ message: "Nenhuma avaliação encontrada" });
         }
 
-        console.log("Avaliação encontrada:", resultado);
+        // console.log("Avaliação encontrada:", resultado);
         // Retorna apenas o campo 'avaliacao' para melhor clareza
         res.json({ avaliacao: resultado[0].avaliacao });
     });
@@ -978,6 +982,8 @@ const dataUltimoDesafioEntregue = (req, res) => {
         });
 }
 
+
+
 // Rota para buscar o Último Desafio Realizado
 const buscarUltimoDesafioMontado = (req, res) => {
     // Corrigindo o destructuring dos parâmetros
@@ -1078,7 +1084,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static('public'));
 
 app.post('/reset-desafios-feitos/:idUser', resetDesafiosFeitos);
-app.get('/verificar-oportunidade-foi-criada/:id', oportunidadeCriadaOuNao)
+app.post('/verificar-oportunidade-foi-criada/:id', oportunidadeCriadaOuNao)
 app.get('/buscar-avaliacoes/:id', buscarAvaliacoes);
 app.get('/buscar-contratado-por-id', buscarContratadoPorId)
 app.post('/contratar', adicionarContratado);
