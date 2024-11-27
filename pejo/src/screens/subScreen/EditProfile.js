@@ -15,7 +15,7 @@ export default function EditProfile({ route, navigation }) {
     const formatPhoneNumber = (text) => {
         // Remove todos os caracteres não numéricos
         let phoneNumber = text.replace(/[^\d]/g, '');
-        
+
         // Aplica a formatação (18) 99666-0212
         if (phoneNumber.length <= 2) {
             phoneNumber = phoneNumber.replace(/(\d{2})/, '($1) ');
@@ -48,9 +48,9 @@ export default function EditProfile({ route, navigation }) {
         } else {
             formData.append('profileImage', userData.profileImage || null);
         }
-    
+
         try {
-            const response = await axios.put(`http://10.111.9.44:3000/userEdit/${userData.id}`, formData, {
+            const response = await axios.put(`http://192.168.0.102:3000/userEdit/${userData.id}`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
@@ -61,7 +61,7 @@ export default function EditProfile({ route, navigation }) {
             console.error('Erro ao atualizar perfil:', error);
         }
     };
-    
+
     const handleImagePick = async () => {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (status !== 'granted') {
@@ -73,15 +73,23 @@ export default function EditProfile({ route, navigation }) {
             mediaType: ImagePicker.MediaTypeOptions.Images,
             quality: 1,
         });
-        
+
         console.log('Resultado do ImagePicker:', result);
-        
+
         if (!result.canceled) {
             console.log('Imagem selecionada:', result.assets[0].uri);
             setProfileImage(result.assets[0].uri);
         } else {
             console.log('Usuário cancelou a seleção de imagem');
         }
+    };
+
+    const validateName = (text) => {
+        const nameRegex = /^[a-zA-ZÀ-ÿ\s]*$/; // Permite apenas letras e espaços
+        if (text.length > 50) {
+            return text.slice(0, 50); // Limita a 50 caracteres
+        }
+        return nameRegex.test(text) ? text : name; // Retorna o texto válido ou mantém o nome atual
     };
 
     return (
@@ -91,8 +99,8 @@ export default function EditProfile({ route, navigation }) {
                     <Image
                         style={styles.profileImage}
                         source={{
-                            uri: profileImage 
-                                ? profileImage 
+                            uri: profileImage
+                                ? profileImage
                                 : 'https://example.com/default-profile-picture.jpg'
                         }}
                     />
@@ -100,9 +108,17 @@ export default function EditProfile({ route, navigation }) {
                 </TouchableOpacity>
             </View>
             <Text style={styles.label}>Name</Text>
-            <TextInput value={name} onChangeText={setName} style={styles.input} />
+            <TextInput
+                value={name}
+                onChangeText={(text) => setName(validateName(text))} // Aplica validação no nome
+                style={styles.input}
+            />
             <Text style={styles.label}>Email</Text>
-            <TextInput value={email} onChangeText={setEmail} style={styles.input} />
+            <TextInput
+                value={email}
+                onChangeText={setEmail}
+                style={styles.input}
+            />
             <Text style={styles.label}>Phone</Text>
             <TextInput
                 value={formatPhoneNumber(phone)} // Formata o número de telefone ao ser exibido

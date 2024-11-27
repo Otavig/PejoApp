@@ -16,7 +16,7 @@ const OpportunityDetailScreen = ({ route, navigation }) => {
             if (storedUserId) {
                 try {
                     const response = await axios.get(
-                        `http://10.111.9.44:3000/buscar-contratado-por-id`, 
+                        `http://192.168.0.102:3000/buscar-contratado-por-id`, 
                         {
                             params: {
                                 idUser: storedUserId,
@@ -43,7 +43,7 @@ const OpportunityDetailScreen = ({ route, navigation }) => {
         if (userId && opportunity.id) {
             try {
                 const response = await axios.post(
-                    'http://10.111.9.44:3000/contratar',
+                    'http://192.168.0.102:3000/contratar',
                     {
                         id: userId,
                         contratadoId: opportunity.userIdContract,

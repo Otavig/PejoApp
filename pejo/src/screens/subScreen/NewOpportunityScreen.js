@@ -94,7 +94,7 @@ const NewOpportunityScreen = ({ route, navigation }) => {
         }
     
         try {
-            const response = await axios.post('http://10.111.9.44:3000/criar-oportunidade', {
+            const response = await axios.post('http://192.168.0.102:3000/criar-oportunidade', {
                 idUser: idUsuario,
                 cpf: cpf,
                 horarios: horarios,

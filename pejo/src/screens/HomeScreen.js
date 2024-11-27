@@ -24,7 +24,7 @@ const HomeScreen = ({ route }) => {
     // Buscar desafios
     const buscarDesafios = async () => {
         try {
-            const resposta = await axios.get('http://10.111.9.44:3000/getDesafios');
+            const resposta = await axios.get('http://192.168.0.102:3000/getDesafios');
             return resposta.data;
         } catch (error) {
             console.error('Erro ao buscar desafios', error);
@@ -36,7 +36,7 @@ const HomeScreen = ({ route }) => {
     const buscarUltimaData = async () => {
         try {
             if (idUser) {
-                const respostaUltimaData = await axios.get(`http://10.111.9.44:3000/ultimaData/${idUser}`);
+                const respostaUltimaData = await axios.get(`http://192.168.0.102:3000/ultimaData/${idUser}`);
                 return respostaUltimaData;
             }
         } catch (error) {
@@ -66,12 +66,12 @@ const HomeScreen = ({ route }) => {
     // Buscar desafios realizados pelo usuário
     const buscarDesafiosFeitos = async () => {
         try {
-            const respostaFeitos = await axios.get(`http://10.111.9.44:3000/desafios/feitos?userId=${idUser}`);
+            const respostaFeitos = await axios.get(`http://192.168.0.102:3000/desafios/feitos?userId=${idUser}`);
             const desafiosFeitosIds = JSON.parse(respostaFeitos.data.desafiosConcluidos || '[]'); // Parse IDs
 
             // Busque detalhes dos desafios concluídos
             const desafiosDetalhesPromises = desafiosFeitosIds.map(id =>
-                axios.get(`http://10.111.9.44:3000/intra/getDesafio/${id}`)
+                axios.get(`http://192.168.0.102:3000/intra/getDesafio/${id}`)
             );
 
             const desafiosDetalhes = await Promise.all(desafiosDetalhesPromises);
@@ -124,7 +124,7 @@ const HomeScreen = ({ route }) => {
             // Salvar o desafio montado e a data no AsyncStorage
             await AsyncStorage.setItem('desafioMontado', JSON.stringify({ desafioId: desafioMontado, data: dataHoje }));
 
-            await axios.put(`http://10.111.9.44:3000/user/${idUser}/desafio/${desafioMontado.id}`)
+            await axios.put(`http://192.168.0.102:3000/user/${idUser}/desafio/${desafioMontado.id}`)
 
             console.log('Desafio montado salvo com sucesso!');
         } catch (error) {
@@ -134,14 +134,14 @@ const HomeScreen = ({ route }) => {
 
     const pegarUltimoDesafioMontado = async (idUsuario) => {
         try {
-            const respostaBuscaMontado = await axios.get(`http://10.111.9.44:3000/ultimoDesafioMontado/${idUsuario}`, {
+            const respostaBuscaMontado = await axios.get(`http://192.168.0.102:3000/ultimoDesafioMontado/${idUsuario}`, {
                 headers: {
                     'Content-Type': 'application/json',
                 },
             });
 
             // A resposta já será tratada como JSON
-            const resultado = await axios.get(`http://10.111.9.44:3000/intra/getDesafio/${respostaBuscaMontado.data.ultimoDesafioRealizado}`);
+            const resultado = await axios.get(`http://192.168.0.102:3000/intra/getDesafio/${respostaBuscaMontado.data.ultimoDesafioRealizado}`);
 
             // Atualiza o estado com o desafio anterior
             setDesafioAtual(resultado.data);
@@ -158,12 +158,12 @@ const HomeScreen = ({ route }) => {
             setIsModalVisible(true);
             const hoje = new Date().toISOString().split('T')[0]; // Converte para o formato 'YYYY-MM-DD'.
 
-            const marcarDataResponse = await axios.put(`http://10.111.9.44:3000/ultimaData/marcar/${idUser}/${hoje}`);
+            const marcarDataResponse = await axios.put(`http://192.168.0.102:3000/ultimaData/marcar/${idUser}/${hoje}`);
 
             console.log("Marcar data response:", marcarDataResponse.data);
 
             // Segundo PUT
-            const concluirResponse = await axios.put(`http://10.111.9.44:3000/desafios/concluir/${idUser}/${idDesafio}`);
+            const concluirResponse = await axios.put(`http://192.168.0.102:3000/desafios/concluir/${idUser}/${idDesafio}`);
             console.log("Concluir desafio response:", concluirResponse.data);
 
             await novoLevelConcluido(20);
@@ -178,7 +178,7 @@ const HomeScreen = ({ route }) => {
     const resetarDesafiosFeitos = async (usuarioID) => {
         try {
             // Lógica para resetar os desafios no backend
-            await axios.post(`http://10.111.9.44:3000/reset-desafios-feitos/${usuarioID}}`)
+            await axios.post(`http://192.168.0.102:3000/reset-desafios-feitos/${usuarioID}}`)
         } catch (error) {
             console.error('Erro ao resetar os desafios:', error);
             throw new Error('Falha ao resetar os desafios.');
@@ -188,7 +188,7 @@ const HomeScreen = ({ route }) => {
     const novoLevelConcluido = async (quantia) => {
         try {
             // Envia a requisição para atualizar o nível do usuário
-            const response = await axios.put(`http://10.111.9.44:3000/upUser/${idUser}/${quantia}`);
+            const response = await axios.put(`http://192.168.0.102:3000/upUser/${idUser}/${quantia}`);
 
             console.log('Resposta do servidor (Nível atualizado):', response.data);
         } catch (error) {
@@ -213,7 +213,7 @@ const HomeScreen = ({ route }) => {
 
     const buscarDesafioUnico = async (desafioSelecionado) => {
         try {
-            const desafioResposta = await axios.get(`http://10.111.9.44:3000/intra/getDesafio/${desafioSelecionado}`, {
+            const desafioResposta = await axios.get(`http://192.168.0.102:3000/intra/getDesafio/${desafioSelecionado}`, {
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -246,7 +246,7 @@ const HomeScreen = ({ route }) => {
     };
 
     const dataUltimoDesafioEntregueParaUser = async () => {
-        const resultado = await axios.get(`http://10.111.9.44:3000/data-ultimo-desafio-entregue/${idUser}`);
+        const resultado = await axios.get(`http://192.168.0.102:3000/data-ultimo-desafio-entregue/${idUser}`);
         return resultado.data.utlimoDataDesafio.data_ultimo_desafio_entregue;
 
     }

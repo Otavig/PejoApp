@@ -33,7 +33,7 @@ export default function RegisterScreen() {
     const handlePhoneChange = (text) => {
         // Remove todos os caracteres não numéricos
         const phoneNumber = text.replace(/\D/g, '');
-        
+
         // Formata o número conforme o padrão (XX) XXXXX-XXXX
         if (phoneNumber.length <= 2) {
             setPhone(`(${phoneNumber}`);
@@ -84,8 +84,24 @@ export default function RegisterScreen() {
         return token;
     };
 
-    // Função para registrar o usuário
+    // Validação para o nome
+    const isValidName = (name) => {
+        const nameRegex = /^[a-zA-ZÀ-ÿ\s]{1,50}$/; // Permite letras, incluindo acentuadas, e espaços (máximo 50 caracteres)
+        return nameRegex.test(name);
+    };
+
+    // Atualizar a função de registro para incluir validação de nome
     const handleRegister = async () => {
+        if (!isValidName(name)) {
+            Alert.alert('Erro', 'O nome deve conter apenas letras e espaços, com no máximo 50 caracteres.');
+            return;
+        }
+
+        if (!isValidEmail(email)) {
+            Alert.alert('Erro', 'Por favor, insira um email válido no formato "exemplo@dominio.com".');
+            return;
+        }
+
         if (!isStrongPassword(password)) {
             Alert.alert('Erro', 'A senha deve ter no mínimo 6 caracteres, incluir pelo menos um número e uma letra maiúscula.');
             return;
@@ -93,11 +109,6 @@ export default function RegisterScreen() {
 
         if (password !== confirmPassword) {
             Alert.alert('Erro', 'As senhas não coincidem.');
-            return;
-        }
-
-        if (!isValidEmail(email)) {
-            Alert.alert('Erro', 'Por favor, insira um email válido.');
             return;
         }
 
@@ -136,7 +147,7 @@ export default function RegisterScreen() {
         };
 
         try {
-            const response = await axios.post('http://10.111.9.44:3000/register', data);
+            const response = await axios.post('http://192.168.0.102:3000/register', data);
             Alert.alert('Sucesso', response.data.mensagem);
             navigation.navigate('Login');
         } catch (error) {
@@ -144,6 +155,7 @@ export default function RegisterScreen() {
             Alert.alert('Erro', 'Ocorreu um erro ao registrar, tente novamente.');
         }
     };
+
 
     return (
         <ScrollView contentContainerStyle={styles.container}>

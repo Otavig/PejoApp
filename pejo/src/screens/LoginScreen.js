@@ -25,7 +25,7 @@ export default function LoginScreen() {
         }
 
         try {
-            const response = await axios.post('http://10.111.9.44:3000/login', {
+            const response = await axios.post('http://192.168.0.102:3000/login', {
                 identificador: email,
                 senha: password
             });
@@ -40,9 +40,9 @@ export default function LoginScreen() {
                 }
 
                 const userToken = Math.random().toString(36).substring(2);
-                await AsyncStorage.setItem('userToken', userToken); 
+                await AsyncStorage.setItem('userToken', userToken);
                 await AsyncStorage.setItem('userEmail', email);
-                await AsyncStorage.setItem('userName', nome); 
+                await AsyncStorage.setItem('userName', nome);
                 await AsyncStorage.setItem('userId', id.toString());
                 navigation.navigate('HomeScreen', { userName: nome });
             }
@@ -92,14 +92,21 @@ export default function LoginScreen() {
                 </TouchableOpacity>
                 <View style={styles.footer}>
                     <View style={styles.footerButtonsContainer}>
-                        <TouchableOpacity style={styles.createAccountButton} onPress={() => navigation.navigate('Register')}>
+                        <TouchableOpacity
+                            style={styles.createAccountButton}
+                            onPress={() => navigation.navigate('Register')}
+                        >
                             <Text style={styles.createAccountText}>Não tem uma conta?</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.forgotPasswordButton} onPress={() => navigation.navigate('ForgotPassword')}>
+                        <TouchableOpacity
+                            style={styles.forgotPasswordButton}
+                            onPress={() => navigation.navigate('ForgotPassword')}
+                        >
                             <Text style={styles.forgotPasswordText}>Esqueci a Senha!</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
+
             </View>
         </ScrollView>
     );
@@ -163,37 +170,28 @@ const styles = StyleSheet.create({
     },
     loginButtonText: {
         color: '#ffffff',
-        fontSize: width * 0.045,
+        fontSize: width * 0.050,
         fontWeight: 'bold',
-    },
-    forgotPasswordButton: {
-        
-    },
-    forgotPasswordText: {
-        color: '#0277BD',
-        fontSize: 16,
-        marginTop: 12.5
-    },
-    footer: {
-        paddingHorizontal: 30,
-        paddingBottom: 20,
-    },
-    createAccountButton: {
-        backgroundColor: '#ffffff',
-        borderRadius: 5,
-        paddingVertical: 12,
-        width: '100%',
-        alignItems: 'center',
-        borderColor: '#ddd',
-    },
-    createAccountText: {
-        color: '#0277BD',
-        fontSize: 16,
     },
     footerButtonsContainer: {
         flexDirection: 'row',
-        justifyContent: 'flex-start',
+        justifyContent: 'space-between',
+        alignItems: 'center',
         width: '100%',
-        marginRight: "20%",
+        marginTop: 20,
     },
+    createAccountButton: {
+        paddingHorizontal: 10,
+    },
+    createAccountText: {
+        color: '#0277BD',
+        fontSize: width * 0.04,
+    },
+    forgotPasswordButton: {
+        paddingHorizontal: 10,
+    },
+    forgotPasswordText: {
+        color: '#0277BD',
+        fontSize: width * 0.04,
+    },    
 });
