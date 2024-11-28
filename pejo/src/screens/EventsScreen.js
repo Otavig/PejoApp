@@ -26,7 +26,7 @@ const EventsScreen = () => {
     // Função para buscar os eventos da API
     const fetchEvents = async () => {
         try {
-            const response = await fetch('http://192.168.0.102:3000/getEventos');
+            const response = await fetch('http://10.111.9.44:3000/getEventos');
             const data = await response.json();
             const today = new Date();
 
@@ -81,7 +81,7 @@ const EventsScreen = () => {
             >
                 <ImageBackground
                     source={{
-                        uri: `http://192.168.0.102:3000/imagesEventos/${imagensArray.length > 0 ? imagensArray[0] : 'default.png'}`,
+                        uri: `http://10.111.9.44:3000/imagesEventos/${imagensArray.length > 0 ? imagensArray[0] : 'default.png'}`,
                     }}
                     style={styles.eventImage}
                     imageStyle={{ borderRadius: 10 }}
@@ -135,7 +135,7 @@ const EventsScreen = () => {
                             >
                                 <Image
                                     source={{
-                                        uri: `http://192.168.0.102:3000/imagesEventos/${JSON.parse(item.imagens)[0] || 'default.png'}`,
+                                        uri: `http://10.111.9.44:3000/imagesEventos/${JSON.parse(item.imagens)[0] || 'default.png'}`,
                                     }}
                                     style={styles.eventImageOld}
                                 />

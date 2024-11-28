@@ -22,7 +22,7 @@ if (!fs.existsSync(directoryPath)) {
 const db = mysql.createConnection({
     host: "localhost",
     user: "root",
-    password: "root",
+    password: "",
     database: "db_pejo"
 });
 
@@ -131,7 +131,7 @@ const register = async (req, res) => {
                     return res.status(500).json({ erro: 'Erro ao registrar usuário' });
                 }
 
-                const confirmationLink = `http://192.168.0.102:3000/siteConfirm.html?token=${confirmationToken}`;
+                const confirmationLink = `http://10.111.9.44:3000/siteConfirm.html?token=${confirmationToken}`;
                 await sendConfirmationEmail(email, nome, confirmationLink);
 
                 res.json({ mensagem: 'Usuário registrado com sucesso. Verifique seu e-mail para confirmar.' });
@@ -293,7 +293,7 @@ const sendPasswordResetEmail = async (email, token) => {
             <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ccc; border-radius: 5px;">
                 <h2 style="color: #2196F3;">Redefinição de Senha</h2>
                 <p>Você solicitou a redefinição de sua senha. Clique no link abaixo para redefinir sua senha:</p>
-                <a href="http://192.168.0.102:3000/siteRecovery.html?token=${token}" style="background-color: #2196F3; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px;">Redefinir Senha</a>
+                <a href="http://10.111.9.44:3000/siteRecovery.html?token=${token}" style="background-color: #2196F3; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px;">Redefinir Senha</a>
                 <p>Se você não solicitou essa mudança, ignore este e-mail.</p>
             </div>
         `,
@@ -1065,7 +1065,7 @@ const desafiosConcluidos = (req, res) => {
 
 const formatDate = (date) => {
     const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
-    const formattedDate = new Date(date).toLocaleDateString('en-GB', options); // Formato 'DD/MM/YYYY'
+    const formattedDate = new  Date(date).toLocaleDateString('en-GB', options); // Formato 'DD/MM/YYYY'
     const [day, month, year] = formattedDate.split('/');
     return `${year}-${month}-${day}`; // Formato 'YYYY-MM-DD'
 };

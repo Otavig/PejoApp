@@ -28,7 +28,7 @@ const OpportunityScreen = () => {
 
     const capturarNome = async (idpasse) => {
         try {
-            const responseNome = await axios.get(`http://192.168.0.102:3000/buscar-nome-usuario-unico/${idpasse}`);
+            const responseNome = await axios.get(`http://10.111.9.44:3000/buscar-nome-usuario-unico/${idpasse}`);
             return responseNome.data.nome;
         } catch (error) {
             console.error(`Erro ao buscar nome para user_id ${idpasse}:`, error);
@@ -37,13 +37,13 @@ const OpportunityScreen = () => {
     };
 
     const capturarImagem = async (idpasse) => {
-        const response = await axios.get(`http://192.168.0.102:3000/user/${idpasse}`);
+        const response = await axios.get(`http://10.111.9.44:3000/user/${idpasse}`);
         return response.data.profileImage;
     };
 
     const capturarAvaliacao = async (idpasse) => {
         try {
-            const response = await axios.get(`http://192.168.0.102:3000/buscar-avaliacoes/${idpasse}`);
+            const response = await axios.get(`http://10.111.9.44:3000/buscar-avaliacoes/${idpasse}`);
             return response.data.avaliacao; // Retorna os dados capturados
         } catch (error) {
             console.error("Erro ao capturar avaliação:", error);
@@ -56,7 +56,7 @@ const OpportunityScreen = () => {
     useEffect(() => {
         const fetchOpportunities = async () => {
             try {
-                const response = await axios.get('http://192.168.0.102:3000/buscar-oportunidades');
+                const response = await axios.get('http://10.111.9.44:3000/buscar-oportunidades');
                 // console.log(response.data)
                 if (!response.data || !Array.isArray(response.data)) {
                     throw new Error('Dados inválidos retornados pela API');
@@ -76,7 +76,7 @@ const OpportunityScreen = () => {
                             id: item.id,
                             name: name,
                             rating: avaliacao,
-                            photo: img ? `http://192.168.0.102:3000/imagesUsers/${img}` : 'https://via.placeholder.com/150',
+                            photo: img ? `http://10.111.9.44:3000/imagesUsers/${img}` : 'https://via.placeholder.com/150',
                             location: item.cidade,
                             times: item.horarios,
                             cpf: item.cpf,
@@ -108,7 +108,7 @@ const OpportunityScreen = () => {
             }
             setIdUsuario(storedUserId);
             // Verificar se a oportunidade foi criada
-            const response = await axios.post(`http://192.168.0.102:3000/verificar-oportunidade-foi-criada/${idUsuario}`);
+            const response = await axios.post(`http://10.111.9.44:3000/verificar-oportunidade-foi-criada/${idUsuario}`);
             setIsOpportunityCreated(response.data.existe); // Supondo que `response.data` seja um booleano
         } catch (error) {
             console.error('Erro ao verificar usuário ou oportunidade:', error);

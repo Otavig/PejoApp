@@ -50,7 +50,7 @@ export default function EditProfile({ route, navigation }) {
         }
 
         try {
-            const response = await axios.put(`http://192.168.0.102:3000/userEdit/${userData.id}`, formData, {
+            const response = await axios.put(`http://10.111.9.44:3000/userEdit/${userData.id}`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },

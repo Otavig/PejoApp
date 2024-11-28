@@ -118,7 +118,7 @@ CREATE TABLE IF NOT EXISTS `eventos` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Copiando dados para a tabela db_pejo.eventos: ~1 rows (aproximadamente)
+-- Copiando dados para a tabela db_pejo.eventos: ~6 rows (aproximadamente)
 INSERT INTO `eventos` (`id`, `nome`, `descricao`, `data_evento`, `local`, `imagens`, `data_criacao`, `coordenadas`) VALUES
 	(12, 'Desenvoltura no trabalho', 'Palestra com o Gustavo Prado sobre como se comportar e destacar no seu ambiente de trabalho', '2024-12-06 17:30:00', 'SP - Presidente Prudente', '["1732205629239-matarazo.jpg"]', '2024-11-21 16:13:49', '-22.12082877981584, -51.37948396191292'),
 	(13, 'Desbloqueando a Voz Interior: Superando a Timidez', 'Palestra motivacional com especialistas que exploram técnicas para enfrentar e superar a timidez.', '2025-01-15 22:00:00', 'Shopping Iguatemi, São Paulo, SP', '["1732647213659-shopping.jfif"]', '2024-11-26 18:53:33', '-23.576847914133587, -46.68823411953956'),
@@ -150,13 +150,15 @@ CREATE TABLE IF NOT EXISTS `ultimadata` (
   `userId` int(11) NOT NULL,
   `dia_desafio_feito` date DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Copiando dados para a tabela db_pejo.ultimadata: ~2 rows (aproximadamente)
+-- Copiando dados para a tabela db_pejo.ultimadata: ~5 rows (aproximadamente)
 INSERT INTO `ultimadata` (`id`, `userId`, `dia_desafio_feito`) VALUES
 	(5, 10, '2024-11-26'),
 	(8, 13, '2024-11-26'),
-	(9, 14, '2024-11-25');
+	(9, 14, '2024-11-28'),
+	(10, 17, '2024-11-27'),
+	(11, 18, '2024-11-28');
 
 -- Copiando estrutura para tabela db_pejo.usuarios
 CREATE TABLE IF NOT EXISTS `usuarios` (
@@ -181,13 +183,12 @@ CREATE TABLE IF NOT EXISTS `usuarios` (
   `contratados` varchar(255) DEFAULT '[]',
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`)
-) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Copiando dados para a tabela db_pejo.usuarios: ~2 rows (aproximadamente)
 INSERT INTO `usuarios` (`id`, `token_expiration`, `nome`, `email`, `telefone`, `senha`, `token_confirmacao_email`, `token_recuperacao_senha`, `tipo_usuario`, `data_criacao`, `data_nascimento`, `nivel`, `profileImage`, `token`, `desafios_feitos`, `ultimo_desafio_montado`, `data_ultimo_desafio_entregue`, `avaliacao`, `contratados`) VALUES
-	(10, NULL, 'Equipe Pejo', 'admin@gmail.com', '18996660212', '$2b$10$B457wnrMbc57DRfEVcUHTuGv64m7rKrCIECDholKS6bWHI1TTbZRK', NULL, NULL, 'admin', '2024-11-24 19:58:33', NULL, 100, '1732649496136-profile_10.jpg', NULL, '[33]', 33, '2024-11-25', 3.5, '[]'),
-	(13, NULL, 'Conta do jorginho', 'teste@gmail.com', '18996660211', '$2b$10$B457wnrMbc57DRfEVcUHTuGv64m7rKrCIECDholKS6bWHI1TTbZRK', NULL, NULL, 'usuario', '2024-11-26 16:56:41', NULL, 220, '1732649099326-profile_13.jpg', NULL, '[7]', 7, '2024-11-26', 0, '[]'),
-	(14, '2024-11-26 17:02:23', 'José ', 'jocbrandao2@gmail.com', '18998091310', '$2b$10$z/BC2VFcWeis5EJHGmTAyO0y6ItnnN8JcMVjKbFr8.jFsaHjbhpLi', '971bcb99f1acf612264d97959346f66d', NULL, 'confirmação', '2024-11-26 19:47:23', '2007-02-16', 0, NULL, NULL, '[]', NULL, NULL, 0, '[]');
+	(17, NULL, 'Zé', 'jocbrandao2@gmail.com', '18998091310', '$2b$10$B457wnrMbc57DRfEVcUHTuGv64m7rKrCIECDholKS6bWHI1TTbZRK', NULL, NULL, 'usuario', '2024-11-28 13:30:43', '2007-02-16', 0, '1732801764669-profile_17.jpg', NULL, '[]', 44, '2024-11-28', 0, '[]'),
+	(18, NULL, 'admin', 'admin@gmail.com', '18996660212', '$2b$10$B457wnrMbc57DRfEVcUHTuGv64m7rKrCIECDholKS6bWHI1TTbZRK', NULL, NULL, 'admin', '2024-11-28 13:35:20', NULL, 20, '', NULL, '[58]', 58, '2024-11-28', 0, '[]');
 
 -- Copiando estrutura para trigger db_pejo.after_user_insert
 SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION';

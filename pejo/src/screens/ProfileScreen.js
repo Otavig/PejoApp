@@ -38,7 +38,7 @@ export default function ProfileScreen() {
             return; // Sai da função se o ID for nulo
         }
         try {
-            const response = await axios.get(`http://192.168.0.102:3000/user/${userId}`);
+            const response = await axios.get(`http://10.111.9.44:3000/user/${userId}`);
             const level = response.data.nivel;
             // Calcula o nível real e o progresso
             const calculatedLevel = Math.floor(level / 100);  // Divide o nível por 100 para determinar o nível
@@ -93,7 +93,7 @@ export default function ProfileScreen() {
             <View style={[styles.profileContainer, {marginTop: 100}]} >
                 <Image
                     style={styles.profileImage}
-                    source={{ uri: `http://192.168.0.102:3000/imagesUsers/${userData.profileImage}`  || 'https://example.com/default-profile-picture.jpg' }}
+                    source={{ uri: `http://10.111.9.44:3000/imagesUsers/${userData.profileImage}`  || 'https://example.com/default-profile-picture.jpg' }}
                 />
             </View>
 
